@@ -1,0 +1,12 @@
+{
+    "require": {
+        "symfony/http-foundation": "dev-master",
+        "symfony/routing": "dev-master",
+        "symfony/yaml": "dev-master"
+    },
+    "autoload": {
+        "psr-4": {
+            "Jarvis\\": "src/"
+        }
+    }
+}
