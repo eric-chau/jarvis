@@ -9,6 +9,7 @@
     "autoload": {
         "psr-4": {
             "Jarvis\\Component\\": "src/Component/"
-        }
+        },
+        "files": ["src/Jarvis.php"]
     }
 }
