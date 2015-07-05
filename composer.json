@@ -1,12 +1,14 @@
 {
+    "name": "jarvis/jarvis",
     "require": {
-        "symfony/http-foundation": "dev-master",
-        "symfony/routing": "dev-master",
-        "symfony/yaml": "dev-master"
+        "doctrine/dbal": "2.5.*",
+        "symfony/http-foundation": "2.7.x-dev",
+        "symfony/routing": "2.7.x-dev",
+        "symfony/yaml": "2.7.x-dev"
     },
     "autoload": {
         "psr-4": {
-            "Jarvis\\": "src/"
+            "Jarvis\\Component\\": "src/Component/"
         }
     }
 }
