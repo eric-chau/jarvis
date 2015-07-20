@@ -3,13 +3,12 @@
     "require": {
         "doctrine/dbal": "2.5.*",
         "symfony/http-foundation": "2.7.x-dev",
-        "symfony/routing": "2.7.x-dev",
+        "nikic/fast-route": "0.*",
         "symfony/yaml": "2.7.x-dev"
     },
     "autoload": {
         "psr-4": {
-            "Jarvis\\Component\\": "src/Component/"
-        },
-        "files": ["src/Jarvis.php"]
+            "Jarvis\\": "src/"
+        }
     }
 }

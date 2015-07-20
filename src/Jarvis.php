@@ -1,12 +1,9 @@
 <?php
 
-use Jarvis\Component\Routing;
-use Jarvis\Component\ControllerResolver;
+namespace Jarvis;
 
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Matcher\UrlMatcher;
-use Symfony\Component\Routing\RequestContext;
+use Jarvis\Component\ControllerResolver;
+use Jarvis\ContainerProviderInterface;
 
 /**
  * Jarvis. Minimalist dependency injection container.
@@ -15,7 +12,7 @@ use Symfony\Component\Routing\RequestContext;
  */
 final class Jarvis implements \ArrayAccess
 {
-    private static $jarvis;
+    const JARVIS_CONTAINER_PROVIDER_FQCN = 'Jarvis\ContainerProvider';
 
     private $aliasOf = [];
     private $factories;
@@ -25,41 +22,45 @@ final class Jarvis implements \ArrayAccess
     private $values = [];
 
     /**
-     * @return self
-     */
-    public static function hello(array $settings = [])
-    {
-        if (null === self::$jarvis) {
-            self::$jarvis = new static($settings);
-        }
-
-        return self::$jarvis;
-    }
-
-    /**
-     * Analyzes current request and return result.
+     * Creates an instance of Jarvis. It can take settings as first argument.
+     * List of accepted options:
+     *   - jarvis.container_provider (type: string|array): fqcn of your container provider
      *
-     * @return mixed
+     * @param  array $settings Your own settings to modify Jarvis behavior
+     * @throws \InvalidArgumentException if provided container provider class doesn't
+     *                                   implement ContainerProviderInterface
      */
-    public function analyze()
+    public function __construct(array $settings = [])
     {
-        $result = null;
-        try {
-            $parameters = $this['url.matcher']->match($this['request']->getPathInfo());
-            $callback = $this['controller.resolver']->resolve($parameters);
-            if (is_callable($callback)) {
-                $result = call_user_func_array($callback, []);
-            } else {
-                $result = $callback;
-            }
-        } catch (\Exception $e) {
-            var_dump($e); die;
+        $this['jarvis.starttime'] = microtime(true);
+        $this->factories = new \SplObjectStorage();
+
+        if (!isset($settings['jarvis.container_provider'])) {
+            $settings['jarvis.container_provider'] = [self::JARVIS_CONTAINER_PROVIDER_FQCN];
+        } else {
+            $settings = (array) $settings;
+            array_unshift($settings, self::JARVIS_CONTAINER_PROVIDER_FQCN);
         }
 
-        return $result;
+        $this['jarvis.settings'] = $settings;
+        foreach ($settings['jarvis.container_provider'] as $classname) {
+            if (!is_subclass_of($classname, ContainerProviderInterface::class)) {
+                throw new \InvalidArgumentException(sprintf(
+                    'Expect every container provider to implement %s.',
+                    ContainerProviderInterface::class
+                ));
+            }
+
+            $classname::hydrate($this);
+        }
     }
 
-    public function executionDuration($precision = 8)
+    public function broadcast($event)
+    {
+
+    }
+
+    public function getExecutionDuration($precision = 8)
     {
         return number_format(microtime(true) - $this['jarvis.starttime'], $precision);
     }
@@ -245,36 +246,6 @@ final class Jarvis implements \ArrayAccess
         $this->locked[$id] = true;
 
         return $this;
-    }
-
-    private function __construct(array $settings = [])
-    {
-        $this['jarvis.starttime'] = microtime(true);
-        $this['jarvis.settings'] = $settings;
-        $this->factories = new \SplObjectStorage();
-
-        $this['request'] = function () {
-            return Request::createFromGlobals();
-        };
-
-        $this['routing'] = function () use ($settings) {
-            return new Routing(isset($settings['routes']) ? $settings['routes'] : []);
-        };
-
-        $this['url.matcher'] = function ($jarvis) {
-            $context = new RequestContext();
-            $context->fromRequest($jarvis['request']);
-
-            return new UrlMatcher($jarvis['routing'], $context);
-        };
-
-        $this['controller.resolver'] = function ($jarvis) {
-            return new ControllerResolver($jarvis);
-        };
-
-        $this['fallback.action'] = function ($jarvis) {
-            return new Response($jarvis->executionDuration().' ms');
-        };
     }
 
     /**
