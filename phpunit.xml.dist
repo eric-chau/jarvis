@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<phpunit bootstrap="tests/bootstrap.php"
+         colors="true"
+         stopOnFailure="false"
+>
+
+    <testsuites>
+        <testsuite name="Jarvis Test Suite">
+            <directory suffix="Test.php">tests/</directory>
+        </testsuite>
+    </testsuites>
+
+
+    <filter>
+        <blacklist>
+          <file>phpunit.phar</file>
+          <directory suffix=".php">vendor</directory>
+          <directory suffix=".php">tests</directory>
+          <!-- code coverage reports -->
+          <directory>report</directory>
+        </blacklist>
+    </filter>
+
+</phpunit>
