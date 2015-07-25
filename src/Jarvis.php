@@ -40,7 +40,7 @@ final class Jarvis extends Container
             $settings['jarvis.container_provider'] = [self::JARVIS_CONTAINER_PROVIDER_FQCN];
         } else {
             $settings = (array) $settings;
-            array_unshift($settings, self::JARVIS_CONTAINER_PROVIDER_FQCN);
+            array_unshift($settings['jarvis.container_provider'], self::JARVIS_CONTAINER_PROVIDER_FQCN);
         }
 
         $this['jarvis.settings'] = $settings;
