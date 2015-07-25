@@ -2,8 +2,10 @@
 
 namespace Jarvis;
 
+use FastRoute\Dispatcher;
 use Jarvis\Component\ControllerResolver;
 use Jarvis\ContainerProviderInterface;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Jarvis. Minimalist dependency injection container.
@@ -54,6 +56,40 @@ final class Jarvis extends Container
 
             $classname::hydrate($this);
         }
+    }
+
+    public function analyze()
+    {
+        $response = null;
+        $routeInfo = $this['url_matcher']->dispatch($this['request']->getMethod(), $this['request']->getPathInfo());
+        switch ($routeInfo[0]) {
+            case Dispatcher::NOT_FOUND:
+                $response = new Response(null, Response::HTTP_NOT_FOUND);
+
+                break;
+            case Dispatcher::METHOD_NOT_ALLOWED:
+                $response = new Response(null, Response::HTTP_METHOD_NOT_ALLOWED);
+
+                break;
+            case Dispatcher::FOUND:
+                $handler = $routeInfo[1];
+                if (is_array($handler) && is_string($handler[0]) && '@' === $handler[0][0]) {
+                    $identifier = substr($handler[0], 1);
+                    if (!isset($this[$identifier])) {
+                        throw new \Exception('invalid service identifier provided: '.$identifier);
+                    }
+
+                    $handler[0] = $this[$identifier];
+                }
+
+                $response = call_user_func_array($handler, $routeInfo[2]);
+
+                break;
+            default:
+                break;
+        }
+
+        return $response;
     }
 
     public function broadcast($event)
