@@ -193,11 +193,13 @@ class Container implements \ArrayAccess
      * @param  string $id the identifier to lock
      * @return self
      */
-    public function lock($id)
+    public function lock($ids)
     {
-        $this->throwExceptionIfIdentifierNotFound($id);
-        $id = $this->resolveIdentifier($id);
-        $this->locked[$id] = true;
+        foreach ((array) $ids as $id) {
+            $this->throwExceptionIfIdentifierNotFound($id);
+            $id = $this->resolveIdentifier($id);
+            $this->locked[$id] = true;
+        }
 
         return $this;
     }
