@@ -2,13 +2,11 @@
 
 namespace Jarvis;
 
-use FastRoute\Dispatcher\GroupCountBased as Dispatcher;
 use FastRoute\DataGenerator\GroupCountBased;
 use FastRoute\RouteCollector;
 use FastRoute\RouteParser\Std;
-use Jarvis\Component\Router;
+use Jarvis\Routing\Router;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
 
 /**
  * This is Jarvis internal container provider. It will inject every core
@@ -27,12 +25,10 @@ class ContainerProvider implements ContainerProviderInterface
             return Request::createFromGlobals();
         };
 
-        $container['route_collector'] = function () {
-            return new RouteCollector(new Std(), new GroupCountBased());
+        $container['router'] = function () {
+            return new Router(new RouteCollector(new Std(), new GroupCountBased()));
         };
 
-        $container['url_matcher'] = function ($jarvis) {
-            return new Dispatcher($jarvis['route_collector']->getData());
-        };
+        $container->lock(['request', 'router']);
     }
 }

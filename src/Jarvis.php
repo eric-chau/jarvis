@@ -61,7 +61,8 @@ final class Jarvis extends Container
     public function analyze()
     {
         $response = null;
-        $routeInfo = $this['url_matcher']->dispatch($this['request']->getMethod(), $this['request']->getPathInfo());
+
+        $routeInfo = $this['router']->match($this['request']->getMethod(), $this['request']->getPathInfo());
         switch ($routeInfo[0]) {
             case Dispatcher::NOT_FOUND:
                 $response = new Response(null, Response::HTTP_NOT_FOUND);
