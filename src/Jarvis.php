@@ -65,42 +65,33 @@ final class Jarvis extends Container implements JarvisEvents
 
     public function analyze()
     {
-        $this
-            ->masterEmitter()
-            ->broadcast(JarvisEvents::ANALYZE_EVENT, $analyzeEvent = new AnalyzeEvent($this['request']))
-        ;
+        $this->masterBroadcast(JarvisEvents::ANALYZE_EVENT, $analyzeEvent = new AnalyzeEvent($this['request']));
 
         if ($response = $analyzeEvent->getResponse()) {
             return $response;
         }
 
         $routeInfo = $this['router']->match($this['request']->getMethod(), $this['request']->getPathInfo());
-        switch ($routeInfo[0]) {
-            case Dispatcher::NOT_FOUND:
-                $response = new Response(null, Response::HTTP_NOT_FOUND);
-
-                break;
-            case Dispatcher::METHOD_NOT_ALLOWED:
-                $response = new Response(null, Response::HTTP_METHOD_NOT_ALLOWED);
-
-                break;
-            case Dispatcher::FOUND:
-                $handler = $routeInfo[1];
-                if (is_array($handler) && is_string($handler[0]) && '@' === $handler[0][0]) {
-                    $identifier = substr($handler[0], 1);
-                    if (!isset($this[$identifier])) {
-                        throw new \Exception('invalid service identifier provided: '.$identifier);
-                    }
-
-                    $handler[0] = $this[$identifier];
+        if (Dispatcher::FOUND === $routeInfo[0]) {
+            $handler = $routeInfo[1];
+            if (is_array($handler) && is_string($handler[0]) && '@' === $handler[0][0]) {
+                $identifier = substr($handler[0], 1);
+                if (!isset($this[$identifier])) {
+                    throw new \Exception('invalid service identifier provided: '.$identifier);
                 }
 
-                $response = call_user_func_array($handler, $routeInfo[2]);
+                $handler[0] = $this[$identifier];
+            }
 
-                break;
-            default:
-                break;
+            $response = call_user_func_array($handler, $routeInfo[2]);
+        } elseif (Dispatcher::NOT_FOUND === $routeInfo[0] || Dispatcher::METHOD_NOT_ALLOWED === $routeInfo[0]) {
+            $response = new Response(null, Dispatcher::NOT_FOUND === $routeInfo[0]
+                ? Response::HTTP_NOT_FOUND
+                : Response::HTTP_METHOD_NOT_ALLOWED
+            );
         }
+
+        $this->masterBroadcast(JarvisEvents::RESPONSE_EVENT);
 
         return $response;
     }
@@ -137,8 +128,6 @@ final class Jarvis extends Container implements JarvisEvents
             }
         }
 
-        $this->masterEmitter = false;
-
         return $this;
     }
 
@@ -152,9 +141,11 @@ final class Jarvis extends Container implements JarvisEvents
      *
      * @return self
      */
-    private function masterEmitter()
+    private function masterBroadcast($eventName, EventInterface $event = null)
     {
         $this->masterEmitter = true;
+        $this->broadcast($eventName, $event);
+        $this->masterEmitter = false;
 
         return $this;
     }
