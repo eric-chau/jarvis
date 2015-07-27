@@ -1,6 +1,6 @@
 <?php
 
-namespace Jarvis;
+namespace Jarvis\DependencyInjection;
 
 /**
  * Minimalist dependency injection container

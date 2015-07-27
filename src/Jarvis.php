@@ -4,9 +4,12 @@ namespace Jarvis;
 
 use FastRoute\Dispatcher;
 use Jarvis\Component\ControllerResolver;
-use Jarvis\ContainerProviderInterface;
+use Jarvis\DependencyInjection\Container;
+use Jarvis\DependencyInjection\ContainerProvider;
+use Jarvis\DependencyInjection\ContainerProviderInterface;
 use Jarvis\Event\AnalyzeEvent;
 use Jarvis\Event\EventInterface;
+use Jarvis\Event\JarvisEvents;
 use Jarvis\Event\SimpleEvent;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -15,9 +18,9 @@ use Symfony\Component\HttpFoundation\Response;
  *
  * @author Eric Chau <eriic.chau@gmail.com>
  */
-final class Jarvis extends Container implements JarvisEvents
+final class Jarvis extends Container
 {
-    const JARVIS_CONTAINER_PROVIDER_FQCN = 'Jarvis\ContainerProvider';
+    const JARVIS_CONTAINER_PROVIDER_FQCN = ContainerProvider::class;
 
     private $aliasOf = [];
     private $factories;
@@ -26,6 +29,7 @@ final class Jarvis extends Container implements JarvisEvents
     private $raw = [];
     private $values = [];
     private $receivers = [];
+    private $scopes = [];
     private $masterEmitter = false;
 
     /**
@@ -73,17 +77,7 @@ final class Jarvis extends Container implements JarvisEvents
 
         $routeInfo = $this['router']->match($this['request']->getMethod(), $this['request']->getPathInfo());
         if (Dispatcher::FOUND === $routeInfo[0]) {
-            $handler = $routeInfo[1];
-            if (is_array($handler) && is_string($handler[0]) && '@' === $handler[0][0]) {
-                $identifier = substr($handler[0], 1);
-                if (!isset($this[$identifier])) {
-                    throw new \Exception('invalid service identifier provided: '.$identifier);
-                }
-
-                $handler[0] = $this[$identifier];
-            }
-
-            $response = call_user_func_array($handler, $routeInfo[2]);
+            $response = call_user_func_array($this['callback_resolver']->resolve($routeInfo[1]), $routeInfo[2]);
         } elseif (Dispatcher::NOT_FOUND === $routeInfo[0] || Dispatcher::METHOD_NOT_ALLOWED === $routeInfo[0]) {
             $response = new Response(null, Dispatcher::NOT_FOUND === $routeInfo[0]
                 ? Response::HTTP_NOT_FOUND
@@ -96,7 +90,7 @@ final class Jarvis extends Container implements JarvisEvents
         return $response;
     }
 
-    public function addReceiver($eventName, callable $receiver)
+    public function addReceiver($eventName, $receiver)
     {
         if (isset($this->receivers[$eventName])) {
             $this->receivers[$eventName] = [];
@@ -120,7 +114,7 @@ final class Jarvis extends Container implements JarvisEvents
         if (isset($this->receivers[$eventName])) {
             $event = $event ?: new SimpleEvent();
             foreach ($this->receivers[$eventName] as $receiver) {
-                call_user_func_array($receiver, [$event]);
+                call_user_func_array($this['callback_resolver']->resolve($receiver), [$event]);
 
                 if ($event->isPropagationStopped()) {
                     break;
@@ -129,6 +123,40 @@ final class Jarvis extends Container implements JarvisEvents
         }
 
         return $this;
+    }
+
+    public function disableScope($names)
+    {
+        foreach ((array) $names as $name) {
+            unset($this->scopes[$name]);
+        }
+
+        return $this;
+    }
+
+    public function enableScope($names)
+    {
+        foreach ((array) $names as $name) {
+            $this->scopes[$name] = true;
+        }
+
+        return $this;
+    }
+
+    public function getScopes()
+    {
+        return $this->scopes;
+    }
+
+    public function isEnabledScope($names)
+    {
+        foreach ((array) $names as $name) {
+            if (!isset($this->scopes[$name])) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     public function getExecutionDuration($precision = 8)

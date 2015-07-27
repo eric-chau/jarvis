@@ -1,6 +1,8 @@
 <?php
 
-namespace Jarvis;
+namespace Jarvis\DependencyInjection;
+
+use Jarvis\Jarvis;
 
 /**
  * This interface allows you to hydrate Jarvis' container with your own services
