@@ -5,6 +5,9 @@ namespace Jarvis;
 use FastRoute\Dispatcher;
 use Jarvis\Component\ControllerResolver;
 use Jarvis\ContainerProviderInterface;
+use Jarvis\Event\AnalyzeEvent;
+use Jarvis\Event\EventInterface;
+use Jarvis\Event\SimpleEvent;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -12,7 +15,7 @@ use Symfony\Component\HttpFoundation\Response;
  *
  * @author Eric Chau <eriic.chau@gmail.com>
  */
-final class Jarvis extends Container
+final class Jarvis extends Container implements JarvisEvents
 {
     const JARVIS_CONTAINER_PROVIDER_FQCN = 'Jarvis\ContainerProvider';
 
@@ -22,11 +25,13 @@ final class Jarvis extends Container
     private $locked = [];
     private $raw = [];
     private $values = [];
+    private $receivers = [];
+    private $masterEmitter = false;
 
     /**
      * Creates an instance of Jarvis. It can take settings as first argument.
      * List of accepted options:
-     *   - jarvis.container_provider (type: string|array): fqcn of your container provider
+     *   - container_provider (type: string|array): fqcn of your container provider
      *
      * @param  array $settings Your own settings to modify Jarvis behavior
      * @throws \InvalidArgumentException if provided container provider class doesn't
@@ -38,15 +43,15 @@ final class Jarvis extends Container
 
         $this['jarvis.starttime'] = microtime(true);
 
-        if (!isset($settings['jarvis.container_provider'])) {
-            $settings['jarvis.container_provider'] = [self::JARVIS_CONTAINER_PROVIDER_FQCN];
+        if (!isset($settings['container_provider'])) {
+            $settings['container_provider'] = [self::JARVIS_CONTAINER_PROVIDER_FQCN];
         } else {
             $settings = (array) $settings;
-            array_unshift($settings['jarvis.container_provider'], self::JARVIS_CONTAINER_PROVIDER_FQCN);
+            array_unshift($settings['container_provider'], self::JARVIS_CONTAINER_PROVIDER_FQCN);
         }
 
         $this['jarvis.settings'] = $settings;
-        foreach ($settings['jarvis.container_provider'] as $classname) {
+        foreach ($settings['container_provider'] as $classname) {
             if (!is_subclass_of($classname, ContainerProviderInterface::class)) {
                 throw new \InvalidArgumentException(sprintf(
                     'Expect every container provider to implement %s.',
@@ -60,7 +65,14 @@ final class Jarvis extends Container
 
     public function analyze()
     {
-        $response = null;
+        $this
+            ->masterEmitter()
+            ->broadcast(JarvisEvents::ANALYZE_EVENT, $analyzeEvent = new AnalyzeEvent($this['request']))
+        ;
+
+        if ($response = $analyzeEvent->getResponse()) {
+            return $response;
+        }
 
         $routeInfo = $this['router']->match($this['request']->getMethod(), $this['request']->getPathInfo());
         switch ($routeInfo[0]) {
@@ -93,13 +105,57 @@ final class Jarvis extends Container
         return $response;
     }
 
-    public function broadcast($event)
+    public function addReceiver($eventName, callable $receiver)
     {
+        if (isset($this->receivers[$eventName])) {
+            $this->receivers[$eventName] = [];
+        }
 
+        $this->receivers[$eventName][] = $receiver;
+
+        return $this;
+    }
+
+    public function broadcast($eventName, EventInterface $event = null)
+    {
+        if (!$this->masterEmitter && in_array($eventName, JarvisEvents::RESERVED_EVENT_NAMES)) {
+            throw new \LogicException(sprintf(
+                'You\'re trying to broadcast "%s" but "%s" are reserved event names.',
+                $eventName,
+                implode('|', $this->reservedEventName)
+            ));
+        }
+
+        if (isset($this->receivers[$eventName])) {
+            $event = $event ?: new SimpleEvent();
+            foreach ($this->receivers[$eventName] as $receiver) {
+                call_user_func_array($receiver, [$event]);
+
+                if ($event->isPropagationStopped()) {
+                    break;
+                }
+            }
+        }
+
+        $this->masterEmitter = false;
+
+        return $this;
     }
 
     public function getExecutionDuration($precision = 8)
     {
         return number_format(microtime(true) - $this['jarvis.starttime'], $precision);
+    }
+
+    /**
+     * Enables master emitter mode until next call of ::broadcast() method.
+     *
+     * @return self
+     */
+    private function masterEmitter()
+    {
+        $this->masterEmitter = true;
+
+        return $this;
     }
 }
