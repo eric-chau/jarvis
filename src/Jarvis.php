@@ -3,7 +3,6 @@
 namespace Jarvis;
 
 use FastRoute\Dispatcher;
-use Jarvis\Component\ControllerResolver;
 use Jarvis\DependencyInjection\Container;
 use Jarvis\DependencyInjection\ContainerProvider;
 use Jarvis\DependencyInjection\ContainerProviderInterface;
