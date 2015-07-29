@@ -54,7 +54,9 @@ final class Jarvis extends Container
             array_unshift($settings['container_provider'], self::JARVIS_CONTAINER_PROVIDER_FQCN);
         }
 
-        $this['jarvis.settings'] = $settings;
+        $this['settings'] = $settings;
+        $this->lock('settings');
+
         foreach ($settings['container_provider'] as $classname) {
             if (!is_subclass_of($classname, ContainerProviderInterface::class)) {
                 throw new \InvalidArgumentException(sprintf(
@@ -69,25 +71,34 @@ final class Jarvis extends Container
 
     public function analyze()
     {
-        $this->masterBroadcast(JarvisEvents::ANALYZE_EVENT, $analyzeEvent = new AnalyzeEvent($this['request']));
+        $response = null;
 
-        if ($response = $analyzeEvent->getResponse()) {
-            return $response;
+        try {
+            $this->masterBroadcast(JarvisEvents::ANALYZE_EVENT, $analyzeEvent = new AnalyzeEvent($this['request']));
+
+            if ($response = $analyzeEvent->getResponse()) {
+                return $response;
+            }
+
+            $routeInfo = $this['router']->match($this['request']->getMethod(), $this['request']->getPathInfo());
+            if (Dispatcher::FOUND === $routeInfo[0]) {
+                list($controller, $action) = $this['callback_resolver']->resolve($routeInfo[1]);
+                $event = new ControllerEvent($controller, $action, $routeInfo[2]);
+
+                $this->masterBroadcast(JarvisEvents::CONTROLLER_EVENT,  $event);
+
+                $response = call_user_func_array([$event->controller, $event->action], $event->arguments);
+            } elseif (Dispatcher::NOT_FOUND === $routeInfo[0] || Dispatcher::METHOD_NOT_ALLOWED === $routeInfo[0]) {
+                $response = new Response(null, Dispatcher::NOT_FOUND === $routeInfo[0]
+                    ? Response::HTTP_NOT_FOUND
+                    : Response::HTTP_METHOD_NOT_ALLOWED
+                );
+            }
+
+            $this->masterBroadcast(JarvisEvents::RESPONSE_EVENT);
+        } catch (\Exception $exception) {
+            $response = new Response($exception->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
         }
-
-        $routeInfo = $this['router']->match($this['request']->getMethod(), $this['request']->getPathInfo());
-        if (Dispatcher::FOUND === $routeInfo[0]) {
-            $controller = $this['callback_resolver']->resolve($routeInfo[1]);
-            $this->masterBroadcast(JarvisEvents::CONTROLLER_EVENT, $controllerEvent = new ControllerEvent($controller));
-            $response = call_user_func_array($controllerEvent->getController(), $routeInfo[2]);
-        } elseif (Dispatcher::NOT_FOUND === $routeInfo[0] || Dispatcher::METHOD_NOT_ALLOWED === $routeInfo[0]) {
-            $response = new Response(null, Dispatcher::NOT_FOUND === $routeInfo[0]
-                ? Response::HTTP_NOT_FOUND
-                : Response::HTTP_METHOD_NOT_ALLOWED
-            );
-        }
-
-        $this->masterBroadcast(JarvisEvents::RESPONSE_EVENT);
 
         return $response;
     }

@@ -7,15 +7,14 @@ namespace Jarvis\Event;
  */
 class ControllerEvent extends SimpleEvent
 {
-    private $controller;
+    public $controller;
+    public $action;
+    public $arguments;
 
-    public function __construct(array $controller)
+    public function __construct($controller, $action, $arguments)
     {
         $this->controller = $controller;
-    }
-
-    public function getController()
-    {
-        return $this->controller;
+        $this->action = $action;
+        $this->arguments = $arguments;
     }
 }
