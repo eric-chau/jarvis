@@ -1,6 +1,6 @@
 <?php
 
-namespace Jarvis\Annotations;
+namespace Jarvis\Annotation;
 
 use Minime\Annotations\Parser as MinimeParser;
 
@@ -13,34 +13,34 @@ class Parser extends MinimeParser
      * List of Php docblock annotation to ignore
      */
     protected $annotationsToIgnore = [
-        'api'            => null,
-        'author'         => null,
-        'category'       => null,
-        'copyright'      => null,
-        'deprecated'     => null,
-        'example'        => null,
-        'filesource'     => null,
-        'global'         => null,
-        'ignore'         => null,
-        'internal'       => null,
-        'license'        => null,
-        'link'           => null,
-        'method'         => null,
-        'package'        => null,
-        'param'          => null,
-        'property'       => null,
-        'property-read'  => null,
-        'property-write' => null,
-        'return'         => null,
-        'see'            => null,
-        'since'          => null,
-        'source'         => null,
-        'subpackage'     => null,
-        'throws'         => null,
-        'todo'           => null,
-        'uses'           => null,
-        'var'            => null,
-        'version'        => null,
+        'api'            => true,
+        'author'         => true,
+        'category'       => true,
+        'copyright'      => true,
+        'deprecated'     => true,
+        'example'        => true,
+        'filesource'     => true,
+        'global'         => true,
+        'ignore'         => true,
+        'internal'       => true,
+        'license'        => true,
+        'link'           => true,
+        'method'         => true,
+        'package'        => true,
+        'param'          => true,
+        'property'       => true,
+        'property-read'  => true,
+        'property-write' => true,
+        'return'         => true,
+        'see'            => true,
+        'since'          => true,
+        'source'         => true,
+        'subpackage'     => true,
+        'throws'         => true,
+        'todo'           => true,
+        'uses'           => true,
+        'var'            => true,
+        'version'        => true,
     ];
 
     /**
@@ -50,7 +50,7 @@ class Parser extends MinimeParser
      */
     public function __construct()
     {
-        $this->types['Jarvis\Annotations\Types\Concrete'] = '=>';
+        $this->types['Jarvis\Annotation\Types\Concrete'] = '=>';
 
         parent::__construct();
     }

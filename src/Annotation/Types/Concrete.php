@@ -1,6 +1,6 @@
 <?php
 
-namespace Jarvis\Annotations\Types;
+namespace Jarvis\Annotation\Types;
 
 use Minime\Annotations\Interfaces\TypeInterface;
 use Minime\Annotations\ParserException;
