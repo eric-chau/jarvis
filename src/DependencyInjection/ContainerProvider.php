@@ -6,10 +6,14 @@ use FastRoute\DataGenerator\GroupCountBased;
 use FastRoute\RouteCollector;
 use FastRoute\RouteParser\Std;
 use Jarvis\Ability\CallbackResolver;
+use Jarvis\Annotations\Parser;
 use Jarvis\Event\JarvisEvents;
 use Jarvis\Jarvis;
 use Jarvis\Rest\EventReceiver\RestReceiver;
 use Jarvis\Routing\Router;
+use Minime\Annotations\Reader;
+use Minime\Annotations\Cache\ArrayCache;
+use Minime\Annotations\Cache\FileCache;
 use Symfony\Component\HttpFoundation\Request;
 
 /**
@@ -41,8 +45,19 @@ class ContainerProvider implements ContainerProviderInterface
             return new CallbackResolver($jarvis);
         };
 
-        $jarvis->addReceiver(JarvisEvents::ANALYZE_EVENT, [new Reference('jarvis.rest_receiver'), 'onAnalyzeEvent']);
+        $jarvis['annotation_reader'] = function ($jarvis) {
+            $cache = null;
+            if (isset($jarvis['jarvis.settings']['cache_dir']) && is_writable($jarvis['jarvis.settings']['cache_dir'])) {
+                $cache = new FileCache($jarvis['jarvis.settings']['cache_dir']);
+            }
 
-        $jarvis->lock(['request', 'router', 'jarvis.rest_receiver', 'callback_resolver']);
+            return new Reader(new Parser, $cache ?: new ArrayCache);
+        };
+
+        $reference = new Reference('jarvis.rest_receiver');
+        $jarvis->addReceiver(JarvisEvents::ANALYZE_EVENT, [$reference, 'onAnalyzeEvent']);
+        $jarvis->addReceiver(JarvisEvents::CONTROLLER_EVENT, [$reference, 'onControllerEvent']);
+
+        $jarvis->lock(['request', 'router', 'jarvis.rest_receiver', 'callback_resolver', 'annotation_reader']);
     }
 }
