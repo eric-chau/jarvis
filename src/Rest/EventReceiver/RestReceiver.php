@@ -3,6 +3,7 @@
 namespace Jarvis\Rest\EventReceiver;
 
 use Jarvis\Event\AnalyzeEvent;
+use Jarvis\Event\ControllerEvent;
 use Jarvis\Jarvis;
 
 /**
@@ -17,7 +18,7 @@ class RestReceiver
 
     public function __construct(Jarvis $jarvis)
     {
-        $config = isset($jarvis['jarvis.settings']['rest']) ? $jarvis['jarvis.settings']['rest'] : [];
+        $config = isset($jarvis['settings']['rest']) ? $jarvis['settings']['rest'] : [];
 
         $this->restBaseUrls = isset($config['base_urls']) ? (array) $config['base_urls'] : [];
         $this->jarvis = $jarvis;
@@ -32,5 +33,6 @@ class RestReceiver
                 return;
             }
         }
+
     }
 }
