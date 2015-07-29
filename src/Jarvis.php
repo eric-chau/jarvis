@@ -8,6 +8,7 @@ use Jarvis\DependencyInjection\Container;
 use Jarvis\DependencyInjection\ContainerProvider;
 use Jarvis\DependencyInjection\ContainerProviderInterface;
 use Jarvis\Event\AnalyzeEvent;
+use Jarvis\Event\ControllerEvent;
 use Jarvis\Event\EventInterface;
 use Jarvis\Event\JarvisEvents;
 use Jarvis\Event\SimpleEvent;
@@ -77,7 +78,9 @@ final class Jarvis extends Container
 
         $routeInfo = $this['router']->match($this['request']->getMethod(), $this['request']->getPathInfo());
         if (Dispatcher::FOUND === $routeInfo[0]) {
-            $response = call_user_func_array($this['callback_resolver']->resolve($routeInfo[1]), $routeInfo[2]);
+            $controller = $this['callback_resolver']->resolve($routeInfo[1]);
+            $this->masterBroadcast(JarvisEvents::CONTROLLER_EVENT, $controllerEvent = new ControllerEvent($controller));
+            $response = call_user_func_array($controllerEvent->getController(), $routeInfo[2]);
         } elseif (Dispatcher::NOT_FOUND === $routeInfo[0] || Dispatcher::METHOD_NOT_ALLOWED === $routeInfo[0]) {
             $response = new Response(null, Dispatcher::NOT_FOUND === $routeInfo[0]
                 ? Response::HTTP_NOT_FOUND
@@ -145,7 +148,7 @@ final class Jarvis extends Container
 
     public function getScopes()
     {
-        return $this->scopes;
+        return array_keys($this->scopes);
     }
 
     public function isEnabledScope($names)
