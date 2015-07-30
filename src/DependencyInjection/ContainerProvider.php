@@ -2,9 +2,6 @@
 
 namespace Jarvis\DependencyInjection;
 
-use FastRoute\DataGenerator\GroupCountBased;
-use FastRoute\RouteCollector;
-use FastRoute\RouteParser\Std;
 use Jarvis\Ability\CallbackResolver;
 use Jarvis\Ability\ScopeManager;
 use Jarvis\Annotation\Parser;
@@ -37,8 +34,8 @@ class ContainerProvider implements ContainerProviderInterface
             return Request::createFromGlobals();
         };
 
-        $jarvis['router'] = function () {
-            return new Router(new RouteCollector(new Std(), new GroupCountBased()));
+        $jarvis['router'] = function ($jarvis) {
+            return new Router($jarvis['scope_manager']);
         };
 
         $jarvis['callback_resolver'] = function ($jarvis) {

@@ -2,28 +2,40 @@
 
 namespace Jarvis\Routing;
 
-use FastRoute\Dispatcher\GroupCountBased;
+use FastRoute\DataGenerator\GroupCountBased as DataGenerator;
+use FastRoute\Dispatcher\GroupCountBased as Dispatcher;
+use FastRoute\RouteParser\Std as Parser;
 use FastRoute\RouteCollector;
+use Jarvis\Ability\ScopeManager;
+use Jarvis\Jarvis;
 
 /**
  * @author Eric Chau <eriic.chau@gmail.com>
  */
-class Router extends GroupCountBased
+class Router extends Dispatcher
 {
+    private $rawRoutes = [];
     private $routeCollector;
+    private $compilationKey;
+    private $scopeManager;
 
-    public function __construct(RouteCollector $routeCollector)
+    public function __construct(ScopeManager $scopeManager)
     {
-        $this->routeCollector = $routeCollector;
+        $this->scopeManager = $scopeManager;
     }
 
     /**
      * Alias to Router's route collector ::addRoute method.
      * @see RouteCollector::addRoute
      */
-    public function addRoute($httpMethod, $route, $handler)
+    public function addRoute($httpMethod, $route, $handler, $scope = Jarvis::JARVIS_DEFAULT_SCOPE)
     {
-        $this->routeCollector->addRoute($httpMethod, $route, $handler);
+        if (!isset($this->rawRoutes[$scope])) {
+            $this->rawRoutes[$scope] = [];
+        }
+
+        $this->rawRoutes[$scope][] = [$httpMethod, $route, $handler];
+        $this->compilationKey = null;
 
         return $this;
     }
@@ -34,8 +46,40 @@ class Router extends GroupCountBased
      */
     public function match($httpMethod, $uri)
     {
-        list($this->staticRouteMap, $this->variableRouteData) = $this->routeCollector->getData();
-
         return $this->dispatch($httpMethod, $uri);
+    }
+
+    public function dispatch($httpMethod, $uri)
+    {
+        list($this->staticRouteMap, $this->variableRouteData) = $this->getRouteCollector()->getData();
+
+        return parent::dispatch($httpMethod, $uri);
+    }
+
+    private function getRouteCollector()
+    {
+        if (null === $this->compilationKey || $this->compilationKey !== $key = $this->generateCompilationKey()) {
+            $this->compilationKey = $key;
+            $this->routeCollector = new RouteCollector(new Parser(), new DataGenerator());
+
+            $enabledRoutes = [];
+            foreach ($this->rawRoutes as $scope => $rawRoutes) {
+                if ($this->scopeManager->isEnabled($scope)) {
+                    $enabledRoutes = array_merge($enabledRoutes, $rawRoutes);
+                }
+            }
+
+            foreach ($enabledRoutes as $rawRoute) {
+                list($httpMethod, $route, $handler) = $rawRoute;
+                $this->routeCollector->addRoute($httpMethod, $route, $handler);
+            }
+        }
+
+        return $this->routeCollector;
+    }
+
+    private function generateCompilationKey()
+    {
+        return md5(implode(',', $this->scopeManager->getAll()));
     }
 }
