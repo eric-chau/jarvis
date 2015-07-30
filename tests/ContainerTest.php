@@ -1,6 +1,6 @@
 <?php
 
-use Jarvis\Container;
+use Jarvis\DependencyInjection\Container;
 
 /**
  * @author Eric Chau <eriic.chau@gmail.com>
