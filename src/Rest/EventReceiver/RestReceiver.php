@@ -2,9 +2,8 @@
 
 namespace Jarvis\Rest\EventReceiver;
 
+use Jarvis\Ability\ScopeManager;
 use Jarvis\Event\AnalyzeEvent;
-use Jarvis\Event\ControllerEvent;
-use Jarvis\Jarvis;
 
 /**
  * @author Eric Chau <eriic.chau@gmail.com>
@@ -13,22 +12,20 @@ class RestReceiver
 {
     const REST_SCOPE_NAME = 'rest';
 
-    private $jarvis;
+    private $scopeManager;
     private $restBaseUrls;
 
-    public function __construct(Jarvis $jarvis)
+    public function __construct(ScopeManager $scopeManager, array $restConfig = [])
     {
-        $config = isset($jarvis['settings']['rest']) ? $jarvis['settings']['rest'] : [];
-
-        $this->restBaseUrls = isset($config['base_urls']) ? (array) $config['base_urls'] : [];
-        $this->jarvis = $jarvis;
+        $this->scopeManager = $scopeManager;
+        $this->restBaseUrls = isset($restConfig['base_urls']) ? (array) $restConfig['base_urls'] : [];
     }
 
     public function onAnalyzeEvent(AnalyzeEvent $event)
     {
         foreach ($this->restBaseUrls as $baseUrl) {
             if (0 === strpos($event->getRequest()->getPathInfo(), $baseUrl)) {
-                $this->jarvis->enableScope(self::REST_SCOPE_NAME);
+                $this->scopeManager->enable(self::REST_SCOPE_NAME);
 
                 return;
             }

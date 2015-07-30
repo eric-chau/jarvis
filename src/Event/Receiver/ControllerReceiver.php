@@ -11,7 +11,7 @@ use Jarvis\Jarvis;
  */
 class ControllerReceiver
 {
-    const ANNOTATION_HANDLER_SERVICE_BASE_IDENTIFIER = 'annotation.handler';
+    const ANNOTATION_HANDLER_SERVICE_BASE_IDENTIFIER = 'annotation.handler.';
 
     private $jarvis;
 

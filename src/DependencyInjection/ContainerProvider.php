@@ -6,6 +6,7 @@ use FastRoute\DataGenerator\GroupCountBased;
 use FastRoute\RouteCollector;
 use FastRoute\RouteParser\Std;
 use Jarvis\Ability\CallbackResolver;
+use Jarvis\Ability\ScopeManager;
 use Jarvis\Annotation\Parser;
 use Jarvis\Annotation\Handler\ResponseFormatHandler;
 use Jarvis\Event\JarvisEvents;
@@ -53,6 +54,10 @@ class ContainerProvider implements ContainerProviderInterface
             return new Reader(new Parser, $cache ?: new ArrayCache);
         };
 
+        $jarvis['scope_manager'] = function () {
+            return new ScopeManager();
+        };
+
         $jarvis->lock(['request', 'router', 'callback_resolver', 'annotation_reader']);
 
         self::injectEventReceivers($jarvis);
@@ -63,7 +68,10 @@ class ContainerProvider implements ContainerProviderInterface
     {
         // Rest receiver
         $jarvis['jarvis.rest_receiver'] = function ($jarvis) {
-            return new RestReceiver($jarvis);
+            return new RestReceiver(
+                $jarvis['scope_manager'],
+                isset($jarvis['settings']['rest']) ? (array) $jarvis['settings']['rest'] : []
+            );
         };
 
         $jarvis->addReceiver(JarvisEvents::ANALYZE_EVENT, [

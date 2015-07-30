@@ -21,6 +21,7 @@ use Symfony\Component\HttpFoundation\Response;
 final class Jarvis extends Container
 {
     const JARVIS_CONTAINER_PROVIDER_FQCN = ContainerProvider::class;
+    const JARVIS_DEFAULT_SCOPE = 'default';
 
     private $aliasOf = [];
     private $factories;
@@ -29,7 +30,6 @@ final class Jarvis extends Container
     private $raw = [];
     private $values = [];
     private $receivers = [];
-    private $scopes = [];
     private $masterEmitter = false;
 
     /**
@@ -136,40 +136,6 @@ final class Jarvis extends Container
         }
 
         return $this;
-    }
-
-    public function disableScope($names)
-    {
-        foreach ((array) $names as $name) {
-            unset($this->scopes[$name]);
-        }
-
-        return $this;
-    }
-
-    public function enableScope($names)
-    {
-        foreach ((array) $names as $name) {
-            $this->scopes[$name] = true;
-        }
-
-        return $this;
-    }
-
-    public function getScopes()
-    {
-        return array_keys($this->scopes);
-    }
-
-    public function isEnabledScope($names)
-    {
-        foreach ((array) $names as $name) {
-            if (!isset($this->scopes[$name])) {
-                return false;
-            }
-        }
-
-        return true;
     }
 
     public function getExecutionDuration($precision = 8)
