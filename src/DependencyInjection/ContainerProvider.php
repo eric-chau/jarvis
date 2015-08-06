@@ -30,8 +30,23 @@ class ContainerProvider implements ContainerProviderInterface
      */
     public static function hydrate(Jarvis $jarvis)
     {
-        $jarvis['request'] = function () {
-            return Request::createFromGlobals();
+        $jarvis['request'] = function ($jarvis) {
+            $classname = isset($jarvis['request_fqcn']) ? $jarvis['request_fqcn'] : Request::class;
+
+            if (
+                !is_string($classname)
+                || (
+                    $classname !== Request::class
+                    && !is_subclass_of($classname, Request::class)
+                )
+            ) {
+                throw new \InvalidArgumentException(sprintf(
+                    '"request_fqcn" parameter must be string and instance of %s.',
+                    Request::class
+                ));
+            }
+
+            return $classname::createFromGlobals();
         };
 
         $jarvis['router'] = function ($jarvis) {
@@ -56,9 +71,6 @@ class ContainerProvider implements ContainerProviderInterface
         };
 
         $jarvis->lock(['request', 'router', 'callback_resolver', 'annotation_reader']);
-
-        self::injectEventReceivers($jarvis);
-        self::injectAnnotationHandlers($jarvis);
     }
 
     protected static function injectEventReceivers(Jarvis $jarvis)
