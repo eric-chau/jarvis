@@ -120,7 +120,7 @@ final class Jarvis extends Container
             throw new \LogicException(sprintf(
                 'You\'re trying to broadcast "%s" but "%s" are reserved event names.',
                 $eventName,
-                implode('|', $this->reservedEventName)
+                implode('|', JarvisEvents::RESERVED_EVENT_NAMES)
             ));
         }
 
