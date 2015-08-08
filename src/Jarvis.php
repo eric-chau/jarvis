@@ -69,18 +69,19 @@ final class Jarvis extends Container
         }
     }
 
-    public function analyze()
+    public function analyze(Request $request = null)
     {
+        $request = $request ?: $this['request'];
         $response = null;
 
         try {
-            $this->masterBroadcast(JarvisEvents::ANALYZE_EVENT, $analyzeEvent = new AnalyzeEvent($this['request']));
+            $this->masterBroadcast(JarvisEvents::ANALYZE_EVENT, $analyzeEvent = new AnalyzeEvent($request));
 
             if ($response = $analyzeEvent->getResponse()) {
                 return $response;
             }
 
-            $routeInfo = $this['router']->match($this['request']->getMethod(), $this['request']->getPathInfo());
+            $routeInfo = $this['router']->match($request->getMethod(), $request->getPathInfo());
             if (Dispatcher::FOUND === $routeInfo[0]) {
                 list($controller, $action) = $this['callback_resolver']->resolve($routeInfo[1]);
                 $event = new ControllerEvent($controller, $action, $routeInfo[2]);
