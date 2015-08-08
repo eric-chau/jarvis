@@ -9,8 +9,10 @@ use Jarvis\DependencyInjection\ContainerProviderInterface;
 use Jarvis\Event\AnalyzeEvent;
 use Jarvis\Event\ControllerEvent;
 use Jarvis\Event\EventInterface;
+use Jarvis\Event\ResponseEvent;
 use Jarvis\Event\JarvisEvents;
 use Jarvis\Event\SimpleEvent;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -89,6 +91,7 @@ final class Jarvis extends Container
                 $this->masterBroadcast(JarvisEvents::CONTROLLER_EVENT,  $event);
 
                 $response = call_user_func_array([$event->controller, $event->action], $event->arguments);
+
             } elseif (Dispatcher::NOT_FOUND === $routeInfo[0] || Dispatcher::METHOD_NOT_ALLOWED === $routeInfo[0]) {
                 $response = new Response(null, Dispatcher::NOT_FOUND === $routeInfo[0]
                     ? Response::HTTP_NOT_FOUND
@@ -96,7 +99,7 @@ final class Jarvis extends Container
                 );
             }
 
-            $this->masterBroadcast(JarvisEvents::RESPONSE_EVENT);
+            $this->masterBroadcast(JarvisEvents::RESPONSE_EVENT, new ResponseEvent($request, $response));
         } catch (\Exception $exception) {
             $response = new Response($exception->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
         }
