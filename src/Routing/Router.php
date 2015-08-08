@@ -58,7 +58,8 @@ class Router extends Dispatcher
 
     private function getRouteCollector()
     {
-        if (null === $this->compilationKey || $this->compilationKey !== $key = $this->generateCompilationKey()) {
+        $key = $this->generateCompilationKey();
+        if (null === $this->compilationKey || $this->compilationKey !== $key) {
             $this->compilationKey = $key;
             $this->routeCollector = new RouteCollector(new Parser(), new DataGenerator());
 
