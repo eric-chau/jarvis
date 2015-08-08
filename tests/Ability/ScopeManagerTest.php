@@ -1,6 +1,6 @@
 <?php
 
-use Jarvis\Ability\ScopeManager;
+use Jarvis\Skill\Core\ScopeManager;
 use Jarvis\Jarvis;
 
 /**

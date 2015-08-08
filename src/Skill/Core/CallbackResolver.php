@@ -1,6 +1,6 @@
 <?php
 
-namespace Jarvis\Ability;
+namespace Jarvis\Skill\Core;
 
 use Jarvis\Jarvis;
 use Jarvis\DependencyInjection\Reference;

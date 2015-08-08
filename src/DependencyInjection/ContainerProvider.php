@@ -2,8 +2,8 @@
 
 namespace Jarvis\DependencyInjection;
 
-use Jarvis\Ability\CallbackResolver;
-use Jarvis\Ability\ScopeManager;
+use Jarvis\Skill\Core\CallbackResolver;
+use Jarvis\Skill\Core\ScopeManager;
 use Jarvis\Annotation\Parser;
 use Jarvis\Annotation\Handler\ResponseFormatHandler;
 use Jarvis\Event\JarvisEvents;

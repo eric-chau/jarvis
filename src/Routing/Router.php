@@ -6,7 +6,7 @@ use FastRoute\DataGenerator\GroupCountBased as DataGenerator;
 use FastRoute\Dispatcher\GroupCountBased as Dispatcher;
 use FastRoute\RouteParser\Std as Parser;
 use FastRoute\RouteCollector;
-use Jarvis\Ability\ScopeManager;
+use Jarvis\Skill\Core\ScopeManager;
 use Jarvis\Jarvis;
 
 /**
