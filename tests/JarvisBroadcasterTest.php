@@ -1,7 +1,16 @@
 <?php
 
+namespace Jarvis\Tests;
+
 use Jarvis\Jarvis;
+use Jarvis\DependencyInjection\Reference;
+use Jarvis\Event\AnalyzeEvent;
+use Jarvis\Event\ControllerEvent;
+use Jarvis\Event\EventInterface;
 use Jarvis\Event\JarvisEvents;
+use Jarvis\Event\SimpleEvent;
+use Jarvis\Event\ResponseEvent;
+use Symfony\Component\HttpFoundation\Request;
 
 /**
  * Tests for Jarvis broadcast message skill.
@@ -10,6 +19,63 @@ use Jarvis\Event\JarvisEvents;
  */
 class JarvisBroadcasterTest extends \PHPUnit_Framework_TestCase
 {
+    const RANDOM_EVENT_NAME = 'random.event_name';
+
+    public function testReceiverAlwaysGetAnInstanceOfEventInterfaceAsFirstArgument()
+    {
+        $jarvis = new Jarvis();
+
+        $receiver = new FakeReceiver();
+
+        $jarvis->addReceiver(self::RANDOM_EVENT_NAME, [$receiver, 'onEventBroadcast']);
+
+        $this->assertNull($receiver->event);
+
+        $jarvis->broadcast(self::RANDOM_EVENT_NAME);
+
+        $this->assertInstanceOf(EventInterface::class, $receiver->event);
+        $this->assertInstanceOf(SimpleEvent::class, $receiver->event);
+    }
+
+    public function testBroadcastOfAnalyzeEventAndControllerEventAndResponseEventDuringAnalyzeExecution()
+    {
+        $jarvis = new Jarvis();
+
+        $receiver = new FakeReceiver();
+
+        $jarvis->addReceiver(JarvisEvents::ANALYZE_EVENT, [$receiver, 'onAnalyzeEvent']);
+        $jarvis->addReceiver(JarvisEvents::CONTROLLER_EVENT, [$receiver, 'onControllerEvent']);
+        $jarvis->addReceiver(JarvisEvents::RESPONSE_EVENT, [$receiver, 'onResponseEvent']);
+
+        $jarvis['fake_controller'] = function () {
+            return new FakeController();
+        };
+
+        $jarvis['router']->addRoute('GET', '/', [new Reference('fake_controller'), 'randomAction']);
+
+        $this->assertNull($receiver->analyzeEvent);
+        $this->assertNull($receiver->controllerEvent);
+        $this->assertNull($receiver->responseEvent);
+
+        $response = $jarvis->analyze(new Request());
+
+        $this->assertInstanceOf(AnalyzeEvent::class, $receiver->analyzeEvent);
+        $this->assertInstanceOf(ControllerEvent::class, $receiver->controllerEvent);
+        $this->assertInstanceOf(ResponseEvent::class, $receiver->responseEvent);
+    }
+
+    public function testBroadcastEventArgumentWillAlwaysBePassedToReceivers()
+    {
+        $jarvis = new Jarvis();
+
+        $receiver = new FakeReceiver();
+
+        $this->assertNotInstanceOf(FakeEvent::class, $receiver->event);
+        $jarvis->addReceiver(self::RANDOM_EVENT_NAME, [$receiver, 'onEventBroadcast']);
+        $jarvis->broadcast(self::RANDOM_EVENT_NAME, new FakeEvent());
+        $this->assertInstanceOf(FakeEvent::class, $receiver->event);
+    }
+
     /**
      * @expectedException \LogicException
      */
