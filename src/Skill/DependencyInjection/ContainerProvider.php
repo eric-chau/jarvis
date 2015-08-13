@@ -1,17 +1,17 @@
 <?php
 
-namespace Jarvis\DependencyInjection;
+namespace Jarvis\Skill\DependencyInjection;
 
 use Jarvis\Skill\Core\CallbackResolver;
 use Jarvis\Skill\Core\ScopeManager;
 use Jarvis\Annotation\Parser;
 use Jarvis\Annotation\Handler\ResponseFormatHandler;
-use Jarvis\EventBroadcaster\JarvisEvents;
-use Jarvis\EventBroadcaster\Receiver\ControllerReceiver;
+use Jarvis\Skill\EventBroadcaster\JarvisEvents;
+use Jarvis\Skill\EventBroadcaster\Receiver\ControllerReceiver;
 use Jarvis\Jarvis;
 use Jarvis\Relational\Annotation\Handler\ParamConverterHandler;
 use Jarvis\Rest\EventReceiver\RestReceiver;
-use Jarvis\Routing\Router;
+use Jarvis\Skill\Routing\Router;
 use Minime\Annotations\Reader;
 use Minime\Annotations\Cache\ArrayCache;
 use Minime\Annotations\Cache\FileCache;

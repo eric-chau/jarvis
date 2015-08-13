@@ -1,6 +1,6 @@
 <?php
 
-namespace Jarvis\Routing;
+namespace Jarvis\Skill\Routing;
 
 use FastRoute\DataGenerator\GroupCountBased as DataGenerator;
 use FastRoute\Dispatcher\GroupCountBased as Dispatcher;

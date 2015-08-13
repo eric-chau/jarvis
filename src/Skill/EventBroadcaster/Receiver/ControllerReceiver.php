@@ -1,9 +1,9 @@
 <?php
 
-namespace Jarvis\EventBroadcaster\Receiver;
+namespace Jarvis\Skill\EventBroadcaster\Receiver;
 
 use Jarvis\Annotation\AnnotationHandlerInterface;
-use Jarvis\EventBroadcaster\ControllerEvent;
+use Jarvis\Skill\EventBroadcaster\ControllerEvent;
 use Jarvis\Jarvis;
 
 /**

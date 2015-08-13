@@ -3,15 +3,15 @@
 namespace Jarvis;
 
 use FastRoute\Dispatcher;
-use Jarvis\DependencyInjection\Container;
-use Jarvis\DependencyInjection\ContainerProvider;
-use Jarvis\DependencyInjection\ContainerProviderInterface;
-use Jarvis\EventBroadcaster\AnalyzeEvent;
-use Jarvis\EventBroadcaster\ControllerEvent;
-use Jarvis\EventBroadcaster\EventInterface;
-use Jarvis\EventBroadcaster\ResponseEvent;
-use Jarvis\EventBroadcaster\JarvisEvents;
-use Jarvis\EventBroadcaster\SimpleEvent;
+use Jarvis\Skill\DependencyInjection\Container;
+use Jarvis\Skill\DependencyInjection\ContainerProvider;
+use Jarvis\Skill\DependencyInjection\ContainerProviderInterface;
+use Jarvis\Skill\EventBroadcaster\AnalyzeEvent;
+use Jarvis\Skill\EventBroadcaster\ControllerEvent;
+use Jarvis\Skill\EventBroadcaster\EventInterface;
+use Jarvis\Skill\EventBroadcaster\ResponseEvent;
+use Jarvis\Skill\EventBroadcaster\JarvisEvents;
+use Jarvis\Skill\EventBroadcaster\SimpleEvent;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 

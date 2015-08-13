@@ -3,7 +3,7 @@
 namespace Jarvis\Skill\Core;
 
 use Jarvis\Jarvis;
-use Jarvis\DependencyInjection\Reference;
+use Jarvis\Skill\DependencyInjection\Reference;
 
 /**
  * @author Eric Chau <eriic.chau@gmail.com>
