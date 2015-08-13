@@ -2,7 +2,7 @@
 
 namespace Jarvis\Tests;
 
-use Jarvis\Event\SimpleEvent;
+use Jarvis\EventBroadcaster\SimpleEvent;
 
 class FakeEvent extends SimpleEvent
 {

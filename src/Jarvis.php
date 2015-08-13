@@ -6,12 +6,12 @@ use FastRoute\Dispatcher;
 use Jarvis\DependencyInjection\Container;
 use Jarvis\DependencyInjection\ContainerProvider;
 use Jarvis\DependencyInjection\ContainerProviderInterface;
-use Jarvis\Event\AnalyzeEvent;
-use Jarvis\Event\ControllerEvent;
-use Jarvis\Event\EventInterface;
-use Jarvis\Event\ResponseEvent;
-use Jarvis\Event\JarvisEvents;
-use Jarvis\Event\SimpleEvent;
+use Jarvis\EventBroadcaster\AnalyzeEvent;
+use Jarvis\EventBroadcaster\ControllerEvent;
+use Jarvis\EventBroadcaster\EventInterface;
+use Jarvis\EventBroadcaster\ResponseEvent;
+use Jarvis\EventBroadcaster\JarvisEvents;
+use Jarvis\EventBroadcaster\SimpleEvent;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 

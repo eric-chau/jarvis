@@ -1,6 +1,6 @@
 <?php
 
-namespace Jarvis\Event;
+namespace Jarvis\EventBroadcaster;
 
 /**
  * @author Eric Chau <eriic.chau@gmail.com>

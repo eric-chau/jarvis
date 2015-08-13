@@ -4,12 +4,12 @@ namespace Jarvis\Tests;
 
 use Jarvis\Jarvis;
 use Jarvis\DependencyInjection\Reference;
-use Jarvis\Event\AnalyzeEvent;
-use Jarvis\Event\ControllerEvent;
-use Jarvis\Event\EventInterface;
-use Jarvis\Event\JarvisEvents;
-use Jarvis\Event\SimpleEvent;
-use Jarvis\Event\ResponseEvent;
+use Jarvis\EventBroadcaster\AnalyzeEvent;
+use Jarvis\EventBroadcaster\ControllerEvent;
+use Jarvis\EventBroadcaster\EventInterface;
+use Jarvis\EventBroadcaster\JarvisEvents;
+use Jarvis\EventBroadcaster\SimpleEvent;
+use Jarvis\EventBroadcaster\ResponseEvent;
 use Symfony\Component\HttpFoundation\Request;
 
 /**
