@@ -34,7 +34,7 @@ class Router extends Dispatcher
             $this->rawRoutes[$scope] = [];
         }
 
-        $this->rawRoutes[$scope][] = [$httpMethod, $route, $handler];
+        $this->rawRoutes[$scope][] = [strtolower($httpMethod), $route, $handler];
         $this->compilationKey = null;
 
         return $this;
@@ -53,7 +53,7 @@ class Router extends Dispatcher
     {
         list($this->staticRouteMap, $this->variableRouteData) = $this->getRouteCollector()->getData();
 
-        return parent::dispatch($httpMethod, $uri);
+        return parent::dispatch(strtolower($httpMethod), $uri);
     }
 
     private function getRouteCollector()
