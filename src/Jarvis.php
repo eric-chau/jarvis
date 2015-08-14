@@ -9,6 +9,7 @@ use Jarvis\Skill\DependencyInjection\ContainerProviderInterface;
 use Jarvis\Skill\EventBroadcaster\AnalyzeEvent;
 use Jarvis\Skill\EventBroadcaster\ControllerEvent;
 use Jarvis\Skill\EventBroadcaster\EventInterface;
+use Jarvis\Skill\EventBroadcaster\ExceptionEvent;
 use Jarvis\Skill\EventBroadcaster\ResponseEvent;
 use Jarvis\Skill\EventBroadcaster\JarvisEvents;
 use Jarvis\Skill\EventBroadcaster\SimpleEvent;
@@ -101,7 +102,8 @@ final class Jarvis extends Container
 
             $this->masterBroadcast(JarvisEvents::RESPONSE_EVENT, new ResponseEvent($request, $response));
         } catch (\Exception $exception) {
-            $response = new Response($exception->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
+            $this->masterBroadcast(JarvisEvents::EXCEPTION_EVENT, $exceptionEvent = new ExceptionEvent($exception));
+            $response = $exceptionEvent->getResponse();
         }
 
         return $response;
