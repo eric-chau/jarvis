@@ -13,4 +13,9 @@ class FakeController
     {
         return new Response(self::class);
     }
+
+    public function throwExceptionAction()
+    {
+        throw new \Exception(__METHOD__);
+    }
 }
