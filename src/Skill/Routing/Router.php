@@ -1,12 +1,12 @@
 <?php
 
-namespace Jarvis\Routing;
+namespace Jarvis\Skill\Routing;
 
 use FastRoute\DataGenerator\GroupCountBased as DataGenerator;
 use FastRoute\Dispatcher\GroupCountBased as Dispatcher;
 use FastRoute\RouteParser\Std as Parser;
 use FastRoute\RouteCollector;
-use Jarvis\Ability\ScopeManager;
+use Jarvis\Skill\Core\ScopeManager;
 use Jarvis\Jarvis;
 
 /**
@@ -58,7 +58,8 @@ class Router extends Dispatcher
 
     private function getRouteCollector()
     {
-        if (null === $this->compilationKey || $this->compilationKey !== $key = $this->generateCompilationKey()) {
+        $key = $this->generateCompilationKey();
+        if (null === $this->compilationKey || $this->compilationKey !== $key) {
             $this->compilationKey = $key;
             $this->routeCollector = new RouteCollector(new Parser(), new DataGenerator());
 

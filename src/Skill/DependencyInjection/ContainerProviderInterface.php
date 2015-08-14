@@ -1,6 +1,6 @@
 <?php
 
-namespace Jarvis\DependencyInjection;
+namespace Jarvis\Skill\DependencyInjection;
 
 use Jarvis\Jarvis;
 

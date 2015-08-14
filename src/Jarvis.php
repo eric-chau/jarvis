@@ -3,14 +3,16 @@
 namespace Jarvis;
 
 use FastRoute\Dispatcher;
-use Jarvis\DependencyInjection\Container;
-use Jarvis\DependencyInjection\ContainerProvider;
-use Jarvis\DependencyInjection\ContainerProviderInterface;
-use Jarvis\Event\AnalyzeEvent;
-use Jarvis\Event\ControllerEvent;
-use Jarvis\Event\EventInterface;
-use Jarvis\Event\JarvisEvents;
-use Jarvis\Event\SimpleEvent;
+use Jarvis\Skill\DependencyInjection\Container;
+use Jarvis\Skill\DependencyInjection\ContainerProvider;
+use Jarvis\Skill\DependencyInjection\ContainerProviderInterface;
+use Jarvis\Skill\EventBroadcaster\AnalyzeEvent;
+use Jarvis\Skill\EventBroadcaster\ControllerEvent;
+use Jarvis\Skill\EventBroadcaster\EventInterface;
+use Jarvis\Skill\EventBroadcaster\ResponseEvent;
+use Jarvis\Skill\EventBroadcaster\JarvisEvents;
+use Jarvis\Skill\EventBroadcaster\SimpleEvent;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -69,18 +71,19 @@ final class Jarvis extends Container
         }
     }
 
-    public function analyze()
+    public function analyze(Request $request = null)
     {
+        $request = $request ?: $this['request'];
         $response = null;
 
         try {
-            $this->masterBroadcast(JarvisEvents::ANALYZE_EVENT, $analyzeEvent = new AnalyzeEvent($this['request']));
+            $this->masterBroadcast(JarvisEvents::ANALYZE_EVENT, $analyzeEvent = new AnalyzeEvent($request));
 
             if ($response = $analyzeEvent->getResponse()) {
                 return $response;
             }
 
-            $routeInfo = $this['router']->match($this['request']->getMethod(), $this['request']->getPathInfo());
+            $routeInfo = $this['router']->match($request->getMethod(), $request->getPathInfo());
             if (Dispatcher::FOUND === $routeInfo[0]) {
                 list($controller, $action) = $this['callback_resolver']->resolve($routeInfo[1]);
                 $event = new ControllerEvent($controller, $action, $routeInfo[2]);
@@ -88,6 +91,7 @@ final class Jarvis extends Container
                 $this->masterBroadcast(JarvisEvents::CONTROLLER_EVENT,  $event);
 
                 $response = call_user_func_array([$event->controller, $event->action], $event->arguments);
+
             } elseif (Dispatcher::NOT_FOUND === $routeInfo[0] || Dispatcher::METHOD_NOT_ALLOWED === $routeInfo[0]) {
                 $response = new Response(null, Dispatcher::NOT_FOUND === $routeInfo[0]
                     ? Response::HTTP_NOT_FOUND
@@ -95,7 +99,7 @@ final class Jarvis extends Container
                 );
             }
 
-            $this->masterBroadcast(JarvisEvents::RESPONSE_EVENT);
+            $this->masterBroadcast(JarvisEvents::RESPONSE_EVENT, new ResponseEvent($request, $response));
         } catch (\Exception $exception) {
             $response = new Response($exception->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
         }
@@ -120,7 +124,7 @@ final class Jarvis extends Container
             throw new \LogicException(sprintf(
                 'You\'re trying to broadcast "%s" but "%s" are reserved event names.',
                 $eventName,
-                implode('|', $this->reservedEventName)
+                implode('|', JarvisEvents::RESERVED_EVENT_NAMES)
             ));
         }
 

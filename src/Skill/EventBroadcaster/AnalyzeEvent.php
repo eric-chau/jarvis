@@ -1,6 +1,6 @@
 <?php
 
-namespace Jarvis\Event;
+namespace Jarvis\Skill\EventBroadcaster;
 
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;

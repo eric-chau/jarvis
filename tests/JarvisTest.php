@@ -18,7 +18,7 @@ class JarvisTest extends PHPUnit_Framework_TestCase
 
     /**
      * @expectedException        InvalidArgumentException
-     * @expectedExceptionMessage Expect every container provider to implement Jarvis\DependencyInjection\ContainerProviderInterface
+     * @expectedExceptionMessage Expect every container provider to implement Jarvis\Skill\DependencyInjection\ContainerProviderInterface
      */
     public function testInvalidContainerProvider()
     {

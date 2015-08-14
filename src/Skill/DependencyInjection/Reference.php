@@ -1,6 +1,6 @@
 <?php
 
-namespace Jarvis\DependencyInjection;
+namespace Jarvis\Skill\DependencyInjection;
 
 /**
  * @author Eric Chau <eriic.chau@gmail.com>

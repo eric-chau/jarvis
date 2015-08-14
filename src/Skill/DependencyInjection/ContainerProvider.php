@@ -1,17 +1,17 @@
 <?php
 
-namespace Jarvis\DependencyInjection;
+namespace Jarvis\Skill\DependencyInjection;
 
-use Jarvis\Ability\CallbackResolver;
-use Jarvis\Ability\ScopeManager;
+use Jarvis\Skill\Core\CallbackResolver;
+use Jarvis\Skill\Core\ScopeManager;
 use Jarvis\Annotation\Parser;
 use Jarvis\Annotation\Handler\ResponseFormatHandler;
-use Jarvis\Event\JarvisEvents;
-use Jarvis\Event\Receiver\ControllerReceiver;
+use Jarvis\Skill\EventBroadcaster\JarvisEvents;
+use Jarvis\Skill\EventBroadcaster\Receiver\ControllerReceiver;
 use Jarvis\Jarvis;
 use Jarvis\Relational\Annotation\Handler\ParamConverterHandler;
 use Jarvis\Rest\EventReceiver\RestReceiver;
-use Jarvis\Routing\Router;
+use Jarvis\Skill\Routing\Router;
 use Minime\Annotations\Reader;
 use Minime\Annotations\Cache\ArrayCache;
 use Minime\Annotations\Cache\FileCache;
@@ -30,8 +30,23 @@ class ContainerProvider implements ContainerProviderInterface
      */
     public static function hydrate(Jarvis $jarvis)
     {
-        $jarvis['request'] = function () {
-            return Request::createFromGlobals();
+        $jarvis['request'] = function ($jarvis) {
+            $classname = isset($jarvis['request_fqcn']) ? $jarvis['request_fqcn'] : Request::class;
+
+            if (
+                !is_string($classname)
+                || (
+                    $classname !== Request::class
+                    && !is_subclass_of($classname, Request::class)
+                )
+            ) {
+                throw new \InvalidArgumentException(sprintf(
+                    '"request_fqcn" parameter must be string and instance of %s.',
+                    Request::class
+                ));
+            }
+
+            return $classname::createFromGlobals();
         };
 
         $jarvis['router'] = function ($jarvis) {
@@ -56,9 +71,6 @@ class ContainerProvider implements ContainerProviderInterface
         };
 
         $jarvis->lock(['request', 'router', 'callback_resolver', 'annotation_reader']);
-
-        self::injectEventReceivers($jarvis);
-        self::injectAnnotationHandlers($jarvis);
     }
 
     protected static function injectEventReceivers(Jarvis $jarvis)
