@@ -24,6 +24,8 @@ class AnalyzeEvent extends SimpleEvent
     }
 
     /**
+     * @codeCoverageIgnore
+     *
      * @return Request
      */
     public function getRequest()
@@ -32,6 +34,8 @@ class AnalyzeEvent extends SimpleEvent
     }
 
     /**
+     * @codeCoverageIgnore
+     *
      * @return Response|null
      */
     public function getResponse()
@@ -40,6 +44,8 @@ class AnalyzeEvent extends SimpleEvent
     }
 
     /**
+     * @codeCoverageIgnore
+     *
      * @param  Response $response
      * @return self
      */

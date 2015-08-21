@@ -111,7 +111,7 @@ final class Jarvis extends Container
 
     public function addReceiver($eventName, $receiver)
     {
-        if (isset($this->receivers[$eventName])) {
+        if (!isset($this->receivers[$eventName])) {
             $this->receivers[$eventName] = [];
         }
 
@@ -144,6 +144,9 @@ final class Jarvis extends Container
         return $this;
     }
 
+    /**
+     * @codeCoverageIgnore
+     */
     public function getExecutionDuration($precision = 8)
     {
         return number_format(microtime(true) - $this['jarvis.starttime'], $precision);
