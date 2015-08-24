@@ -2,6 +2,8 @@
 
 namespace Jarvis\Tests;
 
+use Symfony\Component\HttpFoundation\Response;
+
 /**
  * @author Eric Chau <eriic.chau@gmail.com>
  */
@@ -30,5 +32,11 @@ class FakeReceiver
     public function onResponseEvent($event)
     {
         $this->responseEvent = $event;
+    }
+
+    public function onAnalyzeEventSetResponse($event)
+    {
+        $this->analyzeEvent = $event;
+        $event->setResponse(new Response(null, Response::HTTP_NOT_MODIFIED));
     }
 }
