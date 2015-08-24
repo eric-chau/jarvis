@@ -19,11 +19,21 @@ class ResponseEvent extends SimpleEvent
         $this->response = $response;
     }
 
+    /**
+     * @codeCoverageIgnore
+     *
+     * @return Request
+     */
     public function getRequest()
     {
         return $this->request;
     }
 
+    /**
+     * @codeCoverageIgnore
+     *
+     * @return Response
+     */
     public function getResponse()
     {
         return $this->response;

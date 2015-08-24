@@ -30,5 +30,10 @@ class ScopeManagerTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue($scopeManager->isEnabled($scope));
         $this->assertCount(2, $scopeManager->getAll());
         $this->assertTrue(in_array($scope, $scopeManager->getAll()));
+
+        $scopeManager->disable($scope);
+        $this->assertFalse($scopeManager->isEnabled($scope));
+        $this->assertCount(1, $scopeManager->getAll());
+        $this->assertFalse(in_array($scope, $scopeManager->getAll()));
     }
 }

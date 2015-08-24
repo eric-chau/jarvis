@@ -18,4 +18,9 @@ class FakeController
     {
         throw new \Exception(__METHOD__);
     }
+
+    public function getFooAction()
+    {
+        return new Response('foo');
+    }
 }

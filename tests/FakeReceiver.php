@@ -39,4 +39,10 @@ class FakeReceiver
         $this->analyzeEvent = $event;
         $event->setResponse(new Response(null, Response::HTTP_NOT_MODIFIED));
     }
+
+    public function modifyResponseOnResponseEvent($event)
+    {
+        $this->responseEvent = $event;
+        $event->getResponse()->setContent('bar');
+    }
 }

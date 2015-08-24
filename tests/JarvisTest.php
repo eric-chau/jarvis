@@ -65,6 +65,26 @@ class JarvisTest extends \PHPUnit_Framework_TestCase
         $this->assertNull($receiver->responseEvent);
     }
 
+    public function testReceiveResponseEventOnAnalyzeAndModifyResponseWillModifyReturnedResponse()
+    {
+        $jarvis = new Jarvis();
+
+        $receiver = new FakeReceiver();
+        $controller = new FakeController();
+
+        $jarvis->addReceiver(JarvisEvents::RESPONSE_EVENT, [$receiver, 'modifyResponseOnResponseEvent']);
+
+        $jarvis['router']->addRoute('get', '/', [$controller, 'getFooAction']);
+
+        $this->assertNull($receiver->responseEvent);
+
+        $response = $jarvis->analyze();
+
+        $this->assertNotSame($controller->getFooAction()->getContent(), $response->getContent());
+        $this->assertSame('bar', $response->getContent());
+
+    }
+
     public function testRequestService()
     {
         $jarvis = new Jarvis();
@@ -84,5 +104,38 @@ class JarvisTest extends \PHPUnit_Framework_TestCase
                 'stdClass',
             ],
         ]);
+    }
+
+    public function testOverrideRequestClassname()
+    {
+        $jarvis = new Jarvis();
+
+        $jarvis['request_fqcn'] = FakeRequest::class;
+
+        $this->assertInstanceOf(FakeRequest::class, $jarvis['request']);
+    }
+
+    /**
+     * @expectedException         \InvalidArgumentException
+     * @espectedException Message "request_fqcn" parameter must be string and instance of Symfony\Component\HttpFoundation\Request.
+     */
+    public function testOverrideRequestClassnameWithWrongValueRaisesException()
+    {
+        $jarvis = new Jarvis();
+
+        $jarvis['request_fqcn'] = true;
+        $jarvis['request'];
+    }
+
+    /**
+     * @expectedException         \InvalidArgumentException
+     * @espectedException Message "request_fqcn" parameter must be string and instance of Symfony\Component\HttpFoundation\Request.
+     */
+    public function testOverrideRequestClassnameWithWrongClassnameRaisesException()
+    {
+        $jarvis = new Jarvis();
+
+        $jarvis['request_fqcn'] = '\DateTime';
+        $jarvis['request'];
     }
 }
