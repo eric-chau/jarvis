@@ -1,0 +1,19 @@
+language: php
+
+php:
+  - 5.6
+  - 7.0
+
+before_script:
+  - curl -s http://getcomposer.org/installer | php
+  - php composer.phar install  --dev --no-interaction --prefer-source
+
+script:
+  - php vendor/bin/phpunit --coverage-clover build/logs/clover.xml
+
+after_script:
+  - vendor/bin/test-reporter
+
+addons:
+  code_climate:
+    repo_token: ed00ff4fe9667554dd5f767c22004aa61b81267c2e24c36550f5e7bf88303c6a
