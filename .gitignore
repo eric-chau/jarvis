@@ -1,5 +1,6 @@
 /log
 /vendor
 /report
+/build/logs
 
 composer.lock
