@@ -5,6 +5,7 @@ namespace Jarvis\Tests;
 use Jarvis\Jarvis;
 use Jarvis\Skill\EventBroadcaster\AnalyzeEvent;
 use Jarvis\Skill\EventBroadcaster\JarvisEvents;
+use Symfony\Component\HttpFoundation\ParameterBag;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -91,6 +92,16 @@ class JarvisTest extends \PHPUnit_Framework_TestCase
 
         $this->assertTrue(isset($jarvis['request']));
         $this->assertInstanceOf(Request::class, $jarvis['request']);
+    }
+
+    public function testSettingsService()
+    {
+        $jarvis = new Jarvis(['foo' => 'bar']);
+
+        $this->assertTrue(isset($jarvis['settings']));
+        $this->assertInstanceOf(ParameterBag::class, $jarvis['settings']);
+        $this->assertTrue($jarvis['settings']->has('foo'));
+        $this->assertSame('bar', $jarvis['settings']->get('foo'));
     }
 
     /**
