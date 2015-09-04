@@ -127,8 +127,8 @@ class JarvisTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException         \InvalidArgumentException
-     * @espectedException Message "request_fqcn" parameter must be string and instance of Symfony\Component\HttpFoundation\Request.
+     * @expectedException        \InvalidArgumentException
+     * @expectedExceptionMessage "request_fqcn" parameter must be string and instance of Symfony\Component\HttpFoundation\Request.
      */
     public function testOverrideRequestClassnameWithWrongValueRaisesException()
     {
@@ -139,8 +139,8 @@ class JarvisTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException         \InvalidArgumentException
-     * @espectedException Message "request_fqcn" parameter must be string and instance of Symfony\Component\HttpFoundation\Request.
+     * @expectedException        \InvalidArgumentException
+     * @expectedExceptionMessage "request_fqcn" parameter must be string and instance of Symfony\Component\HttpFoundation\Request.
      */
     public function testOverrideRequestClassnameWithWrongClassnameRaisesException()
     {
@@ -148,5 +148,39 @@ class JarvisTest extends \PHPUnit_Framework_TestCase
 
         $jarvis['request_fqcn'] = '\DateTime';
         $jarvis['request'];
+    }
+
+    public function testAccessToLockedValueAsJarvisAttribute()
+    {
+        $jarvis = new Jarvis();
+
+        $jarvis['foo'] = 'bar';
+        $jarvis->lock('foo');
+
+        $this->assertSame('bar', $jarvis->foo);
+    }
+
+    /**
+     * @expectedException        \InvalidArgumentException
+     * @expectedExceptionMessage "foo" is not a key of a locked value.
+     */
+    public function testAccessToUnlockedValueOrNonExistentValueAsJarvisAttributeRaiseException()
+    {
+        $jarvis = new Jarvis();
+
+        $jarvis['foo'] = 'bar';
+
+        $jarvis->foo;
+    }
+
+    /**
+     * @expectedException        \LogicException
+     * @expectedExceptionMessage You are not allowed to set new attribute into Jarvis.
+     */
+    public function testSetNewAttributeToJarvisWillRaiseException()
+    {
+        $jarvis = new Jarvis();
+
+        $jarvis->foo = 'bar';
     }
 }
