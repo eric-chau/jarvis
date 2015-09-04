@@ -13,6 +13,7 @@ use Jarvis\Skill\EventBroadcaster\ExceptionEvent;
 use Jarvis\Skill\EventBroadcaster\ResponseEvent;
 use Jarvis\Skill\EventBroadcaster\JarvisEvents;
 use Jarvis\Skill\EventBroadcaster\SimpleEvent;
+use Symfony\Component\HttpFoundation\ParameterBag;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -57,10 +58,10 @@ final class Jarvis extends Container
             array_unshift($settings['container_provider'], self::JARVIS_CONTAINER_PROVIDER_FQCN);
         }
 
-        $this['settings'] = $settings;
+        $this['settings'] = new ParameterBag($settings);
         $this->lock('settings');
 
-        foreach ($settings['container_provider'] as $classname) {
+        foreach ($this['settings']->get('container_provider') as $classname) {
             if (!is_subclass_of($classname, ContainerProviderInterface::class)) {
                 throw new \InvalidArgumentException(sprintf(
                     'Expect every container provider to implement %s.',
