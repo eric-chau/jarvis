@@ -89,6 +89,13 @@ final class Jarvis extends Container
         return $this->$key;
     }
 
+    /**
+     * Sets new attributes to Jarvis. Note that this method is reserved to Jarvis itself only.
+     *
+     * @param string $key   The key name of the new attribute
+     * @param mixed  $value The value to associate to provided key
+     * @throws \LogicException if this method is not called by Jarvis itself
+     */
     public function __set($key, $value)
     {
         if (false === $this->masterSet) {
@@ -100,7 +107,7 @@ final class Jarvis extends Container
 
     public function analyze(Request $request = null)
     {
-        $request = $request ?: $this['request'];
+        $request = $request ?: $this->request;
         $response = null;
 
         try {
@@ -110,9 +117,9 @@ final class Jarvis extends Container
                 return $response;
             }
 
-            $routeInfo = $this['router']->match($request->getMethod(), $request->getPathInfo());
+            $routeInfo = $this->router->match($request->getMethod(), $request->getPathInfo());
             if (Dispatcher::FOUND === $routeInfo[0]) {
-                list($controller, $action) = $this['callback_resolver']->resolve($routeInfo[1]);
+                list($controller, $action) = $this->callback_resolver->resolve($routeInfo[1]);
                 $event = new ControllerEvent($controller, $action, $routeInfo[2]);
 
                 $this->masterBroadcast(JarvisEvents::CONTROLLER_EVENT,  $event);
@@ -159,7 +166,7 @@ final class Jarvis extends Container
         if (isset($this->receivers[$eventName])) {
             $event = $event ?: new SimpleEvent();
             foreach ($this->receivers[$eventName] as $receiver) {
-                call_user_func_array($this['callback_resolver']->resolve($receiver), [$event]);
+                call_user_func_array($this->callback_resolver->resolve($receiver), [$event]);
 
                 if ($event->isPropagationStopped()) {
                     break;
