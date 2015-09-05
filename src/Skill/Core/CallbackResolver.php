@@ -25,6 +25,10 @@ class CallbackResolver
             }
         }
 
+        if (!is_callable($callback)) {
+            throw new \InvalidArgumentException('Provided callback is not callable.');
+        }
+
         return $callback;
     }
 }
