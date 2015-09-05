@@ -119,13 +119,16 @@ final class Jarvis extends Container
 
             $routeInfo = $this->router->match($request->getMethod(), $request->getPathInfo());
             if (Dispatcher::FOUND === $routeInfo[0]) {
-                list($controller, $action) = $this->callback_resolver->resolve($routeInfo[1]);
-                $event = new ControllerEvent($controller, $action, $routeInfo[2]);
+                $callback = $this->callback_resolver->resolve($routeInfo[1]);
 
+                $event = new ControllerEvent($callback, $routeInfo[2]);
                 $this->masterBroadcast(JarvisEvents::CONTROLLER_EVENT,  $event);
 
-                $response = call_user_func_array([$event->controller, $event->action], $event->arguments);
+                $response = call_user_func_array($event->getCallback(), $event->getArguments());
 
+                if (is_string($response)) {
+                    $response = new Response($response);
+                }
             } elseif (Dispatcher::NOT_FOUND === $routeInfo[0] || Dispatcher::METHOD_NOT_ALLOWED === $routeInfo[0]) {
                 $response = new Response(null, Dispatcher::NOT_FOUND === $routeInfo[0]
                     ? Response::HTTP_NOT_FOUND

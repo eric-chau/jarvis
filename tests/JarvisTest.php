@@ -183,4 +183,20 @@ class JarvisTest extends \PHPUnit_Framework_TestCase
 
         $jarvis->foo = 'bar';
     }
+
+    public function testAnalyzeWillConvertToSymfonyResponseIfRouteCallbackReturnString()
+    {
+        $jarvis = new Jarvis();
+
+        $str = 'hello world';
+
+        $jarvis->router->addRoute('get', '/', function () use ($str) {
+            return $str;
+        });
+
+        $result = $jarvis->analyze();
+
+        $this->assertInstanceOf(Response::class, $result);
+        $this->assertSame($str, $result->getContent());
+    }
 }

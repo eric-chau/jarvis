@@ -7,14 +7,77 @@ namespace Jarvis\Skill\EventBroadcaster;
  */
 class ControllerEvent extends SimpleEvent
 {
-    public $controller;
-    public $action;
-    public $arguments;
+    private $callback;
+    private $arguments;
 
-    public function __construct($controller, $action, $arguments)
+    public function __construct($callback, array $arguments = [])
     {
-        $this->controller = $controller;
-        $this->action = $action;
+        $this->callback = $this->validateCallback($callback);
         $this->arguments = $arguments;
+    }
+
+    /**
+     * @codeCoverageIgnore
+     *
+     * @return mixed
+     */
+    public function getCallback()
+    {
+        return $this->callback;
+    }
+
+    /**
+     * Set new callback to ControllerEvent. It must be callable.
+     *
+     * @param  mixed $callback The new callback to set
+     * @return self
+     * @throws \InvalidArgumentException if passed callback is not callable
+     */
+    public function setCallback($callback)
+    {
+        $this->callback = $this->validateCallback($callback);
+
+        return $this;
+    }
+
+    /**
+     * @codeCoverageIgnore
+     *
+     * @return mixed
+     */
+    public function getArguments()
+    {
+        return $this->arguments;
+    }
+
+    /**
+     * @codeCoverageIgnore
+     *
+     * Sets new list of arguments to ControllerEvent.
+     *
+     * @param  array $arguments The new arguments to set, default: empty array ([])
+     * @return self
+     */
+    public function setArguments(array $arguments = [])
+    {
+        $this->arguments = $arguments;
+
+        return $this;
+    }
+
+    /**
+     * Validates provided callback and throws exception if it is not callable.
+     *
+     * @param  mixed $callback The callback to validate
+     * @return mixed
+     * @throws \InvalidArgumentException if passed callback is not callable
+     */
+    public function validateCallback($callback)
+    {
+        if (!is_callable($callback)) {
+            throw new \InvalidArgumentException('Provided callback is not callable.');
+        }
+
+        return $callback;
     }
 }
