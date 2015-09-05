@@ -9,10 +9,10 @@ namespace Jarvis\Skill\DependencyInjection;
  */
 class Container implements \ArrayAccess
 {
+    protected $locked = [];
     private $aliasOf = [];
     private $factories;
     private $hasAliases = [];
-    private $locked = [];
     private $raw = [];
     private $values = [];
 

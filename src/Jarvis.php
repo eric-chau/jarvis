@@ -27,14 +27,9 @@ final class Jarvis extends Container
     const JARVIS_CONTAINER_PROVIDER_FQCN = ContainerProvider::class;
     const JARVIS_DEFAULT_SCOPE = 'default';
 
-    private $aliasOf = [];
-    private $factories;
-    private $hasAliases = [];
-    private $locked = [];
-    private $raw = [];
-    private $values = [];
     private $receivers = [];
     private $masterEmitter = false;
+    private $masterSet = false;
 
     /**
      * Creates an instance of Jarvis. It can take settings as first argument.
@@ -51,17 +46,18 @@ final class Jarvis extends Container
 
         $this['jarvis.starttime'] = microtime(true);
 
-        if (!isset($settings['container_provider'])) {
-            $settings['container_provider'] = [self::JARVIS_CONTAINER_PROVIDER_FQCN];
-        } else {
-            $settings = (array) $settings;
-            array_unshift($settings['container_provider'], self::JARVIS_CONTAINER_PROVIDER_FQCN);
-        }
-
         $this['settings'] = new ParameterBag($settings);
         $this->lock('settings');
 
-        foreach ($this['settings']->get('container_provider') as $classname) {
+        if (!$this->settings->has('container_provider')) {
+            $this->settings->set('container_provider', [self::JARVIS_CONTAINER_PROVIDER_FQCN]);
+        } else {
+            $containerProvider = $this->settings->get('container_provider');
+            array_unshift($containerProvider, self::JARVIS_CONTAINER_PROVIDER_FQCN);
+            $this->settings->set('container_provider', $containerProvider);
+        }
+
+        foreach ($this->settings->get('container_provider') as $classname) {
             if (!is_subclass_of($classname, ContainerProviderInterface::class)) {
                 throw new \InvalidArgumentException(sprintf(
                     'Expect every container provider to implement %s.',
@@ -73,9 +69,45 @@ final class Jarvis extends Container
         }
     }
 
+    /**
+     * This method is an another way to get a locked value.
+     *
+     * Example: $this['foo'] is equal to $this->foo, but it ONLY works for locked values.
+     *
+     * @param  string $key The key of the locked value
+     * @return mixed
+     * @throws \InvalidArgumentException if the requested key is not associated to a locked service
+     */
+    public function __get($key)
+    {
+        if (!isset($this->locked[$key])) {
+            throw new \InvalidArgumentException(sprintf('"%s" is not a key of a locked value.', $key));
+        }
+
+        $this->masterSetter($key, $this[$key]);
+
+        return $this->$key;
+    }
+
+    /**
+     * Sets new attributes to Jarvis. Note that this method is reserved to Jarvis itself only.
+     *
+     * @param string $key   The key name of the new attribute
+     * @param mixed  $value The value to associate to provided key
+     * @throws \LogicException if this method is not called by Jarvis itself
+     */
+    public function __set($key, $value)
+    {
+        if (false === $this->masterSet) {
+            throw new \LogicException('You are not allowed to set new attribute into Jarvis.');
+        }
+
+        $this->$key = $value;
+    }
+
     public function analyze(Request $request = null)
     {
-        $request = $request ?: $this['request'];
+        $request = $request ?: $this->request;
         $response = null;
 
         try {
@@ -85,9 +117,9 @@ final class Jarvis extends Container
                 return $response;
             }
 
-            $routeInfo = $this['router']->match($request->getMethod(), $request->getPathInfo());
+            $routeInfo = $this->router->match($request->getMethod(), $request->getPathInfo());
             if (Dispatcher::FOUND === $routeInfo[0]) {
-                list($controller, $action) = $this['callback_resolver']->resolve($routeInfo[1]);
+                list($controller, $action) = $this->callback_resolver->resolve($routeInfo[1]);
                 $event = new ControllerEvent($controller, $action, $routeInfo[2]);
 
                 $this->masterBroadcast(JarvisEvents::CONTROLLER_EVENT,  $event);
@@ -134,7 +166,7 @@ final class Jarvis extends Container
         if (isset($this->receivers[$eventName])) {
             $event = $event ?: new SimpleEvent();
             foreach ($this->receivers[$eventName] as $receiver) {
-                call_user_func_array($this['callback_resolver']->resolve($receiver), [$event]);
+                call_user_func_array($this->callback_resolver->resolve($receiver), [$event]);
 
                 if ($event->isPropagationStopped()) {
                     break;
@@ -163,6 +195,15 @@ final class Jarvis extends Container
         $this->masterEmitter = true;
         $this->broadcast($eventName, $event);
         $this->masterEmitter = false;
+
+        return $this;
+    }
+
+    private function masterSetter($key, $value)
+    {
+        $this->masterSet = true;
+        $this->$key = $value;
+        $this->masterSet = false;
 
         return $this;
     }
