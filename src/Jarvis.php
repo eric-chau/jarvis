@@ -125,6 +125,10 @@ final class Jarvis extends Container
                 $this->masterBroadcast(JarvisEvents::CONTROLLER_EVENT,  $event);
 
                 $response = call_user_func_array($event->getCallback(), $event->getArguments());
+
+                if (is_string($response)) {
+                    $response = new Response($response);
+                }
             } elseif (Dispatcher::NOT_FOUND === $routeInfo[0] || Dispatcher::METHOD_NOT_ALLOWED === $routeInfo[0]) {
                 $response = new Response(null, Dispatcher::NOT_FOUND === $routeInfo[0]
                     ? Response::HTTP_NOT_FOUND
