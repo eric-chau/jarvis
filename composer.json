@@ -1,7 +1,7 @@
 {
     "name": "eric-chau/jarvis",
     "description": "Jarvis is a PHP micro-framework",
-    "licence": "MIT",
+    "license": "MIT",
     "require": {
         "nikic/fast-route": "0.*",
         "symfony/http-foundation": "2.7.*"
