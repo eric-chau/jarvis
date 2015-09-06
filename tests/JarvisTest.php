@@ -14,6 +14,19 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class JarvisTest extends \PHPUnit_Framework_TestCase
 {
+    public function testJarvisDebugVariable()
+    {
+        // By default Jarvis is started with debug setted to false.
+        $jarvis = new Jarvis();
+
+        $this->assertFalse($jarvis->debug);
+
+        // You can change the debug value by passing your debug value in settings array.
+        $jarvis = new Jarvis(['debug' => true]);
+
+        $this->assertTrue($jarvis->debug);
+    }
+
     public function testAnalyzeCatchEveryExceptionAndConvertItToResponse()
     {
         $jarvis = new Jarvis();

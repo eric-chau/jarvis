@@ -24,6 +24,7 @@ use Symfony\Component\HttpFoundation\Response;
  */
 final class Jarvis extends Container
 {
+    const JARVIS_DEFAULT_DEBUG = false;
     const JARVIS_CONTAINER_PROVIDER_FQCN = ContainerProvider::class;
     const JARVIS_DEFAULT_SCOPE = 'default';
 
@@ -48,6 +49,9 @@ final class Jarvis extends Container
 
         $this['settings'] = new ParameterBag($settings);
         $this->lock('settings');
+
+        $this['debug'] = $this->settings->getBoolean('debug', self::JARVIS_DEFAULT_DEBUG);
+        $this->lock('debug');
 
         if (!$this->settings->has('container_provider')) {
             $this->settings->set('container_provider', [self::JARVIS_CONTAINER_PROVIDER_FQCN]);
