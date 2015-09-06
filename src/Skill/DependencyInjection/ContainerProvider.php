@@ -61,7 +61,7 @@ class ContainerProvider implements ContainerProviderInterface
         $jarvis->addReceiver(JarvisEvents::EXCEPTION_EVENT, [
             new Reference('jarvis.exception_receiver'),
             'onExceptionEvent',
-        ]);
+        ], Jarvis::RECEIVER_LOW_PRIORITY);
 
         $jarvis->lock(['request', 'router', 'callback_resolver', 'jarvis.exception_receiver']);
     }
