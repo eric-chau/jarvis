@@ -111,4 +111,28 @@ class JarvisBroadcasterTest extends \PHPUnit_Framework_TestCase
         $jarvis = new Jarvis();
         $jarvis->broadcast(JarvisEvents::EXCEPTION_EVENT);
     }
+
+    public function testEventReceiversPriorities()
+    {
+        $jarvis = new Jarvis();
+
+        $eventName = 'receiver_priority_test';
+
+        $lowPriorityReceiver = new FakeReceiver();
+        $normalPriorityReceiver = new FakeReceiver();
+        $highPriorityReceiver = new FakeReceiver();
+
+        $this->assertNull($lowPriorityReceiver->microTimestamp);
+        $this->assertNull($normalPriorityReceiver->microTimestamp);
+        $this->assertNull($highPriorityReceiver->microTimestamp);
+
+        $jarvis->addReceiver($eventName, [$lowPriorityReceiver, 'saveMicroTimestamp'], Jarvis::RECEIVER_LOW_PRIORITY);
+        $jarvis->addReceiver($eventName, [$normalPriorityReceiver, 'saveMicroTimestamp'], Jarvis::RECEIVER_NORMAL_PRIORITY);
+        $jarvis->addReceiver($eventName, [$highPriorityReceiver, 'saveMicroTimestamp'], Jarvis::RECEIVER_HIGH_PRIORITY);
+
+        $jarvis->broadcast($eventName);
+
+        $this->assertTrue($normalPriorityReceiver->microTimestamp < $lowPriorityReceiver->microTimestamp);
+        $this->assertTrue($highPriorityReceiver->microTimestamp < $normalPriorityReceiver->microTimestamp);
+    }
 }

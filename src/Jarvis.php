@@ -24,6 +24,10 @@ use Symfony\Component\HttpFoundation\Response;
  */
 final class Jarvis extends Container
 {
+    const RECEIVER_LOW_PRIORITY = 0;
+    const RECEIVER_NORMAL_PRIORITY = 1;
+    const RECEIVER_HIGH_PRIORITY = 2;
+
     const JARVIS_DEFAULT_DEBUG = false;
     const JARVIS_CONTAINER_PROVIDER_FQCN = ContainerProvider::class;
     const JARVIS_DEFAULT_SCOPE = 'default';
@@ -149,13 +153,17 @@ final class Jarvis extends Container
         return $response;
     }
 
-    public function addReceiver($eventName, $receiver)
+    public function addReceiver($eventName, $receiver, $priority = self::RECEIVER_NORMAL_PRIORITY)
     {
         if (!isset($this->receivers[$eventName])) {
-            $this->receivers[$eventName] = [];
+            $this->receivers[$eventName] = [
+                self::RECEIVER_LOW_PRIORITY    => [],
+                self::RECEIVER_NORMAL_PRIORITY => [],
+                self::RECEIVER_HIGH_PRIORITY   => [],
+            ];
         }
 
-        $this->receivers[$eventName][] = $receiver;
+        $this->receivers[$eventName][$priority][] = $receiver;
 
         return $this;
     }
@@ -172,7 +180,7 @@ final class Jarvis extends Container
 
         if (isset($this->receivers[$eventName])) {
             $event = $event ?: new SimpleEvent();
-            foreach ($this->receivers[$eventName] as $receiver) {
+            foreach ($this->buildEventReceivers($eventName) as $receiver) {
                 call_user_func_array($this->callback_resolver->resolve($receiver), [$event]);
 
                 if ($event->isPropagationStopped()) {
@@ -193,7 +201,7 @@ final class Jarvis extends Container
     }
 
     /**
-     * Enables master emitter mode until next call of ::broadcast() method.
+     * Enables master emitter mode.
      *
      * @return self
      */
@@ -206,6 +214,13 @@ final class Jarvis extends Container
         return $this;
     }
 
+    /**
+     * Sets new attribute into Jarvis.
+     *
+     * @param  string $key   The name of the new attribute
+     * @param  mixed  $value The value of the new attribute
+     * @return self
+     */
     private function masterSetter($key, $value)
     {
         $this->masterSet = true;
@@ -213,5 +228,20 @@ final class Jarvis extends Container
         $this->masterSet = false;
 
         return $this;
+    }
+
+    /**
+     * Builds and returns well ordered receivers collection that match with provided event name.
+     *
+     * @param  string $eventName The event name we want to get its receivers
+     * @return array
+     */
+    private function buildEventReceivers($eventName)
+    {
+        return array_merge(
+            $this->receivers[$eventName][self::RECEIVER_HIGH_PRIORITY],
+            $this->receivers[$eventName][self::RECEIVER_NORMAL_PRIORITY],
+            $this->receivers[$eventName][self::RECEIVER_LOW_PRIORITY]
+        );
     }
 }

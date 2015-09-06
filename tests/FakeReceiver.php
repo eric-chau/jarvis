@@ -13,6 +13,7 @@ class FakeReceiver
     public $analyzeEvent;
     public $controllerEvent;
     public $responseEvent;
+    public $microTimestamp;
 
     public function onEventBroadcast($event)
     {
@@ -44,5 +45,10 @@ class FakeReceiver
     {
         $this->responseEvent = $event;
         $event->getResponse()->setContent('bar');
+    }
+
+    public function saveMicroTimestamp($event)
+    {
+        $this->microTimestamp = microtime(true);
     }
 }
