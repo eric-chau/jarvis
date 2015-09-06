@@ -24,13 +24,13 @@ use Symfony\Component\HttpFoundation\Response;
  */
 final class Jarvis extends Container
 {
-    const RECEIVER_LOW_PRIORITY = 0;
-    const RECEIVER_NORMAL_PRIORITY = 1;
-    const RECEIVER_HIGH_PRIORITY = 2;
-
     const JARVIS_DEFAULT_DEBUG = false;
     const JARVIS_CONTAINER_PROVIDER_FQCN = ContainerProvider::class;
     const JARVIS_DEFAULT_SCOPE = 'default';
+
+    const RECEIVER_HIGH_PRIORITY = 2;
+    const RECEIVER_NORMAL_PRIORITY = 1;
+    const RECEIVER_LOW_PRIORITY = 0;
 
     private $receivers = [];
     private $masterEmitter = false;
