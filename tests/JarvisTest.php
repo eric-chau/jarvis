@@ -132,11 +132,9 @@ class JarvisTest extends \PHPUnit_Framework_TestCase
 
     public function testOverrideRequestClassname()
     {
-        $jarvis = new Jarvis();
+        $jarvis = new Jarvis(['request_fqcn' => FakeRequest::class]);
 
-        $jarvis['request_fqcn'] = FakeRequest::class;
-
-        $this->assertInstanceOf(FakeRequest::class, $jarvis['request']);
+        $this->assertInstanceOf(FakeRequest::class, $jarvis->request);
     }
 
     /**
@@ -145,10 +143,9 @@ class JarvisTest extends \PHPUnit_Framework_TestCase
      */
     public function testOverrideRequestClassnameWithWrongValueRaisesException()
     {
-        $jarvis = new Jarvis();
+        $jarvis = new Jarvis(['request_fqcn' => true]);
 
-        $jarvis['request_fqcn'] = true;
-        $jarvis['request'];
+        $jarvis->request;
     }
 
     /**
@@ -157,10 +154,9 @@ class JarvisTest extends \PHPUnit_Framework_TestCase
      */
     public function testOverrideRequestClassnameWithWrongClassnameRaisesException()
     {
-        $jarvis = new Jarvis();
+        $jarvis = new Jarvis(['request_fqcn' => '\DateTime']);
 
-        $jarvis['request_fqcn'] = '\DateTime';
-        $jarvis['request'];
+        $jarvis->request;
     }
 
     public function testAccessToLockedValueAsJarvisAttribute()

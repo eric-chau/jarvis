@@ -6,9 +6,10 @@ use Jarvis\Jarvis;
 use Jarvis\Skill\Core\CallbackResolver;
 use Jarvis\Skill\Core\ScopeManager;
 use Jarvis\Skill\EventBroadcaster\JarvisEvents;
-use Jarvis\Skill\EventBroadcaster\Receiver\ExceptionReceiver;
+use Jarvis\Skill\EventBroadcaster\ExceptionEvent;
 use Jarvis\Skill\Routing\Router;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * This is Jarvis internal container provider. It will inject every core
@@ -24,10 +25,8 @@ class ContainerProvider implements ContainerProviderInterface
     public static function hydrate(Jarvis $jarvis)
     {
         $jarvis['request'] = function ($jarvis) {
-            $classname = isset($jarvis['request_fqcn']) ? $jarvis['request_fqcn'] : Request::class;
-
             if (
-                !is_string($classname)
+                !is_string($classname = $jarvis->settings->get('request_fqcn', Request::class))
                 || (
                     $classname !== Request::class
                     && !is_subclass_of($classname, Request::class)
@@ -54,15 +53,16 @@ class ContainerProvider implements ContainerProviderInterface
             return new ScopeManager();
         };
 
-        $jarvis['jarvis.exception_receiver'] = function () {
-            return new ExceptionReceiver();
-        };
+        $jarvis->lock(['request', 'router', 'callback_resolver']);
 
-        $jarvis->addReceiver(JarvisEvents::EXCEPTION_EVENT, [
-            new Reference('jarvis.exception_receiver'),
-            'onExceptionEvent',
-        ], Jarvis::RECEIVER_LOW_PRIORITY);
+        self::registerReceivers($jarvis);
+    }
 
-        $jarvis->lock(['request', 'router', 'callback_resolver', 'jarvis.exception_receiver']);
+    private static function registerReceivers(Jarvis $jarvis)
+    {
+        $jarvis->addReceiver(JarvisEvents::EXCEPTION_EVENT, function (ExceptionEvent $event) {
+            $response = new Response($event->getException()->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
+            $event->setResponse($response);
+        }, Jarvis::RECEIVER_LOW_PRIORITY);
     }
 }
