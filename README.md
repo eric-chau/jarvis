@@ -5,6 +5,8 @@
 ## "Hello world!" with Jarvis
 
 ```php
+<?php
+
 require_once __DIR__.'/vendor/autoload.php';
 
 $jarvis = new Jarvis\Jarvis();
