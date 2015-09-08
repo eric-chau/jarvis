@@ -3,6 +3,7 @@
     "description": "Jarvis is a PHP micro-framework",
     "license": "MIT",
     "require": {
+        "php": ">=5.6.0",
         "nikic/fast-route": "0.*",
         "symfony/http-foundation": "2.7.*"
     },
