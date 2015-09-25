@@ -65,14 +65,7 @@ class Jarvis extends Container
         }
 
         foreach ($this->settings->get('container_provider') as $classname) {
-            if (!is_subclass_of($classname, ContainerProviderInterface::class)) {
-                throw new \InvalidArgumentException(sprintf(
-                    'Expect every container provider to implement %s.',
-                    ContainerProviderInterface::class
-                ));
-            }
-
-            $classname::hydrate($this);
+            $this->hydrate($classname);
         }
     }
 
@@ -188,6 +181,21 @@ class Jarvis extends Container
                 }
             }
         }
+
+        return $this;
+    }
+
+    public function hydrate($classname)
+    {
+        if (!is_subclass_of($classname, ContainerProviderInterface::class)) {
+            throw new \InvalidArgumentException(sprintf(
+                'Expect every container provider to implement %s and %s does not.',
+                ContainerProviderInterface::class,
+                $classname
+            ));
+        }
+
+        $classname::hydrate($this);
 
         return $this;
     }
