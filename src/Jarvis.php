@@ -54,14 +54,14 @@ class Jarvis extends Container
         $this['settings'] = new ParameterBag($settings);
         $this->lock('settings');
 
-        $this['debug'] = $this->settings->getBoolean('debug', self::DEFAULT_DEBUG);
+        $this['debug'] = $this->settings->getBoolean('debug', static::DEFAULT_DEBUG);
         $this->lock('debug');
 
         if (!$this->settings->has('container_provider')) {
-            $this->settings->set('container_provider', [self::CONTAINER_PROVIDER_FQCN]);
+            $this->settings->set('container_provider', [static::CONTAINER_PROVIDER_FQCN]);
         } else {
             $containerProvider = $this->settings->get('container_provider');
-            array_unshift($containerProvider, self::CONTAINER_PROVIDER_FQCN);
+            array_unshift($containerProvider, static::CONTAINER_PROVIDER_FQCN);
             $this->settings->set('container_provider', $containerProvider);
         }
 
