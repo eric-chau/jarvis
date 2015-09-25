@@ -10,13 +10,13 @@ use Jarvis\Jarvis;
 class ScopeManager
 {
     private $scopes = [
-        Jarvis::JARVIS_DEFAULT_SCOPE => true,
+        Jarvis::DEFAULT_SCOPE => true,
     ];
 
     public function disable($names)
     {
         foreach ((array) $names as $name) {
-            if (Jarvis::JARVIS_DEFAULT_SCOPE === $name) {
+            if (Jarvis::DEFAULT_SCOPE === $name) {
                 continue;
             }
 

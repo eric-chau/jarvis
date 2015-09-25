@@ -13,10 +13,10 @@ class ScopeManagerTest extends \PHPUnit_Framework_TestCase
         $scopeManager = new ScopeManager();
 
         $this->assertCount(1, $scopeManager->getAll());
-        $this->assertTrue($scopeManager->isEnabled(Jarvis::JARVIS_DEFAULT_SCOPE));
+        $this->assertTrue($scopeManager->isEnabled(Jarvis::DEFAULT_SCOPE));
 
-        $scopeManager->disable(Jarvis::JARVIS_DEFAULT_SCOPE);
-        $this->assertTrue($scopeManager->isEnabled(Jarvis::JARVIS_DEFAULT_SCOPE));
+        $scopeManager->disable(Jarvis::DEFAULT_SCOPE);
+        $this->assertTrue($scopeManager->isEnabled(Jarvis::DEFAULT_SCOPE));
     }
 
     public function testEnableAndDisableScope()
