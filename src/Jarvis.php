@@ -49,8 +49,6 @@ final class Jarvis extends Container
     {
         parent::__construct();
 
-        $this['jarvis.starttime'] = microtime(true);
-
         $this['settings'] = new ParameterBag($settings);
         $this->lock('settings');
 
@@ -190,14 +188,6 @@ final class Jarvis extends Container
         }
 
         return $this;
-    }
-
-    /**
-     * @codeCoverageIgnore
-     */
-    public function getExecutionDuration($precision = 8)
-    {
-        return number_format(microtime(true) - $this['jarvis.starttime'], $precision);
     }
 
     /**
