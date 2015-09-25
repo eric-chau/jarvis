@@ -33,6 +33,7 @@ class Jarvis extends Container
     const RECEIVER_LOW_PRIORITY = 0;
 
     private $receivers = [];
+    private $computedReceivers = [];
     private $masterEmitter = false;
     private $masterSet = false;
 
@@ -162,6 +163,7 @@ class Jarvis extends Container
         }
 
         $this->receivers[$eventName][$priority][] = $receiver;
+        $this->computedReceivers[$eventName] = null;
 
         return $this;
     }
@@ -228,7 +230,7 @@ class Jarvis extends Container
      */
     private function buildEventReceivers($eventName)
     {
-        return array_merge(
+        return $this->computedReceivers[$eventName] = isset($this->computedReceivers[$eventName]) ?: array_merge(
             $this->receivers[$eventName][self::RECEIVER_HIGH_PRIORITY],
             $this->receivers[$eventName][self::RECEIVER_NORMAL_PRIORITY],
             $this->receivers[$eventName][self::RECEIVER_LOW_PRIORITY]
