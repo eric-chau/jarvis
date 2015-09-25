@@ -22,11 +22,11 @@ use Symfony\Component\HttpFoundation\Response;
  *
  * @author Eric Chau <eriic.chau@gmail.com>
  */
-final class Jarvis extends Container
+class Jarvis extends Container
 {
-    const JARVIS_DEFAULT_DEBUG = false;
-    const JARVIS_CONTAINER_PROVIDER_FQCN = ContainerProvider::class;
-    const JARVIS_DEFAULT_SCOPE = 'default';
+    const DEFAULT_DEBUG = false;
+    const CONTAINER_PROVIDER_FQCN = ContainerProvider::class;
+    const DEFAULT_SCOPE = 'default';
 
     const RECEIVER_HIGH_PRIORITY = 2;
     const RECEIVER_NORMAL_PRIORITY = 1;
@@ -52,14 +52,14 @@ final class Jarvis extends Container
         $this['settings'] = new ParameterBag($settings);
         $this->lock('settings');
 
-        $this['debug'] = $this->settings->getBoolean('debug', self::JARVIS_DEFAULT_DEBUG);
+        $this['debug'] = $this->settings->getBoolean('debug', static::DEFAULT_DEBUG);
         $this->lock('debug');
 
         if (!$this->settings->has('container_provider')) {
-            $this->settings->set('container_provider', [self::JARVIS_CONTAINER_PROVIDER_FQCN]);
+            $this->settings->set('container_provider', [static::CONTAINER_PROVIDER_FQCN]);
         } else {
             $containerProvider = $this->settings->get('container_provider');
-            array_unshift($containerProvider, self::JARVIS_CONTAINER_PROVIDER_FQCN);
+            array_unshift($containerProvider, static::CONTAINER_PROVIDER_FQCN);
             $this->settings->set('container_provider', $containerProvider);
         }
 

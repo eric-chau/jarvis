@@ -28,7 +28,7 @@ class Router extends Dispatcher
      * Alias to Router's route collector ::addRoute method.
      * @see RouteCollector::addRoute
      */
-    public function addRoute($httpMethod, $route, $handler, $scope = Jarvis::JARVIS_DEFAULT_SCOPE)
+    public function addRoute($httpMethod, $route, $handler, $scope = Jarvis::DEFAULT_SCOPE)
     {
         if (!isset($this->rawRoutes[$scope])) {
             $this->rawRoutes[$scope] = [];
