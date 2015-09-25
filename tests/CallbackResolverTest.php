@@ -32,12 +32,20 @@ class CallbackResolver extends \PHPUnit_Framework_TestCase
     {
         $jarvis = new Jarvis();
 
-        $jarvis->callback_resolver->resolve([new FakeController(), 'randomAction']);
-        $jarvis->callback_resolver->resolve(['DateTime', 'createFromFormat']);
-        $jarvis->callback_resolver->resolve('rand');
-        $jarvis->callback_resolver->resolve(function () {});
+        try {
+            $jarvis->callback_resolver->resolve([new FakeController(), 'randomAction']);
+            $jarvis->callback_resolver->resolve(['DateTime', 'createFromFormat']);
+            $jarvis->callback_resolver->resolve('rand');
+            $jarvis->callback_resolver->resolve(function () {});
+            $this->assertTrue(true);
+        } catch (\InvalidArgumentException $e) {
+            if ('Provided callback is not callable.' === $e->getMessage()) {
+                $this->fail('Php valid callable must successfully be resolved by CallbackResolver.');
+            }
 
-        $this->assertTrue(true);
+            throw $e;
+        }
+
     }
 
     /**
