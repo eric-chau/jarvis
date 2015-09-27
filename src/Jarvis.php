@@ -33,7 +33,6 @@ class Jarvis extends Container
     const RECEIVER_LOW_PRIORITY = 0;
 
     private $receivers = [];
-    private $computedReceivers = [];
     private $masterEmitter = false;
     private $masterSet = false;
 
