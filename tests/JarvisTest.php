@@ -5,6 +5,7 @@ namespace Jarvis\Tests;
 use Jarvis\Jarvis;
 use Jarvis\Skill\EventBroadcaster\AnalyzeEvent;
 use Jarvis\Skill\EventBroadcaster\JarvisEvents;
+use Jarvis\Skill\EventBroadcaster\SimpleEvent;
 use Symfony\Component\HttpFoundation\ParameterBag;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -207,5 +208,19 @@ class JarvisTest extends \PHPUnit_Framework_TestCase
 
         $this->assertInstanceOf(Response::class, $result);
         $this->assertSame($str, $result->getContent());
+    }
+
+    public function testBroadcastTerminateEventOnDestruct()
+    {
+        $jarvis = new Jarvis();
+
+        $receiver = new FakeReceiver();
+        $jarvis->addReceiver(JarvisEvents::TERMINATE_EVENT, [$receiver, 'onEventBroadcast']);
+
+        $this->assertNull($receiver->event);
+
+        unset($jarvis);
+        $this->assertNotNull($receiver->event);
+        $this->assertInstanceOf(SimpleEvent::class, $receiver->event);
     }
 }
