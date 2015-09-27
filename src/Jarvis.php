@@ -69,6 +69,11 @@ class Jarvis extends Container
         }
     }
 
+    public function __destruct()
+    {
+        $this->masterBroadcast(JarvisEvents::TERMINATE_EVENT);
+    }
+
     /**
      * This method is an another way to get a locked value.
      *
