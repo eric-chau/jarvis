@@ -24,7 +24,7 @@ class ContainerProvider implements ContainerProviderInterface
      */
     public static function hydrate(Jarvis $jarvis)
     {
-        $jarvis['request'] = function ($jarvis) {
+        $jarvis['request'] = function($jarvis) {
             if (
                 !is_string($classname = $jarvis->settings->get('request_fqcn', Request::class))
                 || (
@@ -41,15 +41,15 @@ class ContainerProvider implements ContainerProviderInterface
             return $classname::createFromGlobals();
         };
 
-        $jarvis['router'] = function ($jarvis) {
+        $jarvis['router'] = function($jarvis) {
             return new Router($jarvis['scope_manager']);
         };
 
-        $jarvis['callback_resolver'] = function ($jarvis) {
+        $jarvis['callback_resolver'] = function($jarvis) {
             return new CallbackResolver($jarvis);
         };
 
-        $jarvis['scope_manager'] = function () {
+        $jarvis['scope_manager'] = function() {
             return new ScopeManager();
         };
 
@@ -60,7 +60,7 @@ class ContainerProvider implements ContainerProviderInterface
 
     private static function registerReceivers(Jarvis $jarvis)
     {
-        $jarvis->addReceiver(JarvisEvents::EXCEPTION_EVENT, function (ExceptionEvent $event) {
+        $jarvis->addReceiver(JarvisEvents::EXCEPTION_EVENT, function(ExceptionEvent $event) {
             $response = new Response($event->getException()->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
             $event->setResponse($response);
         }, Jarvis::RECEIVER_LOW_PRIORITY);
