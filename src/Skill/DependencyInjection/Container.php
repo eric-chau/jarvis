@@ -190,7 +190,7 @@ class Container implements \ArrayAccess
     /**
      * Locks an object or a parameter so you can not override it until unset() is called.
      *
-     * @param  string $id the identifier to lock
+     * @param  string|array $ids the identifier(s) to lock
      * @return self
      */
     public function lock($ids)
