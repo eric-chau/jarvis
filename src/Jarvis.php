@@ -110,6 +110,10 @@ class Jarvis extends Container
         $this->$key = $value;
     }
 
+    /**
+     * @param  Request|null $request
+     * @return Response
+     */
     public function analyze(Request $request = null)
     {
         $request = $request ?: $this->request;
@@ -150,6 +154,12 @@ class Jarvis extends Container
         return $response;
     }
 
+    /**
+     * @param  string  $eventName
+     * @param  mixed   $receiver
+     * @param  integer $priority
+     * @return self
+     */
     public function addReceiver($eventName, $receiver, $priority = self::RECEIVER_NORMAL_PRIORITY)
     {
         if (!isset($this->receivers[$eventName])) {
@@ -166,6 +176,11 @@ class Jarvis extends Container
         return $this;
     }
 
+    /**
+     * @param  string              $eventName
+     * @param  EventInterface|null $event
+     * @return self
+     */
     public function broadcast($eventName, EventInterface $event = null)
     {
         if (!$this->masterEmitter && in_array($eventName, JarvisEvents::RESERVED_EVENT_NAMES)) {
@@ -190,6 +205,10 @@ class Jarvis extends Container
         return $this;
     }
 
+    /**
+     * @param  string $classname
+     * @return self
+     */
     public function hydrate($classname)
     {
         if (!is_subclass_of($classname, ContainerProviderInterface::class)) {
@@ -243,10 +262,13 @@ class Jarvis extends Container
      */
     private function buildEventReceivers($eventName)
     {
-        return $this->computedReceivers[$eventName] = isset($this->computedReceivers[$eventName]) ?: array_merge(
-            $this->receivers[$eventName][self::RECEIVER_HIGH_PRIORITY],
-            $this->receivers[$eventName][self::RECEIVER_NORMAL_PRIORITY],
-            $this->receivers[$eventName][self::RECEIVER_LOW_PRIORITY]
-        );
+        return $this->computedReceivers[$eventName] = isset($this->computedReceivers[$eventName])
+            ? $this->computedReceivers[$eventName]
+            : array_merge(
+                $this->receivers[$eventName][self::RECEIVER_HIGH_PRIORITY],
+                $this->receivers[$eventName][self::RECEIVER_NORMAL_PRIORITY],
+                $this->receivers[$eventName][self::RECEIVER_LOW_PRIORITY]
+            )
+        ;
     }
 }
