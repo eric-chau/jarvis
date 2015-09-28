@@ -131,7 +131,7 @@ class Jarvis extends Container
                 $callback = $this->callback_resolver->resolve($routeInfo[1]);
 
                 $event = new ControllerEvent($callback, $routeInfo[2]);
-                $this->masterBroadcast(JarvisEvents::CONTROLLER_EVENT,  $event);
+                $this->masterBroadcast(JarvisEvents::CONTROLLER_EVENT, $event);
 
                 $response = call_user_func_array($event->getCallback(), $event->getArguments());
 
