@@ -17,5 +17,5 @@ interface ContainerProviderInterface
      *
      * @param  Jarvis $container The container to hydrate
      */
-    public static function hydrate(Jarvis $container);
+    public function hydrate(Jarvis $container);
 }

@@ -43,8 +43,6 @@ class Jarvis extends Container
      *   - container_provider (type: string|array): fqcn of your container provider
      *
      * @param  array $settings Your own settings to modify Jarvis behavior
-     * @throws \InvalidArgumentException if provided container provider class doesn't
-     *                                   implement ContainerProviderInterface
      */
     public function __construct(array $settings = [])
     {
@@ -65,7 +63,7 @@ class Jarvis extends Container
         }
 
         foreach ($this->settings->get('container_provider') as $classname) {
-            $this->hydrate($classname);
+            $this->hydrate(new $classname());
         }
     }
 
@@ -206,20 +204,12 @@ class Jarvis extends Container
     }
 
     /**
-     * @param  string $classname
+     * @param  string $provider
      * @return self
      */
-    public function hydrate($classname)
+    public function hydrate(ContainerProviderInterface $provider)
     {
-        if (!is_subclass_of($classname, ContainerProviderInterface::class)) {
-            throw new \InvalidArgumentException(sprintf(
-                'Expect every container provider to implement %s and %s does not.',
-                ContainerProviderInterface::class,
-                $classname
-            ));
-        }
-
-        $classname::hydrate($this);
+        call_user_func([$provider, 'hydrate'], $this);
 
         return $this;
     }

@@ -22,7 +22,7 @@ class ContainerProvider implements ContainerProviderInterface
     /**
      * {@inheritdoc}
      */
-    public static function hydrate(Jarvis $jarvis)
+    public function hydrate(Jarvis $jarvis)
     {
         $jarvis['request'] = function($jarvis) {
             if (
@@ -55,10 +55,10 @@ class ContainerProvider implements ContainerProviderInterface
 
         $jarvis->lock(['request', 'router', 'callback_resolver']);
 
-        self::registerReceivers($jarvis);
+        $this->registerReceivers($jarvis);
     }
 
-    private static function registerReceivers(Jarvis $jarvis)
+    private function registerReceivers(Jarvis $jarvis)
     {
         $jarvis->addReceiver(JarvisEvents::EXCEPTION_EVENT, function(ExceptionEvent $event) {
             $response = new Response($event->getException()->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
