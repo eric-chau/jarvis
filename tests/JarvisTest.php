@@ -118,19 +118,6 @@ class JarvisTest extends \PHPUnit_Framework_TestCase
         $this->assertSame('bar', $jarvis['settings']->get('foo'));
     }
 
-    /**
-     * @expectedException        InvalidArgumentException
-     * @expectedExceptionMessage Expect every container provider to implement Jarvis\Skill\DependencyInjection\ContainerProviderInterface
-     */
-    public function testInvalidContainerProvider()
-    {
-        new Jarvis([
-            'container_provider' => [
-                'stdClass',
-            ],
-        ]);
-    }
-
     public function testOverrideRequestClassname()
     {
         $jarvis = new Jarvis(['request_fqcn' => FakeRequest::class]);
