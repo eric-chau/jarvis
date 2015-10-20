@@ -25,7 +25,7 @@ class ContainerProvider implements ContainerProviderInterface
      */
     public function hydrate(Jarvis $jarvis)
     {
-        $jarvis['request'] = function($jarvis) {
+        $jarvis['request'] = function(Jarvis $jarvis) {
             if (
                 !is_string($classname = $jarvis->settings->get('request_fqcn', Request::class))
                 || (
@@ -45,15 +45,15 @@ class ContainerProvider implements ContainerProviderInterface
             return $request;
         };
 
-        $jarvis['session'] = function($jarvis) {
+        $jarvis['session'] = function(Jarvis $jarvis) {
             return $jarvis->request->getSession();
         };
 
-        $jarvis['router'] = function($jarvis) {
+        $jarvis['router'] = function(Jarvis $jarvis) {
             return new Router($jarvis['scope_manager']);
         };
 
-        $jarvis['callback_resolver'] = function($jarvis) {
+        $jarvis['callback_resolver'] = function(Jarvis $jarvis) {
             return new CallbackResolver($jarvis);
         };
 
