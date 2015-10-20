@@ -10,6 +10,7 @@ use Jarvis\Skill\EventBroadcaster\ExceptionEvent;
 use Jarvis\Skill\Routing\Router;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Session\Session;
 
 /**
  * This is Jarvis internal container provider. It will inject every core
@@ -38,7 +39,14 @@ class ContainerProvider implements ContainerProviderInterface
                 ));
             }
 
-            return $classname::createFromGlobals();
+            $request = $classname::createFromGlobals();
+            $request->setSession($request->getSession() ?: new Session());
+
+            return $request;
+        };
+
+        $jarvis['session'] = function($jarvis) {
+            return $jarvis->request->getSession();
         };
 
         $jarvis['router'] = function($jarvis) {
@@ -53,7 +61,7 @@ class ContainerProvider implements ContainerProviderInterface
             return new ScopeManager();
         };
 
-        $jarvis->lock(['request', 'router', 'callback_resolver']);
+        $jarvis->lock(['request', 'session', 'router', 'callback_resolver']);
 
         $this->registerReceivers($jarvis);
     }

@@ -210,4 +210,11 @@ class JarvisTest extends \PHPUnit_Framework_TestCase
         $this->assertNotNull($receiver->event);
         $this->assertInstanceOf(SimpleEvent::class, $receiver->event);
     }
+
+    public function testSessionService()
+    {
+        $jarvis = new Jarvis();
+
+        $this->assertSame($jarvis->request->getSession(), $jarvis->session);
+    }
 }
