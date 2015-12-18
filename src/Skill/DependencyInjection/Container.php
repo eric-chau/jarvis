@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Jarvis\Skill\DependencyInjection;
 
 /**
@@ -18,7 +20,7 @@ class Container implements \ArrayAccess
 
     public function __construct()
     {
-        $this->factories = new \SplObjectStorage;
+        $this->factories = new \SplObjectStorage();
     }
 
     /**
@@ -30,7 +32,7 @@ class Container implements \ArrayAccess
      * @throws InvalidArgumentException if provided identifier is undefined or if alias is
      *                                  equals to identifier
      */
-    public function alias($alias, $id)
+    public function alias(string $alias, string $id) : Container
     {
         if (!$this->offsetExists($id)) {
             throw new \InvalidArgumentException("Cannot create alias for undefined value `$id`.");
@@ -46,6 +48,7 @@ class Container implements \ArrayAccess
         }
 
         $this->hasAliases[$id][] = $alias;
+
         return $this;
     }
 
@@ -56,7 +59,7 @@ class Container implements \ArrayAccess
      * @param  string $id this identifier can contain one or many wildcard character (*)
      * @return array an array of values that mached with provided identifier pattern
      */
-    public function find($id)
+    public function find(string $id) : array
     {
         $values = [];
         $pattern = str_replace(['.', '*'], ['\.', '[\w\-\.]*'], $id);
@@ -75,7 +78,7 @@ class Container implements \ArrayAccess
      * @param  string $id the parameter/object identifier to check
      * @return boolean
      */
-    public function offsetExists($id)
+    public function offsetExists($id) : bool
     {
         return in_array($id, $this->keys());
     }
@@ -121,11 +124,11 @@ class Container implements \ArrayAccess
     public function offsetSet($id, $v)
     {
         if (isset($this->locked[$id])) {
-            throw new \RuntimeException("Cannot override locked value '$id'");
+            throw new \RuntimeException("Cannot override locked value '$id'.");
         }
 
         if (isset($this->aliasOf[$id])) {
-            throw new \InvalidArgumentException('Value\'s identifier cannot be equal to existing alias.');
+            throw new \InvalidArgumentException("Value's identifier cannot be equal to existing alias.");
         }
 
         $this->values[$id] = $v;
@@ -162,7 +165,7 @@ class Container implements \ArrayAccess
      *
      * @return array
      */
-    public function keys()
+    public function keys() : array
     {
         return array_merge(array_keys($this->values), array_keys($this->aliasOf));
     }
@@ -175,7 +178,7 @@ class Container implements \ArrayAccess
      * @return self
      * @throws InvalidArgumentException if provided factory is not a Closure or not an invokable object
      */
-    public function factory($id, $factory)
+    public function factory(string $id, $factory) : Container
     {
         if (!is_object($factory) || !method_exists($factory, '__invoke')) {
             throw new \InvalidArgumentException('Service factory must be a Closure or an invokable object.');
@@ -193,7 +196,7 @@ class Container implements \ArrayAccess
      * @param  string|array $ids the identifier(s) to lock
      * @return self
      */
-    public function lock($ids)
+    public function lock($ids) : Container
     {
         foreach ((array) $ids as $id) {
             $this->throwExceptionIfIdentifierNotFound($id);
@@ -210,7 +213,7 @@ class Container implements \ArrayAccess
      * @param  string $id the identifier we want to know if it exists
      * @throws \InvalidArgumentException if provided identifier is not defined
      */
-    private function throwExceptionIfIdentifierNotFound($id)
+    private function throwExceptionIfIdentifierNotFound(string $id)
     {
         if (!$this->offsetExists($id)) {
             throw new \InvalidArgumentException("Identifier `$id` is not defined.");
@@ -223,7 +226,7 @@ class Container implements \ArrayAccess
      * @param  string $id the identifier to convert if needed
      * @return string
      */
-    private function resolveIdentifier($id)
+    private function resolveIdentifier(string $id) : string
     {
         if (isset($this->values[$id])) {
             return $id;

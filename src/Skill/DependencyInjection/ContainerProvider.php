@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Jarvis\Skill\DependencyInjection;
 
 use Jarvis\Jarvis;
@@ -25,7 +27,7 @@ class ContainerProvider implements ContainerProviderInterface
      */
     public function hydrate(Jarvis $jarvis)
     {
-        $jarvis['request'] = function(Jarvis $jarvis) {
+        $jarvis['request'] = function(Jarvis $jarvis) : Request {
             if (
                 !is_string($classname = $jarvis->settings->get('request_fqcn', Request::class))
                 || (
@@ -40,24 +42,24 @@ class ContainerProvider implements ContainerProviderInterface
             }
 
             $request = $classname::createFromGlobals();
-            $request->setSession($request->getSession() ?: new Session());
+            $request->setSession($request->getSession() ?? new Session());
 
             return $request;
         };
 
-        $jarvis['session'] = function(Jarvis $jarvis) {
+        $jarvis['session'] = function(Jarvis $jarvis) : Session {
             return $jarvis->request->getSession();
         };
 
-        $jarvis['router'] = function(Jarvis $jarvis) {
+        $jarvis['router'] = function(Jarvis $jarvis) : Router {
             return new Router($jarvis['scope_manager']);
         };
 
-        $jarvis['callback_resolver'] = function(Jarvis $jarvis) {
+        $jarvis['callback_resolver'] = function(Jarvis $jarvis) : CallbackResolver {
             return new CallbackResolver($jarvis);
         };
 
-        $jarvis['scope_manager'] = function() {
+        $jarvis['scope_manager'] = function() : ScopeManager {
             return new ScopeManager();
         };
 

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Jarvis;
 
 use FastRoute\Dispatcher;
@@ -81,7 +83,7 @@ class Jarvis extends Container
      * @return mixed
      * @throws \InvalidArgumentException if the requested key is not associated to a locked service
      */
-    public function __get($key)
+    public function __get(string $key)
     {
         if (!isset($this->locked[$key])) {
             throw new \InvalidArgumentException(sprintf('"%s" is not a key of a locked value.', $key));
@@ -99,7 +101,7 @@ class Jarvis extends Container
      * @param mixed  $value The value to associate to provided key
      * @throws \LogicException if this method is not called by Jarvis itself
      */
-    public function __set($key, $value)
+    public function __set(string $key, $value)
     {
         if (false === $this->masterSet) {
             throw new \LogicException('You are not allowed to set new attribute into Jarvis.');
@@ -112,9 +114,9 @@ class Jarvis extends Container
      * @param  Request|null $request
      * @return Response
      */
-    public function analyze(Request $request = null)
+    public function analyze(Request $request = null) : Response
     {
-        $request = $request ?: $this->request;
+        $request = $request ?? $this->request;
         $response = null;
 
         try {
@@ -158,7 +160,7 @@ class Jarvis extends Container
      * @param  integer $priority
      * @return self
      */
-    public function addReceiver($eventName, $receiver, $priority = self::RECEIVER_NORMAL_PRIORITY)
+    public function addReceiver(string $eventName, $receiver, int $priority = self::RECEIVER_NORMAL_PRIORITY) : Jarvis
     {
         if (!isset($this->receivers[$eventName])) {
             $this->receivers[$eventName] = [
@@ -179,18 +181,17 @@ class Jarvis extends Container
      * @param  EventInterface|null $event
      * @return self
      */
-    public function broadcast($eventName, EventInterface $event = null)
+    public function broadcast(string $eventName, EventInterface $event = null) : Jarvis
     {
         if (!$this->masterEmitter && in_array($eventName, JarvisEvents::RESERVED_EVENT_NAMES)) {
             throw new \LogicException(sprintf(
-                'You\'re trying to broadcast "%s" but "%s" are reserved event names.',
-                $eventName,
+                'You\'re trying to broadcast "$eventName" but "%s" are reserved event names.',
                 implode('|', JarvisEvents::RESERVED_EVENT_NAMES)
             ));
         }
 
         if (isset($this->receivers[$eventName])) {
-            $event = $event ?: new SimpleEvent();
+            $event = $event ?? new SimpleEvent();
             foreach ($this->buildEventReceivers($eventName) as $receiver) {
                 call_user_func_array($this->callback_resolver->resolve($receiver), [$event]);
 
@@ -207,7 +208,7 @@ class Jarvis extends Container
      * @param  string $provider
      * @return self
      */
-    public function hydrate(ContainerProviderInterface $provider)
+    public function hydrate(ContainerProviderInterface $provider) : Jarvis
     {
         call_user_func([$provider, 'hydrate'], $this);
 
@@ -219,7 +220,7 @@ class Jarvis extends Container
      *
      * @return self
      */
-    private function masterBroadcast($eventName, EventInterface $event = null)
+    private function masterBroadcast(string $eventName, EventInterface $event = null) : Jarvis
     {
         $this->masterEmitter = true;
         $this->broadcast($eventName, $event);
@@ -235,7 +236,7 @@ class Jarvis extends Container
      * @param  mixed  $value The value of the new attribute
      * @return self
      */
-    private function masterSetter($key, $value)
+    private function masterSetter(string $key, $value) : Jarvis
     {
         $this->masterSet = true;
         $this->$key = $value;
@@ -250,15 +251,12 @@ class Jarvis extends Container
      * @param  string $eventName The event name we want to get its receivers
      * @return array
      */
-    private function buildEventReceivers($eventName)
+    private function buildEventReceivers(string $eventName)
     {
-        return $this->computedReceivers[$eventName] = isset($this->computedReceivers[$eventName])
-            ? $this->computedReceivers[$eventName]
-            : array_merge(
-                $this->receivers[$eventName][self::RECEIVER_HIGH_PRIORITY],
-                $this->receivers[$eventName][self::RECEIVER_NORMAL_PRIORITY],
-                $this->receivers[$eventName][self::RECEIVER_LOW_PRIORITY]
-            )
-        ;
+        return $this->computedReceivers[$eventName] = $this->computedReceivers[$eventName] ?? array_merge(
+            $this->receivers[$eventName][self::RECEIVER_HIGH_PRIORITY],
+            $this->receivers[$eventName][self::RECEIVER_NORMAL_PRIORITY],
+            $this->receivers[$eventName][self::RECEIVER_LOW_PRIORITY]
+        );
     }
 }

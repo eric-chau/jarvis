@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Jarvis\Skill\Core;
 
 use Jarvis\Jarvis;
@@ -10,10 +12,10 @@ use Jarvis\Jarvis;
 class ScopeManager
 {
     private $scopes = [
-        Jarvis::DEFAULT_SCOPE => true,
+        Jarvis::DEFAULT_SCOPE => '',
     ];
 
-    public function disable($names)
+    public function disable($names) : ScopeManager
     {
         foreach ((array) $names as $name) {
             if (Jarvis::DEFAULT_SCOPE === $name) {
@@ -26,21 +28,21 @@ class ScopeManager
         return $this;
     }
 
-    public function enable($names)
+    public function enable($names) : ScopeManager
     {
         foreach ((array) $names as $name) {
-            $this->scopes[$name] = true;
+            $this->scopes[$name] = '';
         }
 
         return $this;
     }
 
-    public function getAll()
+    public function getAll() : array
     {
         return array_keys($this->scopes);
     }
 
-    public function isEnabled($names)
+    public function isEnabled($names) : bool
     {
         foreach ((array) $names as $name) {
             if (!isset($this->scopes[$name])) {

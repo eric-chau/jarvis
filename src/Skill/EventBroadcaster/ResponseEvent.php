@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Jarvis\Skill\EventBroadcaster;
 
 use Symfony\Component\HttpFoundation\Request;
@@ -24,7 +26,7 @@ class ResponseEvent extends SimpleEvent
      *
      * @return Request
      */
-    public function getRequest()
+    public function getRequest() : Request
     {
         return $this->request;
     }
@@ -34,7 +36,7 @@ class ResponseEvent extends SimpleEvent
      *
      * @return Response
      */
-    public function getResponse()
+    public function getResponse() : Response
     {
         return $this->response;
     }

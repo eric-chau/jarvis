@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Jarvis\Skill\EventBroadcaster;
 
 use Symfony\Component\HttpFoundation\Response;
@@ -17,7 +19,7 @@ class ExceptionEvent extends SimpleEvent
         $this->exception = $exception;
     }
 
-    public function getException()
+    public function getException() : \Exception
     {
         return $this->exception;
     }
@@ -27,7 +29,7 @@ class ExceptionEvent extends SimpleEvent
         return $this->response;
     }
 
-    public function setResponse(Response $response)
+    public function setResponse(Response $response) : ExceptionEvent
     {
         $this->response = $response;
         $this->stopPropagation();
@@ -40,7 +42,7 @@ class ExceptionEvent extends SimpleEvent
      *
      * {@inheritdoc}
      */
-    public function stopPropagation()
+    public function stopPropagation() : SimpleEvent
     {
         if (null === $this->response) {
             return $this;

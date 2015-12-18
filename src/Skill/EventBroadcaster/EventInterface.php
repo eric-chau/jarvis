@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Jarvis\Skill\EventBroadcaster;
 
 /**
@@ -10,5 +12,5 @@ interface EventInterface
     /**
      * @return boolean
      */
-    public function isPropagationStopped();
+    public function isPropagationStopped() : bool;
 }

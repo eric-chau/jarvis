@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Jarvis\Skill\Routing;
 
 use FastRoute\DataGenerator\GroupCountBased as DataGenerator;
@@ -28,12 +30,9 @@ class Router extends Dispatcher
      * Alias to Router's route collector ::addRoute method.
      * @see RouteCollector::addRoute
      */
-    public function addRoute($httpMethod, $route, $handler, $scope = Jarvis::DEFAULT_SCOPE)
+    public function addRoute(string $httpMethod, string $route, $handler, string $scope = Jarvis::DEFAULT_SCOPE) : Router
     {
-        if (!isset($this->rawRoutes[$scope])) {
-            $this->rawRoutes[$scope] = [];
-        }
-
+        $this->rawRoutes[$scope] = $this->rawRoutes[$scope] ?? [];
         $this->rawRoutes[$scope][] = [strtolower($httpMethod), $route, $handler];
         $this->compilationKey = null;
 
@@ -44,7 +43,7 @@ class Router extends Dispatcher
      * Alias of GroupCountBased::dispatch.
      * {@inheritdoc}
      */
-    public function match($httpMethod, $uri)
+    public function match(string $httpMethod, string $uri)
     {
         return $this->dispatch($httpMethod, $uri);
     }
@@ -56,7 +55,7 @@ class Router extends Dispatcher
         return parent::dispatch(strtolower($httpMethod), $uri);
     }
 
-    private function getRouteCollector()
+    private function getRouteCollector() : RouteCollector
     {
         $key = $this->generateCompilationKey();
         if (null === $this->compilationKey || $this->compilationKey !== $key) {
@@ -79,7 +78,7 @@ class Router extends Dispatcher
         return $this->routeCollector;
     }
 
-    private function generateCompilationKey()
+    private function generateCompilationKey() : string
     {
         return md5(implode(',', $this->scopeManager->getAll()));
     }
