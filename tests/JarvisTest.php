@@ -28,6 +28,18 @@ class JarvisTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue($jarvis->debug);
     }
 
+    public function testWithCustomContainerProvider()
+    {
+        $jarvis = new Jarvis(['container_provider' => []]);
+
+        $this->assertFalse(isset($jarvis['fake_container_provider_called']));
+
+        $jarvis = new Jarvis(['container_provider' => 'Jarvis\Tests\FakeContainerProvider']);
+
+        $this->assertTrue(isset($jarvis['fake_container_provider_called']));
+        $this->assertTrue($jarvis['is_request_already_defined']); // ensure that Jarvis container provider is called first
+    }
+
     public function testAnalyzeCatchEveryExceptionAndConvertItToResponse()
     {
         $jarvis = new Jarvis();
