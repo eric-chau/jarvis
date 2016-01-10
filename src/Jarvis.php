@@ -61,7 +61,7 @@ class Jarvis extends Container
         if (!$this->settings->has('container_provider')) {
             $this->settings->set('container_provider', [static::CONTAINER_PROVIDER_FQCN]);
         } else {
-            $containerProvider = $this->settings->get('container_provider');
+            $containerProvider = (array) $this->settings->get('container_provider');
             array_unshift($containerProvider, static::CONTAINER_PROVIDER_FQCN);
             $this->settings->set('container_provider', $containerProvider);
         }

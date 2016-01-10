@@ -50,5 +50,6 @@ class FakeReceiver
     public function saveMicroTimestamp($event)
     {
         $this->microTimestamp = microtime(true);
+        usleep(1);
     }
 }
