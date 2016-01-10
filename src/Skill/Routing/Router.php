@@ -50,12 +50,12 @@ class Router extends Dispatcher
 
     public function dispatch($httpMethod, $uri)
     {
-        list($this->staticRouteMap, $this->variableRouteData) = $this->getRouteCollector()->getData();
+        list($this->staticRouteMap, $this->variableRouteData) = $this->routeCollector()->getData();
 
         return parent::dispatch(strtolower($httpMethod), $uri);
     }
 
-    private function getRouteCollector() : RouteCollector
+    private function routeCollector() : RouteCollector
     {
         $key = $this->generateCompilationKey();
         if (null === $this->compilationKey || $this->compilationKey !== $key) {
@@ -80,6 +80,6 @@ class Router extends Dispatcher
 
     private function generateCompilationKey() : string
     {
-        return md5(implode(',', $this->scopeManager->getAll()));
+        return md5(implode(',', $this->scopeManager->all()));
     }
 }

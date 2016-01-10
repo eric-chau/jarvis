@@ -30,7 +30,7 @@ class AnalyzeEvent extends SimpleEvent
      *
      * @return Request
      */
-    public function getRequest() : Request
+    public function request() : Request
     {
         return $this->request;
     }
@@ -40,7 +40,7 @@ class AnalyzeEvent extends SimpleEvent
      *
      * @return Response|null
      */
-    public function getResponse()
+    public function response()
     {
         return $this->response;
     }

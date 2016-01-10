@@ -16,7 +16,7 @@ class Reference
         $this->identifier = $identifier;
     }
 
-    public function getIdentifier() : string
+    public function identifier() : string
     {
         return $this->identifier;
     }

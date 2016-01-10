@@ -23,7 +23,7 @@ class ControllerEvent extends SimpleEvent
      *
      * @return mixed
      */
-    public function getCallback()
+    public function callback()
     {
         return $this->callback;
     }
@@ -47,7 +47,7 @@ class ControllerEvent extends SimpleEvent
      *
      * @return array
      */
-    public function getArguments() : array
+    public function arguments() : array
     {
         return $this->arguments;
     }

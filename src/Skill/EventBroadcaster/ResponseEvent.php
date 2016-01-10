@@ -26,7 +26,7 @@ class ResponseEvent extends SimpleEvent
      *
      * @return Request
      */
-    public function getRequest() : Request
+    public function request() : Request
     {
         return $this->request;
     }
@@ -36,7 +36,7 @@ class ResponseEvent extends SimpleEvent
      *
      * @return Response
      */
-    public function getResponse() : Response
+    public function response() : Response
     {
         return $this->response;
     }

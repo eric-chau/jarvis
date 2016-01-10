@@ -19,12 +19,12 @@ class ExceptionEvent extends SimpleEvent
         $this->exception = $exception;
     }
 
-    public function getException() : \Exception
+    public function exception() : \Exception
     {
         return $this->exception;
     }
 
-    public function getResponse()
+    public function response()
     {
         return $this->response;
     }

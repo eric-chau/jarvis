@@ -122,7 +122,7 @@ class Jarvis extends Container
         try {
             $this->masterBroadcast(JarvisEvents::ANALYZE_EVENT, $analyzeEvent = new AnalyzeEvent($request));
 
-            if ($response = $analyzeEvent->getResponse()) {
+            if ($response = $analyzeEvent->response()) {
                 return $response;
             }
 
@@ -133,7 +133,7 @@ class Jarvis extends Container
                 $event = new ControllerEvent($callback, $routeInfo[2]);
                 $this->masterBroadcast(JarvisEvents::CONTROLLER_EVENT, $event);
 
-                $response = call_user_func_array($event->getCallback(), $event->getArguments());
+                $response = call_user_func_array($event->callback(), $event->arguments());
 
                 if (is_string($response)) {
                     $response = new Response($response);
@@ -148,7 +148,7 @@ class Jarvis extends Container
             $this->masterBroadcast(JarvisEvents::RESPONSE_EVENT, new ResponseEvent($request, $response));
         } catch (\Exception $exception) {
             $this->masterBroadcast(JarvisEvents::EXCEPTION_EVENT, $exceptionEvent = new ExceptionEvent($exception));
-            $response = $exceptionEvent->getResponse();
+            $response = $exceptionEvent->response();
         }
 
         return $response;

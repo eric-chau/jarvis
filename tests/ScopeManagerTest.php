@@ -12,7 +12,7 @@ class ScopeManagerTest extends \PHPUnit_Framework_TestCase
     {
         $scopeManager = new ScopeManager();
 
-        $this->assertCount(1, $scopeManager->getAll());
+        $this->assertCount(1, $scopeManager->all());
         $this->assertTrue($scopeManager->isEnabled(Jarvis::DEFAULT_SCOPE));
 
         $scopeManager->disable(Jarvis::DEFAULT_SCOPE);
@@ -28,12 +28,12 @@ class ScopeManagerTest extends \PHPUnit_Framework_TestCase
 
         $scopeManager->enable($scope);
         $this->assertTrue($scopeManager->isEnabled($scope));
-        $this->assertCount(2, $scopeManager->getAll());
-        $this->assertTrue(in_array($scope, $scopeManager->getAll()));
+        $this->assertCount(2, $scopeManager->all());
+        $this->assertTrue(in_array($scope, $scopeManager->all()));
 
         $scopeManager->disable($scope);
         $this->assertFalse($scopeManager->isEnabled($scope));
-        $this->assertCount(1, $scopeManager->getAll());
-        $this->assertFalse(in_array($scope, $scopeManager->getAll()));
+        $this->assertCount(1, $scopeManager->all());
+        $this->assertFalse(in_array($scope, $scopeManager->all()));
     }
 }

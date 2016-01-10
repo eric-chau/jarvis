@@ -37,7 +37,7 @@ class ScopeManager
         return $this;
     }
 
-    public function getAll() : array
+    public function all() : array
     {
         return array_keys($this->scopes);
     }

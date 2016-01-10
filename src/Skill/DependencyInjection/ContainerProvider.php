@@ -20,7 +20,7 @@ use Symfony\Component\HttpFoundation\Session\Session;
  *
  * @author Eric Chau <eric.chau@gmail.com>
  */
-class ContainerProvider implements ContainerProviderInterface
+final class ContainerProvider implements ContainerProviderInterface
 {
     /**
      * {@inheritdoc}
@@ -71,7 +71,7 @@ class ContainerProvider implements ContainerProviderInterface
     private function registerReceivers(Jarvis $jarvis)
     {
         $jarvis->addReceiver(JarvisEvents::EXCEPTION_EVENT, function(ExceptionEvent $event) {
-            $response = new Response($event->getException()->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
+            $response = new Response($event->exception()->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
             $event->setResponse($response);
         }, Jarvis::RECEIVER_LOW_PRIORITY);
     }
