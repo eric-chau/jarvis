@@ -1,14 +1,14 @@
 <?php
 
-declare(strict_types=1);
+declare(strict_types = 1);
 
 namespace Jarvis\Skill\DependencyInjection;
 
 use Jarvis\Jarvis;
 use Jarvis\Skill\Core\CallbackResolver;
 use Jarvis\Skill\Core\ScopeManager;
-use Jarvis\Skill\EventBroadcaster\JarvisEvents;
 use Jarvis\Skill\EventBroadcaster\ExceptionEvent;
+use Jarvis\Skill\EventBroadcaster\JarvisEvents;
 use Jarvis\Skill\Routing\Router;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;

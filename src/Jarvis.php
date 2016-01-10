@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types=1);
+declare(strict_types = 1);
 
 namespace Jarvis;
 
@@ -12,8 +12,8 @@ use Jarvis\Skill\EventBroadcaster\AnalyzeEvent;
 use Jarvis\Skill\EventBroadcaster\ControllerEvent;
 use Jarvis\Skill\EventBroadcaster\EventInterface;
 use Jarvis\Skill\EventBroadcaster\ExceptionEvent;
-use Jarvis\Skill\EventBroadcaster\ResponseEvent;
 use Jarvis\Skill\EventBroadcaster\JarvisEvents;
+use Jarvis\Skill\EventBroadcaster\ResponseEvent;
 use Jarvis\Skill\EventBroadcaster\SimpleEvent;
 use Symfony\Component\HttpFoundation\ParameterBag;
 use Symfony\Component\HttpFoundation\Request;
@@ -205,7 +205,7 @@ class Jarvis extends Container
     }
 
     /**
-     * @param  string $provider
+     * @param  ContainerProviderInterface $provider
      * @return self
      */
     public function hydrate(ContainerProviderInterface $provider) : Jarvis
