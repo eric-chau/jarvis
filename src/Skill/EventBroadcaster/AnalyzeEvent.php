@@ -4,8 +4,7 @@ declare(strict_types = 1);
 
 namespace Jarvis\Skill\EventBroadcaster;
 
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\{Request, Response};
 
 /**
  * @author Eric Chau <eriic.chau@gmail.com>

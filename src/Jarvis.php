@@ -5,19 +5,21 @@ declare(strict_types = 1);
 namespace Jarvis;
 
 use FastRoute\Dispatcher;
-use Jarvis\Skill\DependencyInjection\Container;
-use Jarvis\Skill\DependencyInjection\ContainerProvider;
-use Jarvis\Skill\DependencyInjection\ContainerProviderInterface;
-use Jarvis\Skill\EventBroadcaster\AnalyzeEvent;
-use Jarvis\Skill\EventBroadcaster\ControllerEvent;
-use Jarvis\Skill\EventBroadcaster\EventInterface;
-use Jarvis\Skill\EventBroadcaster\ExceptionEvent;
-use Jarvis\Skill\EventBroadcaster\JarvisEvents;
-use Jarvis\Skill\EventBroadcaster\ResponseEvent;
-use Jarvis\Skill\EventBroadcaster\SimpleEvent;
-use Symfony\Component\HttpFoundation\ParameterBag;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
+use Jarvis\Skill\DependencyInjection\{
+    Container,
+    ContainerProvider,
+    ContainerProviderInterface
+};
+use Jarvis\Skill\EventBroadcaster\{
+    AnalyzeEvent,
+    ControllerEvent,
+    EventInterface,
+    ExceptionEvent,
+    JarvisEvents,
+    ResponseEvent,
+    SimpleEvent
+};
+use Symfony\Component\HttpFoundation\{ParameterBag, Request, Response};
 
 /**
  * Jarvis. Minimalist dependency injection container.
@@ -251,7 +253,7 @@ class Jarvis extends Container
      * @param  string $eventName The event name we want to get its receivers
      * @return array
      */
-    private function buildEventReceivers(string $eventName)
+    private function buildEventReceivers(string $eventName) : array
     {
         return $this->computedReceivers[$eventName] = $this->computedReceivers[$eventName] ?? array_merge(
             $this->receivers[$eventName][self::RECEIVER_HIGH_PRIORITY],
