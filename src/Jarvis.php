@@ -1,21 +1,25 @@
 <?php
 
+declare(strict_types = 1);
+
 namespace Jarvis;
 
 use FastRoute\Dispatcher;
-use Jarvis\Skill\DependencyInjection\Container;
-use Jarvis\Skill\DependencyInjection\ContainerProvider;
-use Jarvis\Skill\DependencyInjection\ContainerProviderInterface;
-use Jarvis\Skill\EventBroadcaster\AnalyzeEvent;
-use Jarvis\Skill\EventBroadcaster\ControllerEvent;
-use Jarvis\Skill\EventBroadcaster\EventInterface;
-use Jarvis\Skill\EventBroadcaster\ExceptionEvent;
-use Jarvis\Skill\EventBroadcaster\ResponseEvent;
-use Jarvis\Skill\EventBroadcaster\JarvisEvents;
-use Jarvis\Skill\EventBroadcaster\SimpleEvent;
-use Symfony\Component\HttpFoundation\ParameterBag;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
+use Jarvis\Skill\DependencyInjection\{
+    Container,
+    ContainerProvider,
+    ContainerProviderInterface
+};
+use Jarvis\Skill\EventBroadcaster\{
+    AnalyzeEvent,
+    ControllerEvent,
+    EventInterface,
+    ExceptionEvent,
+    JarvisEvents,
+    ResponseEvent,
+    SimpleEvent
+};
+use Symfony\Component\HttpFoundation\{ParameterBag, Request, Response};
 
 /**
  * Jarvis. Minimalist dependency injection container.
@@ -57,7 +61,7 @@ class Jarvis extends Container
         if (!$this->settings->has('container_provider')) {
             $this->settings->set('container_provider', [static::CONTAINER_PROVIDER_FQCN]);
         } else {
-            $containerProvider = $this->settings->get('container_provider');
+            $containerProvider = (array) $this->settings->get('container_provider');
             array_unshift($containerProvider, static::CONTAINER_PROVIDER_FQCN);
             $this->settings->set('container_provider', $containerProvider);
         }
@@ -81,7 +85,7 @@ class Jarvis extends Container
      * @return mixed
      * @throws \InvalidArgumentException if the requested key is not associated to a locked service
      */
-    public function __get($key)
+    public function __get(string $key)
     {
         if (!isset($this->locked[$key])) {
             throw new \InvalidArgumentException(sprintf('"%s" is not a key of a locked value.', $key));
@@ -99,7 +103,7 @@ class Jarvis extends Container
      * @param mixed  $value The value to associate to provided key
      * @throws \LogicException if this method is not called by Jarvis itself
      */
-    public function __set($key, $value)
+    public function __set(string $key, $value)
     {
         if (false === $this->masterSet) {
             throw new \LogicException('You are not allowed to set new attribute into Jarvis.');
@@ -112,15 +116,15 @@ class Jarvis extends Container
      * @param  Request|null $request
      * @return Response
      */
-    public function analyze(Request $request = null)
+    public function analyze(Request $request = null) : Response
     {
-        $request = $request ?: $this->request;
+        $request = $request ?? $this->request;
         $response = null;
 
         try {
             $this->masterBroadcast(JarvisEvents::ANALYZE_EVENT, $analyzeEvent = new AnalyzeEvent($request));
 
-            if ($response = $analyzeEvent->getResponse()) {
+            if ($response = $analyzeEvent->response()) {
                 return $response;
             }
 
@@ -131,7 +135,7 @@ class Jarvis extends Container
                 $event = new ControllerEvent($callback, $routeInfo[2]);
                 $this->masterBroadcast(JarvisEvents::CONTROLLER_EVENT, $event);
 
-                $response = call_user_func_array($event->getCallback(), $event->getArguments());
+                $response = call_user_func_array($event->callback(), $event->arguments());
 
                 if (is_string($response)) {
                     $response = new Response($response);
@@ -146,7 +150,7 @@ class Jarvis extends Container
             $this->masterBroadcast(JarvisEvents::RESPONSE_EVENT, new ResponseEvent($request, $response));
         } catch (\Exception $exception) {
             $this->masterBroadcast(JarvisEvents::EXCEPTION_EVENT, $exceptionEvent = new ExceptionEvent($exception));
-            $response = $exceptionEvent->getResponse();
+            $response = $exceptionEvent->response();
         }
 
         return $response;
@@ -158,7 +162,7 @@ class Jarvis extends Container
      * @param  integer $priority
      * @return self
      */
-    public function addReceiver($eventName, $receiver, $priority = self::RECEIVER_NORMAL_PRIORITY)
+    public function addReceiver(string $eventName, $receiver, int $priority = self::RECEIVER_NORMAL_PRIORITY) : Jarvis
     {
         if (!isset($this->receivers[$eventName])) {
             $this->receivers[$eventName] = [
@@ -179,18 +183,17 @@ class Jarvis extends Container
      * @param  EventInterface|null $event
      * @return self
      */
-    public function broadcast($eventName, EventInterface $event = null)
+    public function broadcast(string $eventName, EventInterface $event = null) : Jarvis
     {
         if (!$this->masterEmitter && in_array($eventName, JarvisEvents::RESERVED_EVENT_NAMES)) {
             throw new \LogicException(sprintf(
-                'You\'re trying to broadcast "%s" but "%s" are reserved event names.',
-                $eventName,
+                'You\'re trying to broadcast "$eventName" but "%s" are reserved event names.',
                 implode('|', JarvisEvents::RESERVED_EVENT_NAMES)
             ));
         }
 
         if (isset($this->receivers[$eventName])) {
-            $event = $event ?: new SimpleEvent();
+            $event = $event ?? new SimpleEvent();
             foreach ($this->buildEventReceivers($eventName) as $receiver) {
                 call_user_func_array($this->callback_resolver->resolve($receiver), [$event]);
 
@@ -204,10 +207,10 @@ class Jarvis extends Container
     }
 
     /**
-     * @param  string $provider
+     * @param  ContainerProviderInterface $provider
      * @return self
      */
-    public function hydrate(ContainerProviderInterface $provider)
+    public function hydrate(ContainerProviderInterface $provider) : Jarvis
     {
         call_user_func([$provider, 'hydrate'], $this);
 
@@ -219,7 +222,7 @@ class Jarvis extends Container
      *
      * @return self
      */
-    private function masterBroadcast($eventName, EventInterface $event = null)
+    private function masterBroadcast(string $eventName, EventInterface $event = null) : Jarvis
     {
         $this->masterEmitter = true;
         $this->broadcast($eventName, $event);
@@ -235,7 +238,7 @@ class Jarvis extends Container
      * @param  mixed  $value The value of the new attribute
      * @return self
      */
-    private function masterSetter($key, $value)
+    private function masterSetter(string $key, $value) : Jarvis
     {
         $this->masterSet = true;
         $this->$key = $value;
@@ -250,15 +253,12 @@ class Jarvis extends Container
      * @param  string $eventName The event name we want to get its receivers
      * @return array
      */
-    private function buildEventReceivers($eventName)
+    private function buildEventReceivers(string $eventName) : array
     {
-        return $this->computedReceivers[$eventName] = isset($this->computedReceivers[$eventName])
-            ? $this->computedReceivers[$eventName]
-            : array_merge(
-                $this->receivers[$eventName][self::RECEIVER_HIGH_PRIORITY],
-                $this->receivers[$eventName][self::RECEIVER_NORMAL_PRIORITY],
-                $this->receivers[$eventName][self::RECEIVER_LOW_PRIORITY]
-            )
-        ;
+        return $this->computedReceivers[$eventName] = $this->computedReceivers[$eventName] ?? array_merge(
+            $this->receivers[$eventName][self::RECEIVER_HIGH_PRIORITY],
+            $this->receivers[$eventName][self::RECEIVER_NORMAL_PRIORITY],
+            $this->receivers[$eventName][self::RECEIVER_LOW_PRIORITY]
+        );
     }
 }

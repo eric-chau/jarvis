@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types = 1);
+
 namespace Jarvis\Skill\EventBroadcaster;
 
 /**
@@ -21,7 +23,7 @@ class ControllerEvent extends SimpleEvent
      *
      * @return mixed
      */
-    public function getCallback()
+    public function callback()
     {
         return $this->callback;
     }
@@ -33,7 +35,7 @@ class ControllerEvent extends SimpleEvent
      * @return self
      * @throws \InvalidArgumentException if passed callback is not callable
      */
-    public function setCallback($callback)
+    public function setCallback($callback) : ControllerEvent
     {
         $this->callback = $this->validateCallback($callback);
 
@@ -43,9 +45,9 @@ class ControllerEvent extends SimpleEvent
     /**
      * @codeCoverageIgnore
      *
-     * @return mixed
+     * @return array
      */
-    public function getArguments()
+    public function arguments() : array
     {
         return $this->arguments;
     }
@@ -58,7 +60,7 @@ class ControllerEvent extends SimpleEvent
      * @param  array $arguments The new arguments to set, default: empty array ([])
      * @return self
      */
-    public function setArguments(array $arguments = [])
+    public function setArguments(array $arguments = []) : ControllerEvent
     {
         $this->arguments = $arguments;
 

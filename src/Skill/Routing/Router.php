@@ -1,13 +1,16 @@
 <?php
 
+declare(strict_types = 1);
+
 namespace Jarvis\Skill\Routing;
 
-use FastRoute\DataGenerator\GroupCountBased as DataGenerator;
-use FastRoute\Dispatcher\GroupCountBased as Dispatcher;
-use FastRoute\RouteParser\Std as Parser;
-use FastRoute\RouteCollector;
-use Jarvis\Skill\Core\ScopeManager;
-use Jarvis\Jarvis;
+use FastRoute\{
+    DataGenerator\GroupCountBased as DataGenerator,
+    Dispatcher\GroupCountBased as Dispatcher,
+    RouteParser\Std as Parser,
+    RouteCollector
+};
+use Jarvis\{Jarvis, Skill\Core\ScopeManager};
 
 /**
  * @author Eric Chau <eriic.chau@gmail.com>
@@ -28,12 +31,9 @@ class Router extends Dispatcher
      * Alias to Router's route collector ::addRoute method.
      * @see RouteCollector::addRoute
      */
-    public function addRoute($httpMethod, $route, $handler, $scope = Jarvis::DEFAULT_SCOPE)
+    public function addRoute(string $httpMethod, string $route, $handler, string $scope = Jarvis::DEFAULT_SCOPE) : Router
     {
-        if (!isset($this->rawRoutes[$scope])) {
-            $this->rawRoutes[$scope] = [];
-        }
-
+        $this->rawRoutes[$scope] = $this->rawRoutes[$scope] ?? [];
         $this->rawRoutes[$scope][] = [strtolower($httpMethod), $route, $handler];
         $this->compilationKey = null;
 
@@ -44,19 +44,19 @@ class Router extends Dispatcher
      * Alias of GroupCountBased::dispatch.
      * {@inheritdoc}
      */
-    public function match($httpMethod, $uri)
+    public function match(string $httpMethod, string $uri)
     {
         return $this->dispatch($httpMethod, $uri);
     }
 
     public function dispatch($httpMethod, $uri)
     {
-        list($this->staticRouteMap, $this->variableRouteData) = $this->getRouteCollector()->getData();
+        list($this->staticRouteMap, $this->variableRouteData) = $this->routeCollector()->getData();
 
         return parent::dispatch(strtolower($httpMethod), $uri);
     }
 
-    private function getRouteCollector()
+    private function routeCollector() : RouteCollector
     {
         $key = $this->generateCompilationKey();
         if (null === $this->compilationKey || $this->compilationKey !== $key) {
@@ -79,8 +79,8 @@ class Router extends Dispatcher
         return $this->routeCollector;
     }
 
-    private function generateCompilationKey()
+    private function generateCompilationKey() : string
     {
-        return md5(implode(',', $this->scopeManager->getAll()));
+        return md5(implode(',', $this->scopeManager->all()));
     }
 }

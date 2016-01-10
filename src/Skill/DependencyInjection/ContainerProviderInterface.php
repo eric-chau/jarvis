@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types = 1);
+
 namespace Jarvis\Skill\DependencyInjection;
 
 use Jarvis\Jarvis;

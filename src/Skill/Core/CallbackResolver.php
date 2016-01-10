@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types = 1);
+
 namespace Jarvis\Skill\Core;
 
 use Jarvis\Jarvis;
@@ -20,8 +22,8 @@ class CallbackResolver
     public function resolve($callback)
     {
         if (is_array($callback) && $callback[0] instanceof Reference) {
-            if (isset($this->jarvis[$callback[0]->getIdentifier()])) {
-                $callback[0] = $this->jarvis[$callback[0]->getIdentifier()];
+            if (isset($this->jarvis[$callback[0]->identifier()])) {
+                $callback[0] = $this->jarvis[$callback[0]->identifier()];
             }
         }
 

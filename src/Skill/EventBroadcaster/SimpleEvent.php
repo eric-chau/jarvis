@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types = 1);
+
 namespace Jarvis\Skill\EventBroadcaster;
 
 /**
@@ -12,12 +14,12 @@ class SimpleEvent implements EventInterface
     /**
      * {@inheritdoc}
      */
-    public function isPropagationStopped()
+    public function isPropagationStopped() : bool
     {
         return $this->isPropagationStopped;
     }
 
-    public function stopPropagation()
+    public function stopPropagation() : SimpleEvent
     {
         $this->isPropagationStopped = true;
 

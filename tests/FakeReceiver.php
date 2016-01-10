@@ -44,11 +44,12 @@ class FakeReceiver
     public function modifyResponseOnResponseEvent($event)
     {
         $this->responseEvent = $event;
-        $event->getResponse()->setContent('bar');
+        $event->response()->setContent('bar');
     }
 
     public function saveMicroTimestamp($event)
     {
         $this->microTimestamp = microtime(true);
+        usleep(1);
     }
 }

@@ -1,16 +1,14 @@
 <?php
 
+declare(strict_types = 1);
+
 namespace Jarvis\Skill\DependencyInjection;
 
 use Jarvis\Jarvis;
-use Jarvis\Skill\Core\CallbackResolver;
-use Jarvis\Skill\Core\ScopeManager;
-use Jarvis\Skill\EventBroadcaster\JarvisEvents;
-use Jarvis\Skill\EventBroadcaster\ExceptionEvent;
+use Jarvis\Skill\Core\{CallbackResolver, ScopeManager};
+use Jarvis\Skill\EventBroadcaster\{ExceptionEvent, JarvisEvents};
 use Jarvis\Skill\Routing\Router;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\Session\Session;
+use Symfony\Component\HttpFoundation\{Request, Response, Session\Session};
 
 /**
  * This is Jarvis internal container provider. It will inject every core
@@ -18,14 +16,14 @@ use Symfony\Component\HttpFoundation\Session\Session;
  *
  * @author Eric Chau <eric.chau@gmail.com>
  */
-class ContainerProvider implements ContainerProviderInterface
+final class ContainerProvider implements ContainerProviderInterface
 {
     /**
      * {@inheritdoc}
      */
     public function hydrate(Jarvis $jarvis)
     {
-        $jarvis['request'] = function(Jarvis $jarvis) {
+        $jarvis['request'] = function(Jarvis $jarvis) : Request {
             if (
                 !is_string($classname = $jarvis->settings->get('request_fqcn', Request::class))
                 || (
@@ -40,24 +38,24 @@ class ContainerProvider implements ContainerProviderInterface
             }
 
             $request = $classname::createFromGlobals();
-            $request->setSession($request->getSession() ?: new Session());
+            $request->setSession($request->getSession() ?? new Session());
 
             return $request;
         };
 
-        $jarvis['session'] = function(Jarvis $jarvis) {
+        $jarvis['session'] = function(Jarvis $jarvis) : Session {
             return $jarvis->request->getSession();
         };
 
-        $jarvis['router'] = function(Jarvis $jarvis) {
+        $jarvis['router'] = function(Jarvis $jarvis) : Router {
             return new Router($jarvis['scope_manager']);
         };
 
-        $jarvis['callback_resolver'] = function(Jarvis $jarvis) {
+        $jarvis['callback_resolver'] = function(Jarvis $jarvis) : CallbackResolver {
             return new CallbackResolver($jarvis);
         };
 
-        $jarvis['scope_manager'] = function() {
+        $jarvis['scope_manager'] = function() : ScopeManager {
             return new ScopeManager();
         };
 
@@ -69,7 +67,7 @@ class ContainerProvider implements ContainerProviderInterface
     private function registerReceivers(Jarvis $jarvis)
     {
         $jarvis->addReceiver(JarvisEvents::EXCEPTION_EVENT, function(ExceptionEvent $event) {
-            $response = new Response($event->getException()->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
+            $response = new Response($event->exception()->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
             $event->setResponse($response);
         }, Jarvis::RECEIVER_LOW_PRIORITY);
     }
