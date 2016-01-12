@@ -51,7 +51,11 @@ class JarvisBroadcasterTest extends \PHPUnit_Framework_TestCase
             return new FakeController();
         };
 
-        $jarvis['router']->addRoute('GET', '/', [new Reference('fake_controller'), 'randomAction']);
+        $jarvis['router']
+            ->beginRoute()
+                ->setHandler([new Reference('fake_controller'), 'randomAction'])
+            ->end()
+        ;
 
         $this->assertNull($receiver->analyzeEvent);
         $this->assertNull($receiver->controllerEvent);

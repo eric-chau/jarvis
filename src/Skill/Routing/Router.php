@@ -18,6 +18,7 @@ use Jarvis\{Jarvis, Skill\Core\ScopeManager};
 class Router extends Dispatcher
 {
     private $rawRoutes = [];
+    private $routesNames = [];
     private $routeCollector;
     private $compilationKey;
     private $scopeManager;
@@ -31,29 +32,72 @@ class Router extends Dispatcher
      * Alias to Router's route collector ::addRoute method.
      * @see RouteCollector::addRoute
      */
-    public function addRoute(string $httpMethod, string $route, $handler, string $scope = Jarvis::DEFAULT_SCOPE) : Router
+    public function addRoute(Route $route) : Router
     {
-        $this->rawRoutes[$scope] = $this->rawRoutes[$scope] ?? [];
-        $this->rawRoutes[$scope][] = [strtolower($httpMethod), $route, $handler];
+        $this->rawRoutes[$route->scope()] = $this->rawRoutes[$route->scope()] ?? [];
+        $this->rawRoutes[$route->scope()][] = [$route->method(), $route->pattern(), $route->handler()];
         $this->compilationKey = null;
 
+        if (null !== $name = $route->name()) {
+            $this->routesNames[$name] = $route->pattern();
+        }
+
         return $this;
+    }
+
+    public function beginRoute(string $name = null) : Route
+    {
+        return new Route($name, $this);
+    }
+
+    /**
+     * Generates URI associated to provided route name.
+     *
+     * @param  string $name   The URI route name we want to generate
+     * @param  array  $params Parameters to replace in pattern
+     * @return string
+     * @throws \InvalidArgumentException if provided route name is unknown
+     */
+    public function uri(string $name, array $params = []) : string
+    {
+        if (!isset($this->routesNames[$name])) {
+            throw new \InvalidArgumentException(
+                "Cannot generate URI for '$name' cause it does not exist."
+            );
+        }
+
+        $uri = $this->routesNames[$name];
+        foreach ($params as $key => $value) {
+            if (1 !== preg_match("~\{($key:?[^}]*)\}~", $uri, $matches)) {
+                continue;
+            }
+
+            $value = (string) $value;
+            $pieces = explode(':', $matches[1]);
+            if (1 < count($pieces) && 1 !== preg_match('~' . $pieces[1] . '~', $value)) {
+                continue;
+            }
+
+            $uri = str_replace($matches[0], $value, $uri);
+        }
+
+        return $uri;
     }
 
     /**
      * Alias of GroupCountBased::dispatch.
      * {@inheritdoc}
      */
-    public function match(string $httpMethod, string $uri)
+    public function match(string $method, string $uri)
     {
-        return $this->dispatch($httpMethod, $uri);
+        return $this->dispatch($method, $uri);
     }
 
-    public function dispatch($httpMethod, $uri)
+    public function dispatch($method, $uri)
     {
         list($this->staticRouteMap, $this->variableRouteData) = $this->routeCollector()->getData();
 
-        return parent::dispatch(strtolower($httpMethod), $uri);
+        return parent::dispatch(strtolower($method), $uri);
     }
 
     private function routeCollector() : RouteCollector
@@ -71,8 +115,8 @@ class Router extends Dispatcher
             }
 
             foreach ($enabledRoutes as $rawRoute) {
-                list($httpMethod, $route, $handler) = $rawRoute;
-                $this->routeCollector->addRoute($httpMethod, $route, $handler);
+                list($method, $route, $handler) = $rawRoute;
+                $this->routeCollector->addRoute($method, $route, $handler);
             }
         }
 
