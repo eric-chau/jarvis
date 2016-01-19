@@ -12,7 +12,7 @@ use Jarvis\Jarvis;
 class Route
 {
     private $name;
-    private $method = 'get';
+    private $method = ['get'];
     private $pattern = '/';
     private $handler;
     private $scope = Jarvis::DEFAULT_SCOPE;
@@ -29,14 +29,14 @@ class Route
         return $this->name;
     }
 
-    public function method() : string
+    public function method() : array
     {
         return $this->method;
     }
 
-    public function setMethod(string $method) : Route
+    public function setMethod($method) : Route
     {
-        $this->method = strtolower($method);
+        $this->method = array_map('strtolower', (array) $method);
 
         return $this;
     }
