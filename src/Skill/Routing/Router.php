@@ -22,10 +22,36 @@ class Router extends Dispatcher
     private $routeCollector;
     private $compilationKey;
     private $scopeManager;
+    private $host = '';
+    private $scheme = 'http';
 
     public function __construct(ScopeManager $scopeManager)
     {
         $this->scopeManager = $scopeManager;
+    }
+
+    public function host() : string
+    {
+        return $this->host;
+    }
+
+    public function setHost(string $host = null) : Router
+    {
+        $this->host = (string) $host;
+
+        return $this;
+    }
+
+    public function scheme() : string
+    {
+        return $this->scheme;
+    }
+
+    public function setScheme(string $scheme = null) : Router
+    {
+        $this->scheme = (string) $scheme ?: 'http';
+
+        return $this;
     }
 
     /**
@@ -48,6 +74,17 @@ class Router extends Dispatcher
     public function beginRoute(string $name = null) : Route
     {
         return new Route($name, $this);
+    }
+
+    public function url(string $uri) : string
+    {
+        $scheme = '';
+        if ($this->host) {
+            $uri = preg_replace('~/+~', '/', "{$this->host}$uri");
+            $scheme = "{$this->scheme}://";
+        }
+
+        return "$scheme$uri";
     }
 
     /**
