@@ -8,6 +8,7 @@ use Jarvis\Skill\EventBroadcaster\AnalyzeEvent;
 use Jarvis\Skill\EventBroadcaster\ControllerEvent;
 use Jarvis\Skill\EventBroadcaster\EventInterface;
 use Jarvis\Skill\EventBroadcaster\JarvisEvents;
+use Jarvis\Skill\EventBroadcaster\PermanentEvent;
 use Jarvis\Skill\EventBroadcaster\SimpleEvent;
 use Jarvis\Skill\EventBroadcaster\ResponseEvent;
 use Symfony\Component\HttpFoundation\Request;
@@ -138,5 +139,26 @@ class JarvisBroadcasterTest extends \PHPUnit_Framework_TestCase
 
         $this->assertTrue($normalPriorityReceiver->microTimestamp < $lowPriorityReceiver->microTimestamp);
         $this->assertTrue($highPriorityReceiver->microTimestamp < $normalPriorityReceiver->microTimestamp);
+    }
+
+    public function testPermanentEvent()
+    {
+        $jarvis = new Jarvis();
+
+        $receiver = new FakeReceiver();
+
+        $eventName = 'permanent.event.init';
+        $jarvis->addReceiver($eventName, [$receiver, 'onEventBroadcast']);
+        $this->assertNull($receiver->event);
+
+        $event = new SimpleEvent();
+        $permanentEvent = new PermanentEvent();
+        $jarvis->broadcast($eventName, $event);
+        $this->assertSame($event, $receiver->event);
+
+        $jarvis->broadcast($eventName, $permanentEvent);
+        $jarvis->addReceiver($eventName, [$receiver, 'onEventBroadcast']);
+        $this->assertNotSame($event, $receiver->event);
+        $this->assertSame($permanentEvent, $receiver->event);
     }
 }

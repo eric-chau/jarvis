@@ -16,6 +16,7 @@ use Jarvis\Skill\EventBroadcaster\{
     EventInterface,
     ExceptionEvent,
     JarvisEvents,
+    PermanentEventInterface,
     ResponseEvent,
     SimpleEvent
 };
@@ -37,6 +38,7 @@ class Jarvis extends Container
     const RECEIVER_LOW_PRIORITY = 0;
 
     private $receivers = [];
+    private $permanentEvents = [];
     private $computedReceivers = [];
     private $masterEmitter = false;
     private $masterSet = false;
@@ -175,6 +177,12 @@ class Jarvis extends Container
         $this->receivers[$eventName][$priority][] = $receiver;
         $this->computedReceivers[$eventName] = null;
 
+        if (isset($this->permanentEvents[$eventName])) {
+            $event = $this->permanentEvents[$eventName];
+
+            call_user_func_array($this->callback_resolver->resolve($receiver), [$event]);
+        }
+
         return $this;
     }
 
@@ -194,6 +202,10 @@ class Jarvis extends Container
 
         if (isset($this->receivers[$eventName])) {
             $event = $event ?? new SimpleEvent();
+            if ($event instanceof PermanentEventInterface && $event->isPermanent()) {
+                $this->permanentEvents[$eventName] = $event;
+            }
+
             foreach ($this->buildEventReceivers($eventName) as $receiver) {
                 call_user_func_array($this->callback_resolver->resolve($receiver), [$event]);
 
@@ -212,7 +224,7 @@ class Jarvis extends Container
      */
     public function hydrate(ContainerProviderInterface $provider) : Jarvis
     {
-        call_user_func([$provider, 'hydrate'], $this);
+        $provider->hydrate($this);
 
         return $this;
     }
