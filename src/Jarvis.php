@@ -25,6 +25,12 @@ use Symfony\Component\HttpFoundation\{ParameterBag, Request, Response};
 /**
  * Jarvis. Minimalist dependency injection container.
  *
+ * @property \Jarvis\Skill\Routing\Router $router
+ * @property \Symfony\Component\HttpFoundation\Request $request
+ * @property \Symfony\Component\HttpFoundation\Session\Session $session
+ * @property \Jarvis\Skill\Core\CallbackResolver $callbackResolver
+ * @property \Jarvis\Skill\Core\ScopeManager $scopeManager
+ *
  * @author Eric Chau <eriic.chau@gmail.com>
  */
 class Jarvis extends Container
@@ -132,7 +138,7 @@ class Jarvis extends Container
 
             $routeInfo = $this->router->match($request->getMethod(), $request->getPathInfo());
             if (Dispatcher::FOUND === $routeInfo[0]) {
-                $callback = $this->callback_resolver->resolve($routeInfo[1]);
+                $callback = $this->callbackResolver->resolve($routeInfo[1]);
 
                 $event = new ControllerEvent($callback, $routeInfo[2]);
                 $this->masterBroadcast(JarvisEvents::CONTROLLER_EVENT, $event);
@@ -180,7 +186,7 @@ class Jarvis extends Container
         if (isset($this->permanentEvents[$eventName])) {
             $event = $this->permanentEvents[$eventName];
 
-            call_user_func_array($this->callback_resolver->resolve($receiver), [$event]);
+            call_user_func_array($this->callbackResolver->resolve($receiver), [$event]);
         }
 
         return $this;
@@ -207,7 +213,7 @@ class Jarvis extends Container
             }
 
             foreach ($this->buildEventReceivers($eventName) as $receiver) {
-                call_user_func_array($this->callback_resolver->resolve($receiver), [$event]);
+                call_user_func_array($this->callbackResolver->resolve($receiver), [$event]);
 
                 if ($event->isPropagationStopped()) {
                     break;
