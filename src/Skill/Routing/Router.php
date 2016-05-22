@@ -110,7 +110,7 @@ class Router extends Dispatcher
 
             $value = (string) $value;
             $pieces = explode(':', $matches[1]);
-            if (1 < count($pieces) && 1 !== preg_match('~' . $pieces[1] . '~', $value)) {
+            if (1 < count($pieces) && 1 !== preg_match("~{$pieces[1]}~", $value)) {
                 continue;
             }
 

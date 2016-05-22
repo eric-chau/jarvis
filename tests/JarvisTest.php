@@ -143,35 +143,6 @@ class JarvisTest extends \PHPUnit_Framework_TestCase
         $this->assertSame('bar', $jarvis['settings']->get('foo'));
     }
 
-    public function testOverrideRequestClassname()
-    {
-        $jarvis = new Jarvis(['request_fqcn' => FakeRequest::class]);
-
-        $this->assertInstanceOf(FakeRequest::class, $jarvis->request);
-    }
-
-    /**
-     * @expectedException        \InvalidArgumentException
-     * @expectedExceptionMessage "request_fqcn" parameter must be string and instance of Symfony\Component\HttpFoundation\Request.
-     */
-    public function testOverrideRequestClassnameWithWrongValueRaisesException()
-    {
-        $jarvis = new Jarvis(['request_fqcn' => true]);
-
-        $jarvis->request;
-    }
-
-    /**
-     * @expectedException        \InvalidArgumentException
-     * @expectedExceptionMessage "request_fqcn" parameter must be string and instance of Symfony\Component\HttpFoundation\Request.
-     */
-    public function testOverrideRequestClassnameWithWrongClassnameRaisesException()
-    {
-        $jarvis = new Jarvis(['request_fqcn' => '\DateTime']);
-
-        $jarvis->request;
-    }
-
     public function testAccessToLockedValueAsJarvisAttribute()
     {
         $jarvis = new Jarvis();
