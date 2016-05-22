@@ -27,21 +27,8 @@ final class ContainerProvider implements ContainerProviderInterface
      */
     public function hydrate(Jarvis $jarvis)
     {
-        $jarvis['request'] = function(Jarvis $jarvis) : Request {
-            if (
-                !is_string($classname = $jarvis->settings->get('request_fqcn', Request::class))
-                || (
-                    $classname !== Request::class
-                    && !is_subclass_of($classname, Request::class)
-                )
-            ) {
-                throw new \InvalidArgumentException(sprintf(
-                    '"request_fqcn" parameter must be string and instance of %s.',
-                    Request::class
-                ));
-            }
-
-            $request = $classname::createFromGlobals();
+        $jarvis['request'] = function() : Request {
+            $request = Request::createFromGlobals();
             $request->setSession($request->getSession() ?? new Session());
 
             return $request;
@@ -65,11 +52,6 @@ final class ContainerProvider implements ContainerProviderInterface
 
         $jarvis->lock(['request', 'session', 'router', 'callbackResolver', 'scopeManager']);
 
-        $this->registerReceivers($jarvis);
-    }
-
-    private function registerReceivers(Jarvis $jarvis)
-    {
         $jarvis->addReceiver(JarvisEvents::EXCEPTION_EVENT, function(ExceptionEvent $event) {
             $response = new Response($event->exception()->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
             $event->setResponse($response);
