@@ -4,15 +4,16 @@ declare(strict_types = 1);
 
 namespace Jarvis\Skill\EventBroadcaster;
 
-use Symfony\Component\HttpFoundation\{Request, Response};
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * @author Eric Chau <eriic.chau@gmail.com>
  */
 class ResponseEvent extends SimpleEvent
 {
-    private $request;
-    private $response;
+    protected $request;
+    protected $response;
 
     public function __construct(Request $request, Response $response)
     {
@@ -35,7 +36,7 @@ class ResponseEvent extends SimpleEvent
      *
      * @return Response
      */
-    public function response() : Response
+    public function response()
     {
         return $this->response;
     }

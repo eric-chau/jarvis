@@ -5,31 +5,31 @@ declare(strict_types = 1);
 namespace Jarvis;
 
 use FastRoute\Dispatcher;
-use Jarvis\Skill\DependencyInjection\{
-    Container,
-    ContainerProvider,
-    ContainerProviderInterface
-};
-use Jarvis\Skill\EventBroadcaster\{
-    AnalyzeEvent,
-    ControllerEvent,
-    EventInterface,
-    ExceptionEvent,
-    JarvisEvents,
-    PermanentEventInterface,
-    ResponseEvent,
-    SimpleEvent
-};
-use Symfony\Component\HttpFoundation\{ParameterBag, Request, Response};
+use Jarvis\Skill\DependencyInjection\Container;
+use Jarvis\Skill\DependencyInjection\ContainerProvider;
+use Jarvis\Skill\DependencyInjection\ContainerProviderInterface;
+use Jarvis\Skill\EventBroadcaster\AnalyzeEvent;
+use Jarvis\Skill\EventBroadcaster\ControllerEvent;
+use Jarvis\Skill\EventBroadcaster\EventInterface;
+use Jarvis\Skill\EventBroadcaster\ExceptionEvent;
+use Jarvis\Skill\EventBroadcaster\JarvisEvents;
+use Jarvis\Skill\EventBroadcaster\PermanentEventInterface;
+use Jarvis\Skill\EventBroadcaster\ResponseEvent;
+use Jarvis\Skill\EventBroadcaster\SimpleEvent;
+use Symfony\Component\HttpFoundation\ParameterBag;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Jarvis. Minimalist dependency injection container.
  *
+ * @property boolean $debug
  * @property \Jarvis\Skill\Routing\Router $router
  * @property \Symfony\Component\HttpFoundation\Request $request
  * @property \Symfony\Component\HttpFoundation\Session\Session $session
  * @property \Jarvis\Skill\Core\CallbackResolver $callbackResolver
  * @property \Jarvis\Skill\Core\ScopeManager $scopeManager
+ * @property \Symfony\Component\HttpFoundation\ParameterBag $settings
  *
  * @author Eric Chau <eriic.chau@gmail.com>
  */
