@@ -4,13 +4,12 @@ declare(strict_types = 1);
 
 namespace Jarvis\Skill\Routing;
 
-use FastRoute\{
-    DataGenerator\GroupCountBased as DataGenerator,
-    Dispatcher\GroupCountBased as Dispatcher,
-    RouteParser\Std as Parser,
-    RouteCollector
-};
-use Jarvis\{Jarvis, Skill\Core\ScopeManager};
+use FastRoute\DataGenerator\GroupCountBased as DataGenerator;
+use FastRoute\Dispatcher\GroupCountBased as Dispatcher;
+use FastRoute\RouteParser\Std as Parser;
+use FastRoute\RouteCollector;
+use Jarvis\Jarvis;
+use Jarvis\Skill\Core\ScopeManager;
 
 /**
  * @author Eric Chau <eriic.chau@gmail.com>

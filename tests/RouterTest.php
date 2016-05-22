@@ -3,7 +3,8 @@
 namespace Jarvis\Tests;
 
 use Jarvis\Jarvis;
-use Symfony\Component\HttpFoundation\{Request, Response};
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * @author Eric Chau <eriic.chau@gmail.com>

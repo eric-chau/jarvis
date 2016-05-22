@@ -4,16 +4,14 @@ declare(strict_types = 1);
 
 namespace Jarvis\Skill\EventBroadcaster;
 
-use Symfony\Component\HttpFoundation\{Request, Response};
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * @author Eric Chau <eriic.chau@gmail.com>
  */
-class AnalyzeEvent extends SimpleEvent
+class AnalyzeEvent extends ResponseEvent
 {
-    private $request;
-    private $response;
-
     /**
      * Creates an instance of AnalyzeEvent.
      *
@@ -22,26 +20,6 @@ class AnalyzeEvent extends SimpleEvent
     public function __construct(Request $request)
     {
         $this->request = $request;
-    }
-
-    /**
-     * @codeCoverageIgnore
-     *
-     * @return Request
-     */
-    public function request() : Request
-    {
-        return $this->request;
-    }
-
-    /**
-     * @codeCoverageIgnore
-     *
-     * @return Response|null
-     */
-    public function response()
-    {
-        return $this->response;
     }
 
     /**

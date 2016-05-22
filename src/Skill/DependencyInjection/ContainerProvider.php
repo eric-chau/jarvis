@@ -5,10 +5,14 @@ declare(strict_types = 1);
 namespace Jarvis\Skill\DependencyInjection;
 
 use Jarvis\Jarvis;
-use Jarvis\Skill\Core\{CallbackResolver, ScopeManager};
-use Jarvis\Skill\EventBroadcaster\{ExceptionEvent, JarvisEvents};
+use Jarvis\Skill\Core\CallbackResolver;
+use Jarvis\Skill\Core\ScopeManager;
+use Jarvis\Skill\EventBroadcaster\ExceptionEvent;
+use Jarvis\Skill\EventBroadcaster\JarvisEvents;
 use Jarvis\Skill\Routing\Router;
-use Symfony\Component\HttpFoundation\{Request, Response, Session\Session};
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Session\Session;
 
 /**
  * This is Jarvis internal container provider. It will inject every core
