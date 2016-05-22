@@ -48,18 +48,18 @@ final class ContainerProvider implements ContainerProviderInterface
         };
 
         $jarvis['router'] = function(Jarvis $jarvis) : Router {
-            return new Router($jarvis['scope_manager']);
+            return new Router($jarvis['scopeManager']);
         };
 
-        $jarvis['callback_resolver'] = function(Jarvis $jarvis) : CallbackResolver {
+        $jarvis['callbackResolver'] = function(Jarvis $jarvis) : CallbackResolver {
             return new CallbackResolver($jarvis);
         };
 
-        $jarvis['scope_manager'] = function() : ScopeManager {
+        $jarvis['scopeManager'] = function() : ScopeManager {
             return new ScopeManager();
         };
 
-        $jarvis->lock(['request', 'session', 'router', 'callback_resolver']);
+        $jarvis->lock(['request', 'session', 'router', 'callbackResolver', 'scopeManager']);
 
         $this->registerReceivers($jarvis);
     }

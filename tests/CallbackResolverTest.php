@@ -22,7 +22,7 @@ class CallbackResolver extends \PHPUnit_Framework_TestCase
 
         $callback = [new Reference('fake_controller'), 'randomAction'];
 
-        $callback = $jarvis->callback_resolver->resolve($callback);
+        $callback = $jarvis->callbackResolver->resolve($callback);
 
         $this->assertNotInstanceOf(Reference::class, $callback[0]);
         $this->assertSame($fakeController, $callback[0]);
@@ -33,10 +33,10 @@ class CallbackResolver extends \PHPUnit_Framework_TestCase
         $jarvis = new Jarvis();
 
         try {
-            $jarvis->callback_resolver->resolve([new FakeController(), 'randomAction']);
-            $jarvis->callback_resolver->resolve(['DateTime', 'createFromFormat']);
-            $jarvis->callback_resolver->resolve('rand');
-            $jarvis->callback_resolver->resolve(function () {});
+            $jarvis->callbackResolver->resolve([new FakeController(), 'randomAction']);
+            $jarvis->callbackResolver->resolve(['DateTime', 'createFromFormat']);
+            $jarvis->callbackResolver->resolve('rand');
+            $jarvis->callbackResolver->resolve(function () {});
             $this->assertTrue(true);
         } catch (\InvalidArgumentException $e) {
             if ('Provided callback is not callable.' === $e->getMessage()) {
@@ -56,6 +56,6 @@ class CallbackResolver extends \PHPUnit_Framework_TestCase
     {
         $jarvis = new Jarvis();
 
-        $jarvis->callback_resolver->resolve([new FakeController(), 'unknownAction']);
+        $jarvis->callbackResolver->resolve([new FakeController(), 'unknownAction']);
     }
 }
