@@ -4,9 +4,9 @@
 
 Jarvis is a PHP 7 micro framework. It is designed to be simple and lightweight.
 
-Note that if you want to use Jarvis with PHP 5.6, please switch on ``0.1`` branch or use the ``v0.1.*`` tag.
+Note that if you want to use Jarvis with PHP 5.6, please switch on `0.1` branch or use the `v0.1.*` tag.
 
-Jarvis requires ``php >= 7.0``. it's based on its own dependency injection container, http foundation component from Symfony and nikic's fast route.
+Jarvis requires `php >= 7.0`. it's based on its own dependency injection container, http foundation component from Symfony and nikic's fast route.
 
 # Usage
 
@@ -34,7 +34,7 @@ $response->send();
 
 # How Jarvis process incoming request
 
-The schema below will sum up how  ``Jarvis\Jarvis::analyze()`` treats any incoming request:
+The schema below will sum up how  `Jarvis\Jarvis::analyze()` treats any incoming request:
 
 ```
 INPUT: an instance of Request
@@ -67,13 +67,13 @@ INPUT: an instance of Request
 OUT: an instance of Response
 ```
 
-*: note that if provided URI does not match any route ``analyze()`` will return an instance of Response with 404 or 406 status code.
+*: note that if provided URI does not match any route `analyze()` will return an instance of Response with 404 or 406 status code.
 
 # Router skill
 
-Jarvis' Router can handle anonymous and named routes. By default, a route is type of HTTP ``GET`` method and the pattern setted to ``/``. You can find some example below:
+Jarvis' Router can handle anonymous and named routes. By default, a route is type of HTTP `GET` method and the pattern setted to `/`. You can find some example below:
 
-### Anonymous route, ``GET`` HTTP method, ``/`` as pattern
+### Anonymous route, `GET` HTTP method, `/` as pattern
 ```php
 <?php
 
@@ -90,7 +90,7 @@ $jarvis->router
 ;
 ```
 
-### Named route, name: ``user_edit`` , http method: ``PUT``, pattern: ``/user/{id}
+### Named route, name: `user_edit` , http method: `PUT`, pattern: `/user/{id}`
 
 Note that id must be a number. Let's see how to do so.
 ```php
@@ -117,7 +117,7 @@ echo $jarvis->router->uri('user_edit', ['id' => 123]); // print '/user/123'
 
 # Dependency injection container skill
 
-## ``Container::alias()``
+## `Container::alias()`
 
 Jarvis' DIC (dependency injection container) can deal with alias:
 
@@ -132,9 +132,9 @@ $jarvis->alias('bar', 'foo');
 $jarvis['foo'] === $jarvis['bar']; // = true
 ```
 
-## ``Container::find()``
+## `Container::find()`
 
-``::find()`` is an another useful method provided by Jarvis' DIC:
+`::find()` is an another useful method provided by Jarvis' DIC:
 
 ```php
 <?php
