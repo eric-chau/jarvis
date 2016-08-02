@@ -14,12 +14,12 @@ class ExceptionEvent extends SimpleEvent
     private $exception;
     private $response;
 
-    public function __construct(\Exception $exception)
+    public function __construct(\Throwable $exception)
     {
         $this->exception = $exception;
     }
 
-    public function exception(): \Exception
+    public function exception(): \Throwable
     {
         return $this->exception;
     }

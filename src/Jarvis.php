@@ -145,8 +145,8 @@ class Jarvis extends Container
 
                 $response = call_user_func_array($event->callback(), $event->arguments());
 
-                if (is_string($response)) {
-                    $response = new Response($response);
+                if (is_scalar($response)) {
+                    $response = new Response((string) $response);
                 }
             } elseif (Dispatcher::NOT_FOUND === $routeInfo[0] || Dispatcher::METHOD_NOT_ALLOWED === $routeInfo[0]) {
                 $response = new Response(null, Dispatcher::NOT_FOUND === $routeInfo[0]
@@ -156,12 +156,12 @@ class Jarvis extends Container
             }
 
             $this->masterBroadcast(JarvisEvents::RESPONSE_EVENT, new ResponseEvent($request, $response));
-        } catch (\Exception $exception) {
-            $this->masterBroadcast(JarvisEvents::EXCEPTION_EVENT, $exceptionEvent = new ExceptionEvent($exception));
+        } catch (\Throwable $throwable) {
+            $this->masterBroadcast(JarvisEvents::EXCEPTION_EVENT, $exceptionEvent = new ExceptionEvent($throwable));
             $response = $exceptionEvent->response();
 
             if (null === $response) {
-                throw $exception;
+                throw $throwable;
             }
         }
 
