@@ -9,6 +9,9 @@ namespace Jarvis\Skill\DependencyInjection;
  */
 class Reference
 {
+    /**
+     * @var string
+     */
     private $identifier;
 
     public function __construct(string $identifier)
@@ -16,7 +19,12 @@ class Reference
         $this->identifier = $identifier;
     }
 
-    public function identifier() : string
+    public function identifier(): string
+    {
+        return $this->identifier;
+    }
+
+    public function __toString(): string
     {
         return $this->identifier;
     }

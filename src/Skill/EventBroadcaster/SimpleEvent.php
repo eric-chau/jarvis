@@ -14,12 +14,12 @@ class SimpleEvent implements EventInterface
     /**
      * {@inheritdoc}
      */
-    public function isPropagationStopped() : bool
+    public function isPropagationStopped(): bool
     {
         return $this->isPropagationStopped;
     }
 
-    public function stopPropagation() : SimpleEvent
+    public function stopPropagation(): SimpleEvent
     {
         $this->isPropagationStopped = true;
 

@@ -70,7 +70,7 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @expectedException          RuntimeException
-     * @expectedExceptionMessage   Cannot override locked value 'key'
+     * @expectedExceptionMessage   Cannot override locked value `key`
      */
     public function testLock()
     {
@@ -202,7 +202,7 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
             $this->fail('Raises of RuntimeException expected.');
         } catch (\Exception $e) {
             $this->assertInstanceOf('RuntimeException', $e);
-            $this->assertEquals('Cannot override locked value \'key\'.', $e->getMessage());
+            $this->assertEquals('Cannot override locked value `key`.', $e->getMessage());
         }
 
         unset($dic['key'], $dic['service']);

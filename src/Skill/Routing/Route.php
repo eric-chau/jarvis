@@ -24,29 +24,29 @@ class Route
         $this->router = $router;
     }
 
-    public function name()
+    public function name(): ?string
     {
         return $this->name;
     }
 
-    public function method() : array
+    public function method(): array
     {
         return $this->method;
     }
 
-    public function setMethod($method) : Route
+    public function setMethod($method): Route
     {
         $this->method = array_map('strtolower', (array) $method);
 
         return $this;
     }
 
-    public function pattern() : string
+    public function pattern(): string
     {
         return $this->pattern;
     }
 
-    public function setPattern(string $pattern) : Route
+    public function setPattern(string $pattern): Route
     {
         $this->pattern = $pattern;
 
@@ -58,26 +58,26 @@ class Route
         return $this->handler;
     }
 
-    public function setHandler($handler) : Route
+    public function setHandler($handler): Route
     {
         $this->handler = $handler;
 
         return $this;
     }
 
-    public function scope() : string
+    public function scope(): string
     {
         return $this->scope;
     }
 
-    public function setScope(string $scope) : Route
+    public function setScope(string $scope): Route
     {
         $this->scope = $scope;
 
         return $this;
     }
 
-    public function end()
+    public function end(): Router
     {
         return $this->router->addRoute($this);
     }

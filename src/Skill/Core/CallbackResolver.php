@@ -12,6 +12,9 @@ use Jarvis\Skill\DependencyInjection\Reference;
  */
 class CallbackResolver
 {
+    /**
+     * @var Jarvis
+     */
     private $jarvis;
 
     public function __construct(Jarvis $jarvis)
@@ -19,18 +22,12 @@ class CallbackResolver
         $this->jarvis = $jarvis;
     }
 
-    public function resolve($callback)
+    public function resolve($callback): \Closure
     {
         if (is_array($callback) && $callback[0] instanceof Reference) {
-            if (isset($this->jarvis[$callback[0]->identifier()])) {
-                $callback[0] = $this->jarvis[$callback[0]->identifier()];
-            }
+            $callback[0] = $this->jarvis[(string) $callback[0]] ?? $callback[0];
         }
 
-        if (!is_callable($callback)) {
-            throw new \InvalidArgumentException('Provided callback is not callable.');
-        }
-
-        return $callback;
+        return \Closure::fromCallable($callback);
     }
 }

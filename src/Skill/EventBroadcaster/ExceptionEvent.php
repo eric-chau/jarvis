@@ -14,22 +14,22 @@ class ExceptionEvent extends SimpleEvent
     private $exception;
     private $response;
 
-    public function __construct(\Exception $exception)
+    public function __construct(\Throwable $exception)
     {
         $this->exception = $exception;
     }
 
-    public function exception() : \Exception
+    public function exception(): \Throwable
     {
         return $this->exception;
     }
 
-    public function response()
+    public function response(): ?Response
     {
         return $this->response;
     }
 
-    public function setResponse(Response $response) : ExceptionEvent
+    public function setResponse(Response $response): ExceptionEvent
     {
         $this->response = $response;
         $this->stopPropagation();
@@ -42,7 +42,7 @@ class ExceptionEvent extends SimpleEvent
      *
      * {@inheritdoc}
      */
-    public function stopPropagation() : SimpleEvent
+    public function stopPropagation(): SimpleEvent
     {
         if (null === $this->response) {
             return $this;

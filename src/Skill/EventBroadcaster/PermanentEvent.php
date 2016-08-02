@@ -12,7 +12,7 @@ class PermanentEvent extends SimpleEvent implements PermanentEventInterface
     /**
      * {@inheritdoc}
      */
-    public function isPermanent() : bool
+    public function isPermanent(): bool
     {
         return true;
     }

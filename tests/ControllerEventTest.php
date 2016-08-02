@@ -10,14 +10,13 @@ use Jarvis\Skill\EventBroadcaster\ControllerEvent;
 class ControllerEventTest extends \PHPUnit_Framework_TestCase
 {
     /**
-     * @expectedException        \InvalidArgumentException
-     * @expectedExceptionMessage Provided callback is not callable.
+     * @expectedException        \TypeError
      */
     public function testSetInvalidCallbackRaiseException()
     {
         $event = new ControllerEvent(function () {});
 
         $this->assertSame($event, $event->setCallback('rand'));
-        $event->setCallback('foobar');
+        $event->setCallback(\Closure::fromCallable('foobar'));
     }
 }

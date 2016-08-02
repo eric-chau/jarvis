@@ -28,7 +28,7 @@ class AnalyzeEvent extends ResponseEvent
      * @param  Response $response
      * @return self
      */
-    public function setResponse(Response $response) : AnalyzeEvent
+    public function setResponse(Response $response): AnalyzeEvent
     {
         $this->response = $response;
 

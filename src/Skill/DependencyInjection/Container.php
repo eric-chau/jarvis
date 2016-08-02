@@ -32,7 +32,7 @@ class Container implements \ArrayAccess
      * @throws InvalidArgumentException if provided identifier is undefined or if alias is
      *                                  equals to identifier
      */
-    public function alias(string $alias, string $id) : Container
+    public function alias(string $alias, string $id): Container
     {
         if (!$this->offsetExists($id)) {
             throw new \InvalidArgumentException("Cannot create alias for undefined value `$id`.");
@@ -43,10 +43,7 @@ class Container implements \ArrayAccess
         }
 
         $this->aliasOf[$alias] = $id;
-        if (!isset($this->hasAliases[$id])) {
-            $this->hasAliases[$id] = [];
-        }
-
+        $this->hasAliases[$id] = $this->hasAliases[$id] ?? [];
         $this->hasAliases[$id][] = $alias;
 
         return $this;
@@ -59,7 +56,7 @@ class Container implements \ArrayAccess
      * @param  string $id this identifier can contain one or many wildcard character (*)
      * @return array an array of values that mached with provided identifier pattern
      */
-    public function find(string $id) : array
+    public function find(string $id): array
     {
         $values = [];
         $pattern = str_replace(['.', '*'], ['\.', '[\w\-\.]*'], $id);
@@ -78,7 +75,7 @@ class Container implements \ArrayAccess
      * @param  string $id the parameter/object identifier to check
      * @return boolean
      */
-    public function offsetExists($id) : bool
+    public function offsetExists($id): bool
     {
         return in_array($id, $this->keys());
     }
@@ -121,10 +118,10 @@ class Container implements \ArrayAccess
      * @throws \RuntimeException prevents override of locked value
      * @throws \InvalidArgumentException prevents value's identifier to be equal to an existing alias
      */
-    public function offsetSet($id, $v)
+    public function offsetSet($id, $v): void
     {
         if (isset($this->locked[$id])) {
-            throw new \RuntimeException("Cannot override locked value '$id'.");
+            throw new \RuntimeException("Cannot override locked value `$id`.");
         }
 
         if (isset($this->aliasOf[$id])) {
@@ -141,7 +138,7 @@ class Container implements \ArrayAccess
      *
      * @param  string $id the identifier of the object/parameter to unset
      */
-    public function offsetUnset($id)
+    public function offsetUnset($id): void
     {
         if (isset($this->values[$id])) {
             if (is_object($this->values[$id])) {
@@ -165,7 +162,7 @@ class Container implements \ArrayAccess
      *
      * @return array
      */
-    public function keys() : array
+    public function keys(): array
     {
         return array_merge(array_keys($this->values), array_keys($this->aliasOf));
     }
@@ -178,7 +175,7 @@ class Container implements \ArrayAccess
      * @return self
      * @throws InvalidArgumentException if provided factory is not a Closure or not an invokable object
      */
-    public function factory(string $id, $factory) : Container
+    public function factory(string $id, $factory): Container
     {
         if (!is_object($factory) || !method_exists($factory, '__invoke')) {
             throw new \InvalidArgumentException('Service factory must be a Closure or an invokable object.');
@@ -196,7 +193,7 @@ class Container implements \ArrayAccess
      * @param  string|array $ids the identifier(s) to lock
      * @return self
      */
-    public function lock($ids) : Container
+    public function lock($ids): Container
     {
         foreach ((array) $ids as $id) {
             $this->throwExceptionIfIdentifierNotFound($id);
@@ -213,7 +210,7 @@ class Container implements \ArrayAccess
      * @param  string $id the identifier we want to know if it exists
      * @throws \InvalidArgumentException if provided identifier is not defined
      */
-    private function throwExceptionIfIdentifierNotFound(string $id)
+    private function throwExceptionIfIdentifierNotFound(string $id): void
     {
         if (!$this->offsetExists($id)) {
             throw new \InvalidArgumentException("Identifier `$id` is not defined.");
@@ -226,12 +223,8 @@ class Container implements \ArrayAccess
      * @param  string $id the identifier to convert if needed
      * @return string
      */
-    private function resolveIdentifier(string $id) : string
+    private function resolveIdentifier(string $id): string
     {
-        if (isset($this->values[$id])) {
-            return $id;
-        }
-
-        return $this->aliasOf[$id];
+        return isset($this->values[$id]) ? $id : $this->aliasOf[$id];
     }
 }
