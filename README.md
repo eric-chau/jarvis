@@ -1,12 +1,12 @@
-# Jarvis, a PHP 7 micro framework
+# Jarvis, a PHP 7.1 micro framework
 
 [![Code Climate](https://codeclimate.com/github/eric-chau/jarvis/badges/gpa.svg)](https://codeclimate.com/github/eric-chau/jarvis) [![Test Coverage](https://codeclimate.com/github/eric-chau/jarvis/badges/coverage.svg)](https://codeclimate.com/github/eric-chau/jarvis/coverage) [![Build Status](https://travis-ci.org/eric-chau/jarvis.svg?branch=master)](https://travis-ci.org/eric-chau/jarvis) [![SensioLabsInsight](https://insight.sensiolabs.com/projects/be0c72c7-14f3-4cf2-85cd-a072091e7118/mini.png)](https://insight.sensiolabs.com/projects/be0c72c7-14f3-4cf2-85cd-a072091e7118) [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/eric-chau/jarvis/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/eric-chau/jarvis/?branch=master)
 
-Jarvis is a PHP 7 micro framework. It is designed to be simple and lightweight.
+Jarvis is a PHP 7.1 micro framework. It is designed to be simple and lightweight.
 
 Note that if you want to use Jarvis with PHP 5.6, please switch on `0.1` branch or use the `v0.1.*` tag.
 
-Jarvis requires `php >= 7.0`. it's based on its own dependency injection container, http foundation component from Symfony and nikic's fast route.
+Jarvis requires `php >= 7.1`. it's based on its own dependency injection container, http foundation component from Symfony and nikic's fast route.
 
 # Usage
 
