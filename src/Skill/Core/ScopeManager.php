@@ -15,7 +15,7 @@ class ScopeManager
         Jarvis::DEFAULT_SCOPE => '',
     ];
 
-    public function disable($names) : ScopeManager
+    public function disable($names): ScopeManager
     {
         foreach ((array) $names as $name) {
             if (Jarvis::DEFAULT_SCOPE === $name) {
@@ -28,7 +28,7 @@ class ScopeManager
         return $this;
     }
 
-    public function enable($names) : ScopeManager
+    public function enable($names): ScopeManager
     {
         foreach ((array) $names as $name) {
             $this->scopes[$name] = '';
@@ -37,12 +37,12 @@ class ScopeManager
         return $this;
     }
 
-    public function all() : array
+    public function all(): array
     {
         return array_keys($this->scopes);
     }
 
-    public function isEnabled($names) : bool
+    public function isEnabled($names): bool
     {
         foreach ((array) $names as $name) {
             if (!isset($this->scopes[$name])) {

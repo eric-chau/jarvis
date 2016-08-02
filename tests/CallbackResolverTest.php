@@ -24,8 +24,7 @@ class CallbackResolver extends \PHPUnit_Framework_TestCase
 
         $callback = $jarvis->callbackResolver->resolve($callback);
 
-        $this->assertNotInstanceOf(Reference::class, $callback[0]);
-        $this->assertSame($fakeController, $callback[0]);
+        $this->assertInstanceOf(\Closure::class, $callback);
     }
 
     public function testResolveAcceptAnyCallableCallback()
@@ -49,8 +48,7 @@ class CallbackResolver extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException        \InvalidArgumentException
-     * @expectedExceptionMessage Provided callback is not callable.
+     * @expectedException        \TypeError
      */
     public function testResolveRaisesExceptionOnInvalidCallback()
     {

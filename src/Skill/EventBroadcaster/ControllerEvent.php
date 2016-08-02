@@ -12,9 +12,9 @@ class ControllerEvent extends SimpleEvent
     private $callback;
     private $arguments;
 
-    public function __construct($callback, array $arguments = [])
+    public function __construct(\Closure $callback, array $arguments = [])
     {
-        $this->callback = $this->validateCallback($callback);
+        $this->callback = $callback;
         $this->arguments = $arguments;
     }
 
@@ -23,7 +23,7 @@ class ControllerEvent extends SimpleEvent
      *
      * @return mixed
      */
-    public function callback()
+    public function callback(): \Closure
     {
         return $this->callback;
     }
@@ -35,9 +35,9 @@ class ControllerEvent extends SimpleEvent
      * @return self
      * @throws \InvalidArgumentException if passed callback is not callable
      */
-    public function setCallback($callback) : ControllerEvent
+    public function setCallback(\Closure $callback): ControllerEvent
     {
-        $this->callback = $this->validateCallback($callback);
+        $this->callback = $callback;
 
         return $this;
     }
@@ -47,7 +47,7 @@ class ControllerEvent extends SimpleEvent
      *
      * @return array
      */
-    public function arguments() : array
+    public function arguments(): array
     {
         return $this->arguments;
     }
@@ -60,26 +60,10 @@ class ControllerEvent extends SimpleEvent
      * @param  array $arguments The new arguments to set, default: empty array ([])
      * @return self
      */
-    public function setArguments(array $arguments = []) : ControllerEvent
+    public function setArguments(array $arguments = []): ControllerEvent
     {
         $this->arguments = $arguments;
 
         return $this;
-    }
-
-    /**
-     * Validates provided callback and throws exception if it is not callable.
-     *
-     * @param  mixed $callback The callback to validate
-     * @return mixed
-     * @throws \InvalidArgumentException if passed callback is not callable
-     */
-    public function validateCallback($callback)
-    {
-        if (!is_callable($callback)) {
-            throw new \InvalidArgumentException('Provided callback is not callable.');
-        }
-
-        return $callback;
     }
 }

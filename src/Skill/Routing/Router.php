@@ -29,24 +29,24 @@ class Router extends Dispatcher
         $this->scopeManager = $scopeManager;
     }
 
-    public function host() : string
+    public function host(): string
     {
         return $this->host;
     }
 
-    public function setHost(string $host = null) : Router
+    public function setHost(string $host = null): Router
     {
         $this->host = (string) $host;
 
         return $this;
     }
 
-    public function scheme() : string
+    public function scheme(): string
     {
         return $this->scheme;
     }
 
-    public function setScheme(string $scheme = null) : Router
+    public function setScheme(string $scheme = null): Router
     {
         $this->scheme = (string) $scheme ?: 'http';
 
@@ -57,7 +57,7 @@ class Router extends Dispatcher
      * Alias to Router's route collector ::addRoute method.
      * @see RouteCollector::addRoute
      */
-    public function addRoute(Route $route) : Router
+    public function addRoute(Route $route): Router
     {
         $this->rawRoutes[$route->scope()] = $this->rawRoutes[$route->scope()] ?? [];
         $this->rawRoutes[$route->scope()][] = [$route->method(), $route->pattern(), $route->handler()];
@@ -70,12 +70,12 @@ class Router extends Dispatcher
         return $this;
     }
 
-    public function beginRoute(string $name = null) : Route
+    public function beginRoute(string $name = null): Route
     {
         return new Route($name, $this);
     }
 
-    public function url(string $uri) : string
+    public function url(string $uri): string
     {
         $scheme = '';
         if ($this->host) {
@@ -94,7 +94,7 @@ class Router extends Dispatcher
      * @return string
      * @throws \InvalidArgumentException if provided route name is unknown
      */
-    public function uri(string $name, array $params = []) : string
+    public function uri(string $name, array $params = []): string
     {
         if (!isset($this->routesNames[$name])) {
             throw new \InvalidArgumentException(
@@ -124,19 +124,19 @@ class Router extends Dispatcher
      * Alias of GroupCountBased::dispatch.
      * {@inheritdoc}
      */
-    public function match(string $method, string $uri)
+    public function match(string $method, string $uri): array
     {
         return $this->dispatch($method, $uri);
     }
 
-    public function dispatch($method, $uri)
+    public function dispatch($method, $uri): array
     {
         list($this->staticRouteMap, $this->variableRouteData) = $this->routeCollector()->getData();
 
         return parent::dispatch(strtolower($method), $uri);
     }
 
-    private function routeCollector() : RouteCollector
+    private function routeCollector(): RouteCollector
     {
         $key = $this->generateCompilationKey();
         if (null === $this->compilationKey || $this->compilationKey !== $key) {
@@ -159,7 +159,7 @@ class Router extends Dispatcher
         return $this->routeCollector;
     }
 
-    private function generateCompilationKey() : string
+    private function generateCompilationKey(): string
     {
         return md5(implode(',', $this->scopeManager->all()));
     }

@@ -15,5 +15,5 @@ interface PermanentEventInterface extends EventInterface
     /**
      * @return boolean
      */
-    public function isPermanent() : bool;
+    public function isPermanent(): bool;
 }
