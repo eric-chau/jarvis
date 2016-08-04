@@ -4,8 +4,6 @@ declare(strict_types = 1);
 
 namespace Jarvis\Skill\Routing;
 
-use Jarvis\Jarvis;
-
 /**
  * @author Eric Chau <eriic.chau@gmail.com>
  */
@@ -15,7 +13,6 @@ class Route
     private $method = ['get'];
     private $pattern = '/';
     private $handler;
-    private $scope = Jarvis::DEFAULT_SCOPE;
     private $router;
 
     public function __construct(string $name = null, Router $router)
@@ -61,18 +58,6 @@ class Route
     public function setHandler($handler): Route
     {
         $this->handler = $handler;
-
-        return $this;
-    }
-
-    public function scope(): string
-    {
-        return $this->scope;
-    }
-
-    public function setScope(string $scope): Route
-    {
-        $this->scope = $scope;
 
         return $this;
     }

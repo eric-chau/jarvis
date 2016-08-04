@@ -9,59 +9,41 @@ use FastRoute\Dispatcher\GroupCountBased as Dispatcher;
 use FastRoute\RouteParser\Std as Parser;
 use FastRoute\RouteCollector;
 use Jarvis\Jarvis;
-use Jarvis\Skill\Core\ScopeManager;
 
 /**
  * @author Eric Chau <eriic.chau@gmail.com>
  */
 class Router extends Dispatcher
 {
+    private $computed = false;
+    private $host = '';
     private $rawRoutes = [];
     private $routesNames = [];
     private $routeCollector;
-    private $compilationKey;
-    private $scopeManager;
-    private $host = '';
     private $scheme = 'http';
 
-    public function __construct(ScopeManager $scopeManager)
+    /**
+     * Creates an instance of Router.
+     *
+     * Required to disable FastRoute\Dispatcher\GroupCountBased constructor.
+     */
+    public function __construct()
     {
-        $this->scopeManager = $scopeManager;
-    }
-
-    public function host(): string
-    {
-        return $this->host;
-    }
-
-    public function setHost(string $host = null): Router
-    {
-        $this->host = (string) $host;
-
-        return $this;
-    }
-
-    public function scheme(): string
-    {
-        return $this->scheme;
-    }
-
-    public function setScheme(string $scheme = null): Router
-    {
-        $this->scheme = (string) $scheme ?: 'http';
-
-        return $this;
     }
 
     /**
-     * Alias to Router's route collector ::addRoute method.
-     * @see RouteCollector::addRoute
+     * Adds a new route to the collection.
+     *
+     * We highly recommend you to use ::beginRoute() instead.
+     * {@see ::beginRoute()}
+     *
+     * @param  Route $route
+     * @return self
      */
     public function addRoute(Route $route): Router
     {
-        $this->rawRoutes[$route->scope()] = $this->rawRoutes[$route->scope()] ?? [];
-        $this->rawRoutes[$route->scope()][] = [$route->method(), $route->pattern(), $route->handler()];
-        $this->compilationKey = null;
+        $this->rawRoutes[] = [$route->method(), $route->pattern(), $route->handler()];
+        $this->computed = false;
 
         if (null !== $name = $route->name()) {
             $this->routesNames[$name] = $route->pattern();
@@ -70,11 +52,37 @@ class Router extends Dispatcher
         return $this;
     }
 
+    /**
+     * This is an helper that provides you a smooth syntax to add new route. Example:
+     *
+     * $router
+     *     ->beginRoute('hello_world')
+     *         ->setPattern('/hello/world')
+     *         ->setHandler(function() {
+     *             return 'Hello, world!';
+     *         })
+     *     ->end()
+     * ;
+     *
+     * This syntax avoids you to create a new intance of Route, hydrating it and
+     * then adding it to Router.
+     *
+     * @param  string|null $name
+     * @return Route
+     */
     public function beginRoute(string $name = null): Route
     {
         return new Route($name, $this);
     }
 
+    /**
+     * Generates and returns the full URL (with scheme and host) with provided URI.
+     *
+     * Notes that this method required at least the host to be setted.
+     *
+     * @param  string $uri
+     * @return string
+     */
     public function url(string $uri): string
     {
         $scheme = '';
@@ -84,6 +92,53 @@ class Router extends Dispatcher
         }
 
         return "$scheme$uri";
+    }
+
+    /**
+     * Returns the current scheme.
+     *
+     * @return string
+     */
+    public function scheme(): string
+    {
+        return $this->scheme;
+    }
+
+    /**
+     * Sets the new scheme to use. Calling this method without parameter will reset
+     * it to 'http'.
+     *
+     * @param string|null $scheme
+     */
+    public function setScheme(string $scheme = null): Router
+    {
+        $this->scheme = (string) $scheme ?: 'http';
+
+        return $this;
+    }
+
+    /**
+     * Returns the setted host.
+     *
+     * @return string
+     */
+    public function host(): string
+    {
+        return $this->host;
+    }
+
+    /**
+     * Sets new host to Router. Calling this method without parameter will reset
+     * the host to empty string.
+     *
+     * @param  string|null $host
+     * @return self
+     */
+    public function setHost(string $host = null): Router
+    {
+        $this->host = (string) $host;
+
+        return $this;
     }
 
     /**
@@ -121,14 +176,18 @@ class Router extends Dispatcher
     }
 
     /**
-     * Alias of GroupCountBased::dispatch.
-     * {@inheritdoc}
+     * Alias of ::dispatch.
      */
     public function match(string $method, string $uri): array
     {
         return $this->dispatch($method, $uri);
     }
 
+    /**
+     * {@inheritdoc}
+     * Overrides GroupCountBased::dispatch() to ensure that dispatcher always deals with up-to-date
+     * route collection.
+     */
     public function dispatch($method, $uri): array
     {
         list($this->staticRouteMap, $this->variableRouteData) = $this->routeCollector()->getData();
@@ -136,31 +195,24 @@ class Router extends Dispatcher
         return parent::dispatch(strtolower($method), $uri);
     }
 
+    /**
+     * Will always return the right RouteCollector and knows when to recompute it.
+     *
+     * @return RouteCollector
+     */
     private function routeCollector(): RouteCollector
     {
-        $key = $this->generateCompilationKey();
-        if (null === $this->compilationKey || $this->compilationKey !== $key) {
-            $this->compilationKey = $key;
+        if (!$this->computed) {
             $this->routeCollector = new RouteCollector(new Parser(), new DataGenerator());
 
-            $enabledRoutes = [];
-            foreach ($this->rawRoutes as $scope => $rawRoutes) {
-                if ($this->scopeManager->isEnabled($scope)) {
-                    $enabledRoutes = array_merge($enabledRoutes, $rawRoutes);
-                }
-            }
-
-            foreach ($enabledRoutes as $rawRoute) {
+            foreach ($this->rawRoutes as $rawRoute) {
                 list($method, $route, $handler) = $rawRoute;
                 $this->routeCollector->addRoute($method, $route, $handler);
             }
+
+            $this->computed = true;
         }
 
         return $this->routeCollector;
-    }
-
-    private function generateCompilationKey(): string
-    {
-        return md5(implode(',', $this->scopeManager->all()));
     }
 }
