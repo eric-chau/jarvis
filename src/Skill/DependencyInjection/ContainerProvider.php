@@ -6,7 +6,6 @@ namespace Jarvis\Skill\DependencyInjection;
 
 use Jarvis\Jarvis;
 use Jarvis\Skill\Core\CallbackResolver;
-use Jarvis\Skill\Core\ScopeManager;
 use Jarvis\Skill\EventBroadcaster\BroadcasterInterface;
 use Jarvis\Skill\EventBroadcaster\ExceptionEvent;
 use Jarvis\Skill\EventBroadcaster\JarvisEvents;
@@ -47,11 +46,7 @@ final class ContainerProvider implements ContainerProviderInterface
             return new CallbackResolver($jarvis);
         };
 
-        $jarvis['scopeManager'] = function(): ScopeManager {
-            return new ScopeManager();
-        };
-
-        $jarvis->lock(['request', 'session', 'router', 'callbackResolver', 'scopeManager']);
+        $jarvis->lock(['request', 'session', 'router', 'callbackResolver']);
 
         $jarvis->on(BroadcasterInterface::EXCEPTION_EVENT, function(ExceptionEvent $event): void {
             $response = new Response($event->exception()->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
