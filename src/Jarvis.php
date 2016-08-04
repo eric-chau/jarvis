@@ -28,7 +28,6 @@ use Symfony\Component\HttpFoundation\Response;
  * @property \Symfony\Component\HttpFoundation\Request $request
  * @property \Symfony\Component\HttpFoundation\Session\Session $session
  * @property \Jarvis\Skill\Core\CallbackResolver $callbackResolver
- * @property \Jarvis\Skill\Core\ScopeManager $scopeManager
  * @property \Symfony\Component\HttpFoundation\ParameterBag $settings
  *
  * @author Eric Chau <eriic.chau@gmail.com>
@@ -37,7 +36,6 @@ class Jarvis extends Container implements BroadcasterInterface
 {
     const DEFAULT_DEBUG = false;
     const CONTAINER_PROVIDER_FQCN = ContainerProvider::class;
-    const DEFAULT_SCOPE = 'default';
 
     private $receivers = [];
     private $permanentEvents = [];
