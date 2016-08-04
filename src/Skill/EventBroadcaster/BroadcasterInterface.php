@@ -7,7 +7,7 @@ namespace Jarvis\Skill\EventBroadcaster;
 /**
  * @author Eric Chau <eriic.chau@gmail.com>
  */
-interface JarvisEvents
+interface BroadcasterInterface
 {
     const ANALYZE_EVENT = 'jarvis.analyze';
     const CONTROLLER_EVENT = 'jarvis.controller';
@@ -22,4 +22,11 @@ interface JarvisEvents
         self::EXCEPTION_EVENT,
         self::TERMINATE_EVENT,
     ];
+
+    const RECEIVER_HIGH_PRIORITY = 2;
+    const RECEIVER_NORMAL_PRIORITY = 1;
+    const RECEIVER_LOW_PRIORITY = 0;
+
+    public function on(string $eventName, $receiver, int $priority = self::RECEIVER_NORMAL_PRIORITY);
+    public function broadcast(string $eventName, EventInterface $event = null);
 }

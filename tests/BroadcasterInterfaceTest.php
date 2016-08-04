@@ -7,7 +7,7 @@ use Jarvis\Skill\DependencyInjection\Reference;
 use Jarvis\Skill\EventBroadcaster\AnalyzeEvent;
 use Jarvis\Skill\EventBroadcaster\ControllerEvent;
 use Jarvis\Skill\EventBroadcaster\EventInterface;
-use Jarvis\Skill\EventBroadcaster\JarvisEvents;
+use Jarvis\Skill\EventBroadcaster\BroadcasterInterface;
 use Jarvis\Skill\EventBroadcaster\PermanentEvent;
 use Jarvis\Skill\EventBroadcaster\SimpleEvent;
 use Jarvis\Skill\EventBroadcaster\ResponseEvent;
@@ -18,7 +18,7 @@ use Symfony\Component\HttpFoundation\Request;
  *
  * @author Eric Chau <eriic.chau@gmail.com>
  */
-class JarvisBroadcasterTest extends \PHPUnit_Framework_TestCase
+class BroadcasterInterfaceTest extends \PHPUnit_Framework_TestCase
 {
     const RANDOM_EVENT_NAME = 'random.event_name';
 
@@ -28,7 +28,7 @@ class JarvisBroadcasterTest extends \PHPUnit_Framework_TestCase
 
         $receiver = new FakeReceiver();
 
-        $jarvis->addReceiver(self::RANDOM_EVENT_NAME, [$receiver, 'onEventBroadcast']);
+        $jarvis->on(self::RANDOM_EVENT_NAME, [$receiver, 'onEventBroadcast']);
 
         $this->assertNull($receiver->event);
 
@@ -44,9 +44,9 @@ class JarvisBroadcasterTest extends \PHPUnit_Framework_TestCase
 
         $receiver = new FakeReceiver();
 
-        $jarvis->addReceiver(JarvisEvents::ANALYZE_EVENT, [$receiver, 'onAnalyzeEvent']);
-        $jarvis->addReceiver(JarvisEvents::CONTROLLER_EVENT, [$receiver, 'onControllerEvent']);
-        $jarvis->addReceiver(JarvisEvents::RESPONSE_EVENT, [$receiver, 'onResponseEvent']);
+        $jarvis->on(BroadcasterInterface::ANALYZE_EVENT, [$receiver, 'onAnalyzeEvent']);
+        $jarvis->on(BroadcasterInterface::CONTROLLER_EVENT, [$receiver, 'onControllerEvent']);
+        $jarvis->on(BroadcasterInterface::RESPONSE_EVENT, [$receiver, 'onResponseEvent']);
 
         $jarvis['fake_controller'] = function () {
             return new FakeController();
@@ -76,7 +76,7 @@ class JarvisBroadcasterTest extends \PHPUnit_Framework_TestCase
         $receiver = new FakeReceiver();
 
         $this->assertNotInstanceOf(FakeEvent::class, $receiver->event);
-        $jarvis->addReceiver(self::RANDOM_EVENT_NAME, [$receiver, 'onEventBroadcast']);
+        $jarvis->on(self::RANDOM_EVENT_NAME, [$receiver, 'onEventBroadcast']);
         $jarvis->broadcast(self::RANDOM_EVENT_NAME, new FakeEvent());
         $this->assertInstanceOf(FakeEvent::class, $receiver->event);
     }
@@ -87,7 +87,7 @@ class JarvisBroadcasterTest extends \PHPUnit_Framework_TestCase
     public function testExceptionOnUnauthorizedBroadcastAnalyzeEvent()
     {
         $jarvis = new Jarvis();
-        $jarvis->broadcast(JarvisEvents::ANALYZE_EVENT);
+        $jarvis->broadcast(BroadcasterInterface::ANALYZE_EVENT);
     }
 
     /**
@@ -96,7 +96,7 @@ class JarvisBroadcasterTest extends \PHPUnit_Framework_TestCase
     public function testExceptionOnUnauthorizedBroadcastControllerEvent()
     {
         $jarvis = new Jarvis();
-        $jarvis->broadcast(JarvisEvents::CONTROLLER_EVENT);
+        $jarvis->broadcast(BroadcasterInterface::CONTROLLER_EVENT);
     }
 
     /**
@@ -105,7 +105,7 @@ class JarvisBroadcasterTest extends \PHPUnit_Framework_TestCase
     public function testExceptionOnUnauthorizedBroadcastResponseEvent()
     {
         $jarvis = new Jarvis();
-        $jarvis->broadcast(JarvisEvents::RESPONSE_EVENT);
+        $jarvis->broadcast(BroadcasterInterface::RESPONSE_EVENT);
     }
 
     /**
@@ -114,7 +114,7 @@ class JarvisBroadcasterTest extends \PHPUnit_Framework_TestCase
     public function testExceptionOnUnauthorizedBroadcastExceptionEvent()
     {
         $jarvis = new Jarvis();
-        $jarvis->broadcast(JarvisEvents::EXCEPTION_EVENT);
+        $jarvis->broadcast(BroadcasterInterface::EXCEPTION_EVENT);
     }
 
     public function testEventReceiversPriorities()
@@ -131,9 +131,9 @@ class JarvisBroadcasterTest extends \PHPUnit_Framework_TestCase
         $this->assertNull($normalPriorityReceiver->microTimestamp);
         $this->assertNull($highPriorityReceiver->microTimestamp);
 
-        $jarvis->addReceiver($eventName, [$lowPriorityReceiver, 'saveMicroTimestamp'], Jarvis::RECEIVER_LOW_PRIORITY);
-        $jarvis->addReceiver($eventName, [$normalPriorityReceiver, 'saveMicroTimestamp'], Jarvis::RECEIVER_NORMAL_PRIORITY);
-        $jarvis->addReceiver($eventName, [$highPriorityReceiver, 'saveMicroTimestamp'], Jarvis::RECEIVER_HIGH_PRIORITY);
+        $jarvis->on($eventName, [$lowPriorityReceiver, 'saveMicroTimestamp'], Jarvis::RECEIVER_LOW_PRIORITY);
+        $jarvis->on($eventName, [$normalPriorityReceiver, 'saveMicroTimestamp'], Jarvis::RECEIVER_NORMAL_PRIORITY);
+        $jarvis->on($eventName, [$highPriorityReceiver, 'saveMicroTimestamp'], Jarvis::RECEIVER_HIGH_PRIORITY);
 
         $jarvis->broadcast($eventName);
 
@@ -148,7 +148,7 @@ class JarvisBroadcasterTest extends \PHPUnit_Framework_TestCase
         $receiver = new FakeReceiver();
 
         $eventName = 'permanent.event.init';
-        $jarvis->addReceiver($eventName, [$receiver, 'onEventBroadcast']);
+        $jarvis->on($eventName, [$receiver, 'onEventBroadcast']);
         $this->assertNull($receiver->event);
 
         $event = new SimpleEvent();
@@ -157,7 +157,7 @@ class JarvisBroadcasterTest extends \PHPUnit_Framework_TestCase
         $this->assertSame($event, $receiver->event);
 
         $jarvis->broadcast($eventName, $permanentEvent);
-        $jarvis->addReceiver($eventName, [$receiver, 'onEventBroadcast']);
+        $jarvis->on($eventName, [$receiver, 'onEventBroadcast']);
         $this->assertNotSame($event, $receiver->event);
         $this->assertSame($permanentEvent, $receiver->event);
     }

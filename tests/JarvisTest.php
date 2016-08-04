@@ -4,7 +4,7 @@ namespace Jarvis\Tests;
 
 use Jarvis\Jarvis;
 use Jarvis\Skill\EventBroadcaster\AnalyzeEvent;
-use Jarvis\Skill\EventBroadcaster\JarvisEvents;
+use Jarvis\Skill\EventBroadcaster\BroadcasterInterface;
 use Jarvis\Skill\EventBroadcaster\SimpleEvent;
 use Symfony\Component\HttpFoundation\ParameterBag;
 use Symfony\Component\HttpFoundation\Request;
@@ -85,9 +85,9 @@ class JarvisTest extends \PHPUnit_Framework_TestCase
 
         $receiver = new FakeReceiver();
 
-        $jarvis->addReceiver(JarvisEvents::ANALYZE_EVENT, [$receiver, 'onAnalyzeEventSetResponse']);
-        $jarvis->addReceiver(JarvisEvents::CONTROLLER_EVENT, [$receiver, 'onControllerEvent']);
-        $jarvis->addReceiver(JarvisEvents::RESPONSE_EVENT, [$receiver, 'onResponseEvent']);
+        $jarvis->on(BroadcasterInterface::ANALYZE_EVENT, [$receiver, 'onAnalyzeEventSetResponse']);
+        $jarvis->on(BroadcasterInterface::CONTROLLER_EVENT, [$receiver, 'onControllerEvent']);
+        $jarvis->on(BroadcasterInterface::RESPONSE_EVENT, [$receiver, 'onResponseEvent']);
 
         $this->assertNull($receiver->analyzeEvent);
         $this->assertNull($receiver->controllerEvent);
@@ -108,7 +108,7 @@ class JarvisTest extends \PHPUnit_Framework_TestCase
         $receiver = new FakeReceiver();
         $controller = new FakeController();
 
-        $jarvis->addReceiver(JarvisEvents::RESPONSE_EVENT, [$receiver, 'modifyResponseOnResponseEvent']);
+        $jarvis->on(BroadcasterInterface::RESPONSE_EVENT, [$receiver, 'modifyResponseOnResponseEvent']);
 
         $jarvis['router']
             ->beginRoute()
@@ -202,7 +202,7 @@ class JarvisTest extends \PHPUnit_Framework_TestCase
         $jarvis = new Jarvis();
 
         $receiver = new FakeReceiver();
-        $jarvis->addReceiver(JarvisEvents::TERMINATE_EVENT, [$receiver, 'onEventBroadcast']);
+        $jarvis->on(BroadcasterInterface::TERMINATE_EVENT, [$receiver, 'onEventBroadcast']);
 
         $this->assertNull($receiver->event);
 

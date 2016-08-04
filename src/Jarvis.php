@@ -10,9 +10,9 @@ use Jarvis\Skill\DependencyInjection\ContainerProvider;
 use Jarvis\Skill\DependencyInjection\ContainerProviderInterface;
 use Jarvis\Skill\EventBroadcaster\AnalyzeEvent;
 use Jarvis\Skill\EventBroadcaster\ControllerEvent;
+use Jarvis\Skill\EventBroadcaster\BroadcasterInterface;
 use Jarvis\Skill\EventBroadcaster\EventInterface;
 use Jarvis\Skill\EventBroadcaster\ExceptionEvent;
-use Jarvis\Skill\EventBroadcaster\JarvisEvents;
 use Jarvis\Skill\EventBroadcaster\PermanentEventInterface;
 use Jarvis\Skill\EventBroadcaster\ResponseEvent;
 use Jarvis\Skill\EventBroadcaster\SimpleEvent;
@@ -33,15 +33,11 @@ use Symfony\Component\HttpFoundation\Response;
  *
  * @author Eric Chau <eriic.chau@gmail.com>
  */
-class Jarvis extends Container
+class Jarvis extends Container implements BroadcasterInterface
 {
     const DEFAULT_DEBUG = false;
     const CONTAINER_PROVIDER_FQCN = ContainerProvider::class;
     const DEFAULT_SCOPE = 'default';
-
-    const RECEIVER_HIGH_PRIORITY = 2;
-    const RECEIVER_NORMAL_PRIORITY = 1;
-    const RECEIVER_LOW_PRIORITY = 0;
 
     private $receivers = [];
     private $permanentEvents = [];
@@ -81,7 +77,7 @@ class Jarvis extends Container
 
     public function __destruct()
     {
-        $this->masterBroadcast(JarvisEvents::TERMINATE_EVENT);
+        $this->masterBroadcast(BroadcasterInterface::TERMINATE_EVENT);
     }
 
     /**
@@ -130,7 +126,7 @@ class Jarvis extends Container
         $response = null;
 
         try {
-            $this->masterBroadcast(JarvisEvents::ANALYZE_EVENT, $analyzeEvent = new AnalyzeEvent($request));
+            $this->masterBroadcast(BroadcasterInterface::ANALYZE_EVENT, $analyzeEvent = new AnalyzeEvent($request));
 
             if ($response = $analyzeEvent->response()) {
                 return $response;
@@ -141,7 +137,7 @@ class Jarvis extends Container
                 $callback = $this->callbackResolver->resolve($routeInfo[1]);
 
                 $event = new ControllerEvent($callback, $routeInfo[2]);
-                $this->masterBroadcast(JarvisEvents::CONTROLLER_EVENT, $event);
+                $this->masterBroadcast(BroadcasterInterface::CONTROLLER_EVENT, $event);
 
                 $response = call_user_func_array($event->callback(), $event->arguments());
 
@@ -155,32 +151,26 @@ class Jarvis extends Container
                 );
             }
 
-            $this->masterBroadcast(JarvisEvents::RESPONSE_EVENT, new ResponseEvent($request, $response));
+            $this->masterBroadcast(BroadcasterInterface::RESPONSE_EVENT, new ResponseEvent($request, $response));
         } catch (\Throwable $throwable) {
-            $this->masterBroadcast(JarvisEvents::EXCEPTION_EVENT, $exceptionEvent = new ExceptionEvent($throwable));
+            $exceptionEvent = new ExceptionEvent($throwable);
+            $this->masterBroadcast(BroadcasterInterface::EXCEPTION_EVENT, $exceptionEvent);
             $response = $exceptionEvent->response();
-
-            if (null === $response) {
-                throw $throwable;
-            }
         }
 
         return $response;
     }
 
     /**
-     * @param  string  $eventName
-     * @param  mixed   $receiver
-     * @param  integer $priority
-     * @return self
+     * {@inheritdoc}
      */
-    public function addReceiver(string $eventName, $receiver, int $priority = self::RECEIVER_NORMAL_PRIORITY): Jarvis
+    public function on(string $eventName, $receiver, int $priority = BroadcasterInterface::RECEIVER_NORMAL_PRIORITY)
     {
         if (!isset($this->receivers[$eventName])) {
             $this->receivers[$eventName] = [
-                self::RECEIVER_LOW_PRIORITY    => [],
-                self::RECEIVER_NORMAL_PRIORITY => [],
-                self::RECEIVER_HIGH_PRIORITY   => [],
+                BroadcasterInterface::RECEIVER_LOW_PRIORITY    => [],
+                BroadcasterInterface::RECEIVER_NORMAL_PRIORITY => [],
+                BroadcasterInterface::RECEIVER_HIGH_PRIORITY   => [],
             ];
         }
 
@@ -197,16 +187,14 @@ class Jarvis extends Container
     }
 
     /**
-     * @param  string              $eventName
-     * @param  EventInterface|null $event
-     * @return self
+     * {@inheritdoc}
      */
-    public function broadcast(string $eventName, EventInterface $event = null): Jarvis
+    public function broadcast(string $eventName, EventInterface $event = null)
     {
-        if (!$this->masterEmitter && in_array($eventName, JarvisEvents::RESERVED_EVENT_NAMES)) {
+        if (!$this->masterEmitter && in_array($eventName, BroadcasterInterface::RESERVED_EVENT_NAMES)) {
             throw new \LogicException(sprintf(
                 'You\'re trying to broadcast "$eventName" but "%s" are reserved event names.',
-                implode('|', JarvisEvents::RESERVED_EVENT_NAMES)
+                implode('|', BroadcasterInterface::RESERVED_EVENT_NAMES)
             ));
         }
 
@@ -278,9 +266,9 @@ class Jarvis extends Container
     private function buildEventReceivers(string $eventName): array
     {
         return $this->computedReceivers[$eventName] = $this->computedReceivers[$eventName] ?? array_merge(
-            $this->receivers[$eventName][self::RECEIVER_HIGH_PRIORITY],
-            $this->receivers[$eventName][self::RECEIVER_NORMAL_PRIORITY],
-            $this->receivers[$eventName][self::RECEIVER_LOW_PRIORITY]
+            $this->receivers[$eventName][BroadcasterInterface::RECEIVER_HIGH_PRIORITY],
+            $this->receivers[$eventName][BroadcasterInterface::RECEIVER_NORMAL_PRIORITY],
+            $this->receivers[$eventName][BroadcasterInterface::RECEIVER_LOW_PRIORITY]
         );
     }
 }
