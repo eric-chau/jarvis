@@ -40,7 +40,7 @@ final class ContainerProvider implements ContainerProviderInterface
         };
 
         $jarvis['router'] = function(Jarvis $jarvis): Router {
-            return new Router($jarvis['scopeManager']);
+            return new Router();
         };
 
         $jarvis['callbackResolver'] = function(Jarvis $jarvis): CallbackResolver {

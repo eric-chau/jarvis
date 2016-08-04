@@ -133,11 +133,5 @@ class RouterTest extends \PHPUnit_Framework_TestCase
 
         $jarvis->router->setHost('github.com/');
         $this->assertSame('https://github.com/eric-chau/jarvis', $jarvis->router->url('///eric-chau/jarvis'));
-
-        // $domain = 'https://github.com/';
-        // $jarvis->router->setDomain($domain);
-        // $this->assertSame('https://github.com/foo/bar', $jarvis->router->url('foo/bar'));
-
-        // $this->assertSame('http://hello.world/foo/bar', $jarvis->router->url('foo/bar', 'http://hello.world/'));
     }
 }
