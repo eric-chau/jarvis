@@ -27,22 +27,22 @@ $jarvis->router
     ->end()
 ;
 
-$response = $jarvis->analyze();
+$response = $jarvis->run();
 
 $response->send();
 ```
 
 # How Jarvis process incoming request
 
-The schema below will sum up how  `Jarvis\Jarvis::analyze()` treats any incoming request:
+The schema below will sum up how  `Jarvis\Jarvis::run()` treats any incoming request:
 
 ```
 INPUT: an instance of Request
 
 |
-|__ Step 1: broadcast AnalyzeEvent.
+|__ Step 1: broadcast RunEvent.
 |
-|__ Step 2: check if AnalyzeEvent has a response?
+|__ Step 2: check if RunEvent has a response?
 |_______
 | NO    | YES
 |       |
@@ -67,7 +67,7 @@ INPUT: an instance of Request
 OUT: an instance of Response
 ```
 
-*: note that if provided URI does not match any route `analyze()` will return an instance of Response with 404 or 406 status code.
+*: note that if provided URI does not match any route `run()` will return an instance of Response with 404 or 406 status code.
 
 # Router skill
 

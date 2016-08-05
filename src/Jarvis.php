@@ -8,13 +8,13 @@ use FastRoute\Dispatcher;
 use Jarvis\Skill\DependencyInjection\Container;
 use Jarvis\Skill\DependencyInjection\ContainerProvider;
 use Jarvis\Skill\DependencyInjection\ContainerProviderInterface;
-use Jarvis\Skill\EventBroadcaster\AnalyzeEvent;
-use Jarvis\Skill\EventBroadcaster\ControllerEvent;
 use Jarvis\Skill\EventBroadcaster\BroadcasterInterface;
+use Jarvis\Skill\EventBroadcaster\ControllerEvent;
 use Jarvis\Skill\EventBroadcaster\EventInterface;
 use Jarvis\Skill\EventBroadcaster\ExceptionEvent;
 use Jarvis\Skill\EventBroadcaster\PermanentEventInterface;
 use Jarvis\Skill\EventBroadcaster\ResponseEvent;
+use Jarvis\Skill\EventBroadcaster\RunEvent;
 use Jarvis\Skill\EventBroadcaster\SimpleEvent;
 use Symfony\Component\HttpFoundation\ParameterBag;
 use Symfony\Component\HttpFoundation\Request;
@@ -118,15 +118,15 @@ class Jarvis extends Container implements BroadcasterInterface
      * @param  Request|null $request
      * @return Response
      */
-    public function analyze(Request $request = null): Response
+    public function run(Request $request = null): Response
     {
         $request = $request ?? $this->request;
         $response = null;
 
         try {
-            $this->masterBroadcast(BroadcasterInterface::ANALYZE_EVENT, $analyzeEvent = new AnalyzeEvent($request));
+            $this->masterBroadcast(BroadcasterInterface::RUN_EVENT, $runEvent = new RunEvent($request));
 
-            if ($response = $analyzeEvent->response()) {
+            if ($response = $runEvent->response()) {
                 return $response;
             }
 
@@ -142,7 +142,7 @@ class Jarvis extends Container implements BroadcasterInterface
                 if (is_scalar($response)) {
                     $response = new Response((string) $response);
                 }
-            } elseif (Dispatcher::NOT_FOUND === $routeInfo[0] || Dispatcher::METHOD_NOT_ALLOWED === $routeInfo[0]) {
+            } else {
                 $response = new Response(null, Dispatcher::NOT_FOUND === $routeInfo[0]
                     ? Response::HTTP_NOT_FOUND
                     : Response::HTTP_METHOD_NOT_ALLOWED

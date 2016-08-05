@@ -3,8 +3,8 @@
 namespace Jarvis\Tests;
 
 use Jarvis\Jarvis;
-use Jarvis\Skill\EventBroadcaster\AnalyzeEvent;
 use Jarvis\Skill\EventBroadcaster\BroadcasterInterface;
+use Jarvis\Skill\EventBroadcaster\RunEvent;
 use Jarvis\Skill\EventBroadcaster\SimpleEvent;
 use Symfony\Component\HttpFoundation\ParameterBag;
 use Symfony\Component\HttpFoundation\Request;
@@ -49,7 +49,7 @@ class JarvisTest extends \PHPUnit_Framework_TestCase
                 ->setHandler([new FakeController(), 'throwExceptionAction'])
             ->end()
         ;
-        $response = $jarvis->analyze();
+        $response = $jarvis->run();
 
         $this->assertInstanceOf(Response::class, $response);
         $this->assertSame(500, $response->getStatusCode());
@@ -60,7 +60,7 @@ class JarvisTest extends \PHPUnit_Framework_TestCase
     {
         $jarvis = new Jarvis();
 
-        $response = $jarvis->analyze();
+        $response = $jarvis->run();
         $this->assertSame(404, $response->getStatusCode());
     }
 
@@ -74,29 +74,29 @@ class JarvisTest extends \PHPUnit_Framework_TestCase
                 ->setHandler([new FakeController(), 'throwExceptionAction'])
             ->end()
         ;
-        $response = $jarvis->analyze();
+        $response = $jarvis->run();
 
         $this->assertSame(405, $response->getStatusCode());
     }
 
-    public function testAnalyzeExecutionIsStoppedIfAnalyzeEventHasResponseSetted()
+    public function testAnalyzeExecutionIsStoppedIfRunEventHasResponseSetted()
     {
         $jarvis = new Jarvis();
 
         $receiver = new FakeReceiver();
 
-        $jarvis->on(BroadcasterInterface::ANALYZE_EVENT, [$receiver, 'onAnalyzeEventSetResponse']);
+        $jarvis->on(BroadcasterInterface::RUN_EVENT, [$receiver, 'onRunEventSetResponse']);
         $jarvis->on(BroadcasterInterface::CONTROLLER_EVENT, [$receiver, 'onControllerEvent']);
         $jarvis->on(BroadcasterInterface::RESPONSE_EVENT, [$receiver, 'onResponseEvent']);
 
-        $this->assertNull($receiver->analyzeEvent);
+        $this->assertNull($receiver->runEvent);
         $this->assertNull($receiver->controllerEvent);
         $this->assertNull($receiver->responseEvent);
 
-        $response = $jarvis->analyze();
+        $response = $jarvis->run();
 
         $this->assertSame(Response::HTTP_NOT_MODIFIED, $response->getStatusCode());
-        $this->assertInstanceOf(AnalyzeEvent::class, $receiver->analyzeEvent);
+        $this->assertInstanceOf(RunEvent::class, $receiver->runEvent);
         $this->assertNull($receiver->controllerEvent);
         $this->assertNull($receiver->responseEvent);
     }
@@ -118,7 +118,7 @@ class JarvisTest extends \PHPUnit_Framework_TestCase
 
         $this->assertNull($receiver->responseEvent);
 
-        $response = $jarvis->analyze();
+        $response = $jarvis->run();
 
         $this->assertNotSame($controller->getFooAction()->getContent(), $response->getContent());
         $this->assertSame('bar', $response->getContent());
@@ -191,7 +191,7 @@ class JarvisTest extends \PHPUnit_Framework_TestCase
             ->end()
         ;
 
-        $result = $jarvis->analyze();
+        $result = $jarvis->run();
 
         $this->assertInstanceOf(Response::class, $result);
         $this->assertSame($str, $result->getContent());

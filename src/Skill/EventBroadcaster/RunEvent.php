@@ -10,10 +10,10 @@ use Symfony\Component\HttpFoundation\Response;
 /**
  * @author Eric Chau <eriic.chau@gmail.com>
  */
-class AnalyzeEvent extends ResponseEvent
+class RunEvent extends ResponseEvent
 {
     /**
-     * Creates an instance of AnalyzeEvent.
+     * Creates an instance of RunEvent.
      *
      * @param Request $request
      */
@@ -28,7 +28,7 @@ class AnalyzeEvent extends ResponseEvent
      * @param  Response $response
      * @return self
      */
-    public function setResponse(Response $response): AnalyzeEvent
+    public function setResponse(Response $response): RunEvent
     {
         $this->response = $response;
 

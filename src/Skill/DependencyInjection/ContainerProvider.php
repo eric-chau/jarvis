@@ -8,7 +8,6 @@ use Jarvis\Jarvis;
 use Jarvis\Skill\Core\CallbackResolver;
 use Jarvis\Skill\EventBroadcaster\BroadcasterInterface;
 use Jarvis\Skill\EventBroadcaster\ExceptionEvent;
-use Jarvis\Skill\EventBroadcaster\JarvisEvents;
 use Jarvis\Skill\Routing\Router;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -38,7 +37,7 @@ final class ContainerProvider implements ContainerProviderInterface
             return $jarvis->request->getSession();
         };
 
-        $jarvis['router'] = function(Jarvis $jarvis): Router {
+        $jarvis['router'] = function(): Router {
             return new Router();
         };
 
