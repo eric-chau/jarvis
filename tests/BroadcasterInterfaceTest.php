@@ -4,7 +4,7 @@ namespace Jarvis\Tests;
 
 use Jarvis\Jarvis;
 use Jarvis\Skill\DependencyInjection\Reference;
-use Jarvis\Skill\EventBroadcaster\AnalyzeEvent;
+use Jarvis\Skill\EventBroadcaster\RunEvent;
 use Jarvis\Skill\EventBroadcaster\ControllerEvent;
 use Jarvis\Skill\EventBroadcaster\EventInterface;
 use Jarvis\Skill\EventBroadcaster\BroadcasterInterface;
@@ -38,13 +38,13 @@ class BroadcasterInterfaceTest extends \PHPUnit_Framework_TestCase
         $this->assertInstanceOf(SimpleEvent::class, $receiver->event);
     }
 
-    public function testBroadcastOfAnalyzeEventAndControllerEventAndResponseEventDuringAnalyzeExecution()
+    public function testBroadcastOfRunEventAndControllerEventAndResponseEventDuringAnalyzeExecution()
     {
         $jarvis = new Jarvis();
 
         $receiver = new FakeReceiver();
 
-        $jarvis->on(BroadcasterInterface::ANALYZE_EVENT, [$receiver, 'onAnalyzeEvent']);
+        $jarvis->on(BroadcasterInterface::RUN_EVENT, [$receiver, 'onRunEvent']);
         $jarvis->on(BroadcasterInterface::CONTROLLER_EVENT, [$receiver, 'onControllerEvent']);
         $jarvis->on(BroadcasterInterface::RESPONSE_EVENT, [$receiver, 'onResponseEvent']);
 
@@ -58,13 +58,13 @@ class BroadcasterInterfaceTest extends \PHPUnit_Framework_TestCase
             ->end()
         ;
 
-        $this->assertNull($receiver->analyzeEvent);
+        $this->assertNull($receiver->runEvent);
         $this->assertNull($receiver->controllerEvent);
         $this->assertNull($receiver->responseEvent);
 
-        $response = $jarvis->analyze(new Request());
+        $response = $jarvis->run(new Request());
 
-        $this->assertInstanceOf(AnalyzeEvent::class, $receiver->analyzeEvent);
+        $this->assertInstanceOf(RunEvent::class, $receiver->runEvent);
         $this->assertInstanceOf(ControllerEvent::class, $receiver->controllerEvent);
         $this->assertInstanceOf(ResponseEvent::class, $receiver->responseEvent);
     }
@@ -84,10 +84,10 @@ class BroadcasterInterfaceTest extends \PHPUnit_Framework_TestCase
     /**
      * @expectedException \LogicException
      */
-    public function testExceptionOnUnauthorizedBroadcastAnalyzeEvent()
+    public function testExceptionOnUnauthorizedBroadcastRunEvent()
     {
         $jarvis = new Jarvis();
-        $jarvis->broadcast(BroadcasterInterface::ANALYZE_EVENT);
+        $jarvis->broadcast(BroadcasterInterface::RUN_EVENT);
     }
 
     /**

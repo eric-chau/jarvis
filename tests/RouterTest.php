@@ -20,7 +20,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
                 ->setHandler([new FakeController(), 'randomAction'])
             ->end()
         ;
-        $response = $jarvis->analyze();
+        $response = $jarvis->run();
 
         $this->assertSame(200, $response->getStatusCode());
         $this->assertSame(FakeController::class, $response->getContent());
@@ -30,7 +30,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
     {
         $jarvis = new Jarvis();
 
-        $response = $jarvis->analyze(Request::create('/hello/jarvis'));
+        $response = $jarvis->run(Request::create('/hello/jarvis'));
 
         $this->assertSame(Response::HTTP_NOT_FOUND, $response->getStatusCode());
 
@@ -49,12 +49,12 @@ class RouterTest extends \PHPUnit_Framework_TestCase
             ->end()
         ;
 
-        $response = $jarvis->analyze(Request::create('/hello/jarvis'));
+        $response = $jarvis->run(Request::create('/hello/jarvis'));
 
         $this->assertSame(Response::HTTP_OK, $response->getStatusCode());
         $this->assertSame('Hello jarvis!', $response->getContent());
 
-        $response = $jarvis->analyze(Request::create('/hello/jarvis/123'));
+        $response = $jarvis->run(Request::create('/hello/jarvis/123'));
 
         $this->assertSame(Response::HTTP_OK, $response->getStatusCode());
         $this->assertSame('jarvis (123)', $response->getContent());

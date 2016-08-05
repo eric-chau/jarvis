@@ -10,7 +10,7 @@ use Symfony\Component\HttpFoundation\Response;
 class FakeReceiver
 {
     public $event;
-    public $analyzeEvent;
+    public $runEvent;
     public $controllerEvent;
     public $responseEvent;
     public $microTimestamp;
@@ -20,9 +20,9 @@ class FakeReceiver
         $this->event = $event;
     }
 
-    public function onAnalyzeEvent($event)
+    public function onRunEvent($event)
     {
-        $this->analyzeEvent = $event;
+        $this->runEvent = $event;
     }
 
     public function onControllerEvent($event)
@@ -35,9 +35,9 @@ class FakeReceiver
         $this->responseEvent = $event;
     }
 
-    public function onAnalyzeEventSetResponse($event)
+    public function onRunEventSetResponse($event)
     {
-        $this->analyzeEvent = $event;
+        $this->runEvent = $event;
         $event->setResponse(new Response(null, Response::HTTP_NOT_MODIFIED));
     }
 
