@@ -9,6 +9,7 @@ use FastRoute\Dispatcher\GroupCountBased as Dispatcher;
 use FastRoute\RouteParser\Std as Parser;
 use FastRoute\RouteCollector;
 use Jarvis\Jarvis;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * @author Eric Chau <eriic.chau@gmail.com>
@@ -176,11 +177,31 @@ class Router extends Dispatcher
     }
 
     /**
-     * Alias of ::dispatch.
+     * Matches the given HTTP method and URI to the route collection and returns
+     * the callback with the array of arguments to use.
+     *
+     * @param  string $method
+     * @param  string $uri
+     * @return array
      */
     public function match(string $method, string $uri): array
     {
-        return $this->dispatch($method, $uri);
+        $arguments = [];
+        $callback = null;
+        $result = $this->dispatch($method, $uri);
+
+        if (Dispatcher::FOUND === $result[0]) {
+            [1 => $callback, 2 => $arguments] = $result;
+        } else {
+            $callback = function() use ($result): Response {
+                return new Response(null, Dispatcher::METHOD_NOT_ALLOWED === $result[0]
+                    ? Response::HTTP_METHOD_NOT_ALLOWED
+                    : Response::HTTP_NOT_FOUND
+                );
+            };
+        }
+
+        return [$callback, $arguments];
     }
 
     /**
@@ -190,7 +211,7 @@ class Router extends Dispatcher
      */
     public function dispatch($method, $uri): array
     {
-        list($this->staticRouteMap, $this->variableRouteData) = $this->routeCollector()->getData();
+        [$this->staticRouteMap, $this->variableRouteData] = $this->routeCollector()->getData();
 
         return parent::dispatch(strtolower($method), $uri);
     }
@@ -206,7 +227,7 @@ class Router extends Dispatcher
             $this->routeCollector = new RouteCollector(new Parser(), new DataGenerator());
 
             foreach ($this->rawRoutes as $rawRoute) {
-                list($method, $route, $handler) = $rawRoute;
+                [$method, $route, $handler] = $rawRoute;
                 $this->routeCollector->addRoute($method, $route, $handler);
             }
 

@@ -14,7 +14,7 @@ class ControllerEventTest extends \PHPUnit_Framework_TestCase
      */
     public function testSetInvalidCallbackRaiseException()
     {
-        $event = new ControllerEvent(function () {});
+        $event = new ControllerEvent(function() {});
 
         $this->assertSame($event, $event->setCallback('rand'));
         $event->setCallback(\Closure::fromCallable('foobar'));

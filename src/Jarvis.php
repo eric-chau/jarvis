@@ -24,11 +24,11 @@ use Symfony\Component\HttpFoundation\Response;
  * Jarvis. Minimalist dependency injection container.
  *
  * @property boolean $debug
+ * @property Request $request
+ * @property ParameterBag $settings
  * @property \Jarvis\Skill\Routing\Router $router
- * @property \Symfony\Component\HttpFoundation\Request $request
  * @property \Symfony\Component\HttpFoundation\Session\Session $session
  * @property \Jarvis\Skill\Core\CallbackResolver $callbackResolver
- * @property \Symfony\Component\HttpFoundation\ParameterBag $settings
  *
  * @author Eric Chau <eriic.chau@gmail.com>
  */
@@ -124,32 +124,20 @@ class Jarvis extends Container implements BroadcasterInterface
         $response = null;
 
         try {
-            $this->masterBroadcast(BroadcasterInterface::RUN_EVENT, $runEvent = new RunEvent($request));
-
-            if ($response = $runEvent->response()) {
+            $this->masterBroadcast(BroadcasterInterface::RUN_EVENT, $event = new RunEvent($request));
+            if ($response = $event->response()) {
                 return $response;
             }
 
-            $routeInfo = $this->router->match($request->getMethod(), $request->getPathInfo());
-            if (Dispatcher::FOUND === $routeInfo[0]) {
-                $callback = $this->callbackResolver->resolve($routeInfo[1]);
+            [$callback, $arguments] = $this->router->match($request->getMethod(), $request->getPathInfo());
 
-                $event = new ControllerEvent($callback, $routeInfo[2]);
-                $this->masterBroadcast(BroadcasterInterface::CONTROLLER_EVENT, $event);
+            $event = new ControllerEvent($this->callbackResolver->resolve($callback), $arguments);
+            $this->masterBroadcast(BroadcasterInterface::CONTROLLER_EVENT, $event);
 
-                $response = call_user_func_array($event->callback(), $event->arguments());
-
-                if (is_scalar($response)) {
-                    $response = new Response((string) $response);
-                }
-            } else {
-                $response = new Response(null, Dispatcher::NOT_FOUND === $routeInfo[0]
-                    ? Response::HTTP_NOT_FOUND
-                    : Response::HTTP_METHOD_NOT_ALLOWED
-                );
-            }
-
-            $this->masterBroadcast(BroadcasterInterface::RESPONSE_EVENT, new ResponseEvent($request, $response));
+            $response = call_user_func_array($event->callback(), $event->arguments());
+            $event = new ResponseEvent($request, $response);
+            $this->masterBroadcast(BroadcasterInterface::RESPONSE_EVENT, $event);
+            $response = $event->response();
         } catch (\Throwable $throwable) {
             $exceptionEvent = new ExceptionEvent($throwable);
             $this->masterBroadcast(BroadcasterInterface::EXCEPTION_EVENT, $exceptionEvent);
@@ -162,23 +150,23 @@ class Jarvis extends Container implements BroadcasterInterface
     /**
      * {@inheritdoc}
      */
-    public function on(string $eventName, $receiver, int $priority = BroadcasterInterface::RECEIVER_NORMAL_PRIORITY)
+    public function on(string $name, $receiver, int $priority = BroadcasterInterface::RECEIVER_NORMAL_PRIORITY): Jarvis
     {
-        if (!isset($this->receivers[$eventName])) {
-            $this->receivers[$eventName] = [
+        if (!isset($this->receivers[$name])) {
+            $this->receivers[$name] = [
                 BroadcasterInterface::RECEIVER_LOW_PRIORITY    => [],
                 BroadcasterInterface::RECEIVER_NORMAL_PRIORITY => [],
                 BroadcasterInterface::RECEIVER_HIGH_PRIORITY   => [],
             ];
         }
 
-        $this->receivers[$eventName][$priority][] = $receiver;
-        $this->computedReceivers[$eventName] = null;
+        $this->receivers[$name][$priority][] = $receiver;
+        $this->computedReceivers[$name] = null;
 
-        if (isset($this->permanentEvents[$eventName])) {
-            $event = $this->permanentEvents[$eventName];
+        if (isset($this->permanentEvents[$name])) {
+            $name = $this->permanentEvents[$name];
 
-            call_user_func_array($this->callbackResolver->resolve($receiver), [$event]);
+            call_user_func_array($this->callbackResolver->resolve($receiver), [$name]);
         }
 
         return $this;
@@ -187,22 +175,22 @@ class Jarvis extends Container implements BroadcasterInterface
     /**
      * {@inheritdoc}
      */
-    public function broadcast(string $eventName, EventInterface $event = null)
+    public function broadcast(string $name, EventInterface $event = null): Jarvis
     {
-        if (!$this->masterEmitter && in_array($eventName, BroadcasterInterface::RESERVED_EVENT_NAMES)) {
+        if (!$this->masterEmitter && in_array($name, BroadcasterInterface::RESERVED_EVENT_NAMES)) {
             throw new \LogicException(sprintf(
-                'You\'re trying to broadcast "$eventName" but "%s" are reserved event names.',
+                'You\'re trying to broadcast "$name" but "%s" are reserved event names.',
                 implode('|', BroadcasterInterface::RESERVED_EVENT_NAMES)
             ));
         }
 
-        if (isset($this->receivers[$eventName])) {
-            $event = $event ?? new SimpleEvent();
-            if ($event instanceof PermanentEventInterface && $event->isPermanent()) {
-                $this->permanentEvents[$eventName] = $event;
-            }
+        $event = $event ?? new SimpleEvent();
+        if ($event instanceof PermanentEventInterface && $event->isPermanent()) {
+            $this->permanentEvents[$name] = $event;
+        }
 
-            foreach ($this->buildEventReceivers($eventName) as $receiver) {
+        if (isset($this->receivers[$name])) {
+            foreach ($this->buildEventReceivers($name) as $receiver) {
                 call_user_func_array($this->callbackResolver->resolve($receiver), [$event]);
 
                 if ($event->isPropagationStopped()) {
@@ -230,10 +218,10 @@ class Jarvis extends Container implements BroadcasterInterface
      *
      * @return self
      */
-    private function masterBroadcast(string $eventName, EventInterface $event = null): Jarvis
+    private function masterBroadcast(string $name, EventInterface $event = null): Jarvis
     {
         $this->masterEmitter = true;
-        $this->broadcast($eventName, $event);
+        $this->broadcast($name, $event);
         $this->masterEmitter = false;
 
         return $this;
@@ -258,15 +246,15 @@ class Jarvis extends Container implements BroadcasterInterface
     /**
      * Builds and returns well ordered receivers collection that match with provided event name.
      *
-     * @param  string $eventName The event name we want to get its receivers
+     * @param  string $name The event name we want to get its receivers
      * @return array
      */
-    private function buildEventReceivers(string $eventName): array
+    private function buildEventReceivers(string $name): array
     {
-        return $this->computedReceivers[$eventName] = $this->computedReceivers[$eventName] ?? array_merge(
-            $this->receivers[$eventName][BroadcasterInterface::RECEIVER_HIGH_PRIORITY],
-            $this->receivers[$eventName][BroadcasterInterface::RECEIVER_NORMAL_PRIORITY],
-            $this->receivers[$eventName][BroadcasterInterface::RECEIVER_LOW_PRIORITY]
+        return $this->computedReceivers[$name] = $this->computedReceivers[$name] ?? array_merge(
+            $this->receivers[$name][BroadcasterInterface::RECEIVER_HIGH_PRIORITY],
+            $this->receivers[$name][BroadcasterInterface::RECEIVER_NORMAL_PRIORITY],
+            $this->receivers[$name][BroadcasterInterface::RECEIVER_LOW_PRIORITY]
         );
     }
 }
