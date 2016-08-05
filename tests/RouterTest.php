@@ -17,13 +17,16 @@ class RouterTest extends \PHPUnit_Framework_TestCase
 
         $jarvis['router']
             ->beginRoute()
-                ->setHandler([new FakeController(), 'randomAction'])
+                ->setHandler(function() {
+                    return 'Hello, world!';
+                })
             ->end()
         ;
+
         $response = $jarvis->run();
 
         $this->assertSame(200, $response->getStatusCode());
-        $this->assertSame(FakeController::class, $response->getContent());
+        $this->assertSame('Hello, world!', $response->getContent());
     }
 
     public function testBeginRoute()

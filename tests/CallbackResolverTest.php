@@ -8,22 +8,18 @@ use Jarvis\Skill\DependencyInjection\Reference;
 /**
  * @author Eric Chau <eriic.chau@gmail.com>
  */
-class CallbackResolver extends \PHPUnit_Framework_TestCase
+class CallbackResolverTest extends \PHPUnit_Framework_TestCase
 {
     public function testReferenceIsReplacedByValueFromController()
     {
         $jarvis = new Jarvis();
 
-        $jarvis['fake_controller'] = function () {
-            return new FakeController();
-        };
+        $jarvis['datetime'] = new \DateTime();
 
-        $fakeController = $jarvis['fake_controller'];
+        $callback = [new Reference('datetime'), 'getTimestamp'];
 
-        $callback = [new Reference('fake_controller'), 'randomAction'];
-
+        $this->assertNotInstanceOf(\Closure::class, $callback);
         $callback = $jarvis->callbackResolver->resolve($callback);
-
         $this->assertInstanceOf(\Closure::class, $callback);
     }
 
@@ -32,10 +28,10 @@ class CallbackResolver extends \PHPUnit_Framework_TestCase
         $jarvis = new Jarvis();
 
         try {
-            $jarvis->callbackResolver->resolve([new FakeController(), 'randomAction']);
+            $jarvis->callbackResolver->resolve([new \DateTime(), 'getTimestamp']);
             $jarvis->callbackResolver->resolve(['DateTime', 'createFromFormat']);
             $jarvis->callbackResolver->resolve('rand');
-            $jarvis->callbackResolver->resolve(function () {});
+            $jarvis->callbackResolver->resolve(function() {});
             $this->assertTrue(true);
         } catch (\InvalidArgumentException $e) {
             if ('Provided callback is not callable.' === $e->getMessage()) {
@@ -44,7 +40,6 @@ class CallbackResolver extends \PHPUnit_Framework_TestCase
 
             throw $e;
         }
-
     }
 
     /**
@@ -54,6 +49,6 @@ class CallbackResolver extends \PHPUnit_Framework_TestCase
     {
         $jarvis = new Jarvis();
 
-        $jarvis->callbackResolver->resolve([new FakeController(), 'unknownAction']);
+        $jarvis->callbackResolver->resolve([new \DateTime(), 'hello']);
     }
 }

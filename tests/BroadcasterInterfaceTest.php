@@ -3,7 +3,6 @@
 namespace Jarvis\Tests;
 
 use Jarvis\Jarvis;
-use Jarvis\Skill\DependencyInjection\Reference;
 use Jarvis\Skill\EventBroadcaster\RunEvent;
 use Jarvis\Skill\EventBroadcaster\ControllerEvent;
 use Jarvis\Skill\EventBroadcaster\EventInterface;
@@ -11,7 +10,6 @@ use Jarvis\Skill\EventBroadcaster\BroadcasterInterface;
 use Jarvis\Skill\EventBroadcaster\PermanentEvent;
 use Jarvis\Skill\EventBroadcaster\SimpleEvent;
 use Jarvis\Skill\EventBroadcaster\ResponseEvent;
-use Symfony\Component\HttpFoundation\Request;
 
 /**
  * Tests for Jarvis broadcast message skill.
@@ -38,7 +36,7 @@ class BroadcasterInterfaceTest extends \PHPUnit_Framework_TestCase
         $this->assertInstanceOf(SimpleEvent::class, $receiver->event);
     }
 
-    public function testBroadcastOfRunEventAndControllerEventAndResponseEventDuringAnalyzeExecution()
+    public function testBroadcastOfRunEventAndControllerEventAndResponseEventDuringRunExecution()
     {
         $jarvis = new Jarvis();
 
@@ -48,13 +46,11 @@ class BroadcasterInterfaceTest extends \PHPUnit_Framework_TestCase
         $jarvis->on(BroadcasterInterface::CONTROLLER_EVENT, [$receiver, 'onControllerEvent']);
         $jarvis->on(BroadcasterInterface::RESPONSE_EVENT, [$receiver, 'onResponseEvent']);
 
-        $jarvis['fake_controller'] = function () {
-            return new FakeController();
-        };
-
         $jarvis['router']
             ->beginRoute()
-                ->setHandler([new Reference('fake_controller'), 'randomAction'])
+                ->setHandler(function() {
+                    return 'Hello, world!';
+                })
             ->end()
         ;
 
@@ -62,7 +58,7 @@ class BroadcasterInterfaceTest extends \PHPUnit_Framework_TestCase
         $this->assertNull($receiver->controllerEvent);
         $this->assertNull($receiver->responseEvent);
 
-        $response = $jarvis->run(new Request());
+        $response = $jarvis->run();
 
         $this->assertInstanceOf(RunEvent::class, $receiver->runEvent);
         $this->assertInstanceOf(ControllerEvent::class, $receiver->controllerEvent);
@@ -88,33 +84,6 @@ class BroadcasterInterfaceTest extends \PHPUnit_Framework_TestCase
     {
         $jarvis = new Jarvis();
         $jarvis->broadcast(BroadcasterInterface::RUN_EVENT);
-    }
-
-    /**
-     * @expectedException \LogicException
-     */
-    public function testExceptionOnUnauthorizedBroadcastControllerEvent()
-    {
-        $jarvis = new Jarvis();
-        $jarvis->broadcast(BroadcasterInterface::CONTROLLER_EVENT);
-    }
-
-    /**
-     * @expectedException \LogicException
-     */
-    public function testExceptionOnUnauthorizedBroadcastResponseEvent()
-    {
-        $jarvis = new Jarvis();
-        $jarvis->broadcast(BroadcasterInterface::RESPONSE_EVENT);
-    }
-
-    /**
-     * @expectedException \LogicException
-     */
-    public function testExceptionOnUnauthorizedBroadcastExceptionEvent()
-    {
-        $jarvis = new Jarvis();
-        $jarvis->broadcast(BroadcasterInterface::EXCEPTION_EVENT);
     }
 
     public function testEventReceiversPriorities()
@@ -144,21 +113,21 @@ class BroadcasterInterfaceTest extends \PHPUnit_Framework_TestCase
     public function testPermanentEvent()
     {
         $jarvis = new Jarvis();
-
         $receiver = new FakeReceiver();
 
-        $eventName = 'permanent.event.init';
-        $jarvis->on($eventName, [$receiver, 'onEventBroadcast']);
+        $name = 'classic.event';
+        $simpleEvent = new SimpleEvent();
+
+        $this->assertNull($receiver->event);
+        $jarvis->broadcast($name, $simpleEvent);
+        $jarvis->on($name, [$receiver, 'onEventBroadcast']);
         $this->assertNull($receiver->event);
 
-        $event = new SimpleEvent();
+        $name = 'permanent.event';
         $permanentEvent = new PermanentEvent();
-        $jarvis->broadcast($eventName, $event);
-        $this->assertSame($event, $receiver->event);
 
-        $jarvis->broadcast($eventName, $permanentEvent);
-        $jarvis->on($eventName, [$receiver, 'onEventBroadcast']);
-        $this->assertNotSame($event, $receiver->event);
+        $jarvis->broadcast($name, $permanentEvent);
+        $jarvis->on($name, [$receiver, 'onEventBroadcast']);
         $this->assertSame($permanentEvent, $receiver->event);
     }
 }

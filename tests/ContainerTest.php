@@ -26,7 +26,7 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
     public function testWithClosure()
     {
         $dic = new Container();
-        $dic['closure'] = function () {
+        $dic['closure'] = function() {
             return new \DateTime();
         };
 
@@ -36,7 +36,7 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
     public function testFactory()
     {
         $dic = new Container();
-        $dic->factory('factory', function () {
+        $dic->factory('factory', function() {
             return new \stdClass();
         });
 
@@ -104,7 +104,7 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
     public function testAlias()
     {
         $dic = new Container();
-        $dic['service'] = function () {
+        $dic['service'] = function() {
             $object = new \stdClass();
             $object->value = microtime();
 
@@ -165,7 +165,7 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
     {
         $dic = new Container();
         $dic['parameter'] = 'value';
-        $dic['foo'] = function () {
+        $dic['foo'] = function() {
             return 'bar';
         };
 
@@ -191,7 +191,7 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
     {
         $dic = new Container();
         $dic['key'] = 'value';
-        $dic['service'] = function () {
+        $dic['service'] = function() {
             return new \stdClass();
         };
         $dic->lock('key');
@@ -235,30 +235,30 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals([], $dic->find('random'));
 
-        $callable = function () {
+        $callable = function() {
             return time();
         };
 
-        $dic['urf'] = $callable;
-        $this->assertEquals([$callable()], $dic->find('urf'));
-        $this->assertEquals([$callable()], $dic->find('urf*'));
+        $dic['jarvis'] = $callable;
+        $this->assertEquals([$callable()], $dic->find('jarvis'));
+        $this->assertEquals([$callable()], $dic->find('jarvis*'));
 
-        $dic['urf_1'] = $callable;
-        $this->assertCount(2, $dic->find('urf*'));
-
-        $dic
-            ->alias('urf.extension', 'urf')
-            ->alias('urf.plugin', 'urf')
-            ->alias('urf.bundle', 'urf')
-        ;
-
-        $this->assertCount(3, $dic->find('urf.*'));
+        $dic['jarvis_1'] = $callable;
+        $this->assertCount(2, $dic->find('jarvis*'));
 
         $dic
-            ->alias('urf.demo.bundle.class', 'urf')
-            ->alias('urf.comment.bundle.bundle', 'urf')
-            ->alias('urf.common.bundle.source', 'urf')
+            ->alias('jarvis.extension', 'jarvis')
+            ->alias('jarvis.plugin', 'jarvis')
+            ->alias('jarvis.bundle', 'jarvis')
         ;
-        $this->assertCount(1, $dic->find('urf.*.bundle'));
+
+        $this->assertCount(3, $dic->find('jarvis.*'));
+
+        $dic
+            ->alias('jarvis.demo.bundle.class', 'jarvis')
+            ->alias('jarvis.comment.bundle.bundle', 'jarvis')
+            ->alias('jarvis.common.bundle.source', 'jarvis')
+        ;
+        $this->assertCount(1, $dic->find('jarvis.*.bundle'));
     }
 }

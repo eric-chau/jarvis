@@ -15,9 +15,13 @@ class ResponseEvent extends SimpleEvent
     protected $request;
     protected $response;
 
-    public function __construct(Request $request, Response $response)
+    public function __construct(Request $request, $response)
     {
         $this->request = $request;
+        if (!($response instanceof Response)) {
+            $response = new Response($response);
+        }
+
         $this->response = $response;
     }
 
@@ -36,7 +40,7 @@ class ResponseEvent extends SimpleEvent
      *
      * @return Response
      */
-    public function response(): ?Response
+    public function response()
     {
         return $this->response;
     }

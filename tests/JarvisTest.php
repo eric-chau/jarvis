@@ -37,49 +37,51 @@ class JarvisTest extends \PHPUnit_Framework_TestCase
         $jarvis = new Jarvis(['container_provider' => 'Jarvis\Tests\FakeContainerProvider']);
 
         $this->assertTrue(isset($jarvis['fake_container_provider_called']));
-        $this->assertTrue($jarvis['is_request_already_defined']); // ensure that Jarvis container provider is called first
+        // ensure that Jarvis container provider is called first
+        $this->assertTrue($jarvis['is_request_already_defined']);
     }
 
-    public function testAnalyzeCatchEveryExceptionAndConvertItToResponse()
+    public function testRunCatchEveryExceptionAndConvertItToResponse()
     {
         $jarvis = new Jarvis();
 
         $jarvis['router']
             ->beginRoute()
-                ->setHandler([new FakeController(), 'throwExceptionAction'])
+                ->setHandler(function() {
+                    throw new \Exception('Hello, world!');
+                })
             ->end()
         ;
-        $response = $jarvis->run();
 
-        $this->assertInstanceOf(Response::class, $response);
+        $this->assertInstanceOf(Response::class, $response = $jarvis->run());
         $this->assertSame(500, $response->getStatusCode());
-        $this->assertSame(sprintf('%s::%s', FakeController::class, 'throwExceptionAction'), $response->getContent());
+        $this->assertSame('Hello, world!', $response->getContent());
     }
 
-    public function testAnalayzeOnInvalidRouteReturnsResponseWithStatusCode404()
+    public function testRunOnInvalidRouteReturnsResponseWithStatusCode404()
     {
         $jarvis = new Jarvis();
 
-        $response = $jarvis->run();
-        $this->assertSame(404, $response->getStatusCode());
+        $this->assertSame(404, $jarvis->run()->getStatusCode());
     }
 
-    public function testAnalyzeRouteWithWrongMethodReturnsResponseWithStatusCode405()
+    public function testRunRouteWithWrongMethodReturnsResponseWithStatusCode405()
     {
         $jarvis = new Jarvis();
 
         $jarvis['router']
             ->beginRoute()
                 ->setMethod('post')
-                ->setHandler([new FakeController(), 'throwExceptionAction'])
+                ->setHandler(function() {
+                    return 'Hello, world!';
+                })
             ->end()
         ;
-        $response = $jarvis->run();
 
-        $this->assertSame(405, $response->getStatusCode());
+        $this->assertSame(405, $jarvis->run()->getStatusCode());
     }
 
-    public function testAnalyzeExecutionIsStoppedIfRunEventHasResponseSetted()
+    public function testRunExecutionIsStoppedIfRunEventHasResponseSetted()
     {
         $jarvis = new Jarvis();
 
@@ -101,18 +103,20 @@ class JarvisTest extends \PHPUnit_Framework_TestCase
         $this->assertNull($receiver->responseEvent);
     }
 
-    public function testReceiveResponseEventOnAnalyzeAndModifyResponseWillModifyReturnedResponse()
+    public function testReceiveResponseEventOnRunAndModifyResponseWillModifyReturnedResponse()
     {
         $jarvis = new Jarvis();
 
         $receiver = new FakeReceiver();
-        $controller = new FakeController();
+        $controller = function() {
+            return new Response('foo');
+        };
 
         $jarvis->on(BroadcasterInterface::RESPONSE_EVENT, [$receiver, 'modifyResponseOnResponseEvent']);
 
         $jarvis['router']
             ->beginRoute()
-                ->setHandler([$controller, 'getFooAction'])
+                ->setHandler($controller)
             ->end()
         ;
 
@@ -120,7 +124,8 @@ class JarvisTest extends \PHPUnit_Framework_TestCase
 
         $response = $jarvis->run();
 
-        $this->assertNotSame($controller->getFooAction()->getContent(), $response->getContent());
+        $this->assertNotNull($receiver->responseEvent);
+        $this->assertNotSame($controller()->getContent(), $response->getContent());
         $this->assertSame('bar', $response->getContent());
 
     }
@@ -162,7 +167,6 @@ class JarvisTest extends \PHPUnit_Framework_TestCase
         $jarvis = new Jarvis();
 
         $jarvis['foo'] = 'bar';
-
         $jarvis->foo;
     }
 
@@ -177,7 +181,7 @@ class JarvisTest extends \PHPUnit_Framework_TestCase
         $jarvis->foo = 'bar';
     }
 
-    public function testAnalyzeWillConvertToSymfonyResponseIfRouteCallbackReturnString()
+    public function testRunWillConvertToSymfonyResponseIfRouteCallbackReturnString()
     {
         $jarvis = new Jarvis();
 
@@ -191,10 +195,8 @@ class JarvisTest extends \PHPUnit_Framework_TestCase
             ->end()
         ;
 
-        $result = $jarvis->run();
-
-        $this->assertInstanceOf(Response::class, $result);
-        $this->assertSame($str, $result->getContent());
+        $this->assertInstanceOf(Response::class, $response = $jarvis->run());
+        $this->assertSame($str, $response->getContent());
     }
 
     public function testBroadcastTerminateEventOnDestruct()
