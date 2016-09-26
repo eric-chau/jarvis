@@ -137,4 +137,20 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $jarvis->router->setHost('github.com/');
         $this->assertSame('https://github.com/eric-chau/jarvis', $jarvis->router->url('///eric-chau/jarvis'));
     }
+
+    public function testGuessHost()
+    {
+        $jarvis = new Jarvis();
+
+        $this->assertEquals('', $jarvis['router']->host());
+        $this->assertEquals('http', $jarvis['router']->scheme());
+
+        $jarvis['router']->guessHost(Request::create('/'));
+        $this->assertEquals('localhost', $jarvis['router']->host());
+        $this->assertEquals('http', $jarvis['router']->scheme());
+        $this->assertEquals('http://localhost/hello', $jarvis['router']->url('/hello'));
+
+        $jarvis['router']->guessHost(Request::create('/', 'GET', [], [], [], ['HTTP_HOST' => 'localhost:8000']));
+        $this->assertEquals('http://localhost:8000/hello', $jarvis['router']->url('/hello'));
+    }
 }
