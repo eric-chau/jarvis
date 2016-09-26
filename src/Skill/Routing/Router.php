@@ -6,9 +6,10 @@ namespace Jarvis\Skill\Routing;
 
 use FastRoute\DataGenerator\GroupCountBased as DataGenerator;
 use FastRoute\Dispatcher\GroupCountBased as Dispatcher;
-use FastRoute\RouteParser\Std as Parser;
 use FastRoute\RouteCollector;
+use FastRoute\RouteParser\Std as Parser;
 use Jarvis\Jarvis;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -16,6 +17,8 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class Router extends Dispatcher
 {
+    const HTTP_PORT = 80;
+
     private $computed = false;
     private $host = '';
     private $rawRoutes = [];
@@ -138,6 +141,23 @@ class Router extends Dispatcher
     public function setHost(string $host = null): Router
     {
         $this->host = (string) $host;
+
+        return $this;
+    }
+
+    /**
+     * Uses the provided request to guess the host. This method also set the
+     *
+     * @param  Request $request
+     * @return self
+     */
+    public function guessHost(Request $request)
+    {
+        $this->setScheme($request->getScheme());
+        $this->setHost($request->getHost());
+        if (self::HTTP_PORT !== $request->getPort()) {
+            $this->setHost($this->host() . ':' . $request->getPort());
+        }
 
         return $this;
     }
