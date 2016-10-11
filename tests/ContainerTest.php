@@ -26,7 +26,7 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
     public function testWithClosure()
     {
         $dic = new Container();
-        $dic['closure'] = function() {
+        $dic['closure'] = function () {
             return new \DateTime();
         };
 
@@ -36,7 +36,7 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
     public function testFactory()
     {
         $dic = new Container();
-        $dic->factory('factory', function() {
+        $dic->factory('factory', function () {
             return new \stdClass();
         });
 
@@ -104,7 +104,7 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
     public function testAlias()
     {
         $dic = new Container();
-        $dic['service'] = function() {
+        $dic['service'] = function () {
             $object = new \stdClass();
             $object->value = microtime();
 
@@ -165,7 +165,7 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
     {
         $dic = new Container();
         $dic['parameter'] = 'value';
-        $dic['foo'] = function() {
+        $dic['foo'] = function () {
             return 'bar';
         };
 
@@ -191,7 +191,7 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
     {
         $dic = new Container();
         $dic['key'] = 'value';
-        $dic['service'] = function() {
+        $dic['service'] = function () {
             return new \stdClass();
         };
         $dic->lock('key');
@@ -235,7 +235,7 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals([], $dic->find('random'));
 
-        $callable = function() {
+        $callable = function () {
             return time();
         };
 

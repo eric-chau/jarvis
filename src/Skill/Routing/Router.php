@@ -62,7 +62,7 @@ class Router extends Dispatcher
      * $router
      *     ->beginRoute('hello_world')
      *         ->setPattern('/hello/world')
-     *         ->setHandler(function() {
+     *         ->setHandler(function () {
      *             return 'Hello, world!';
      *         })
      *     ->end()
@@ -213,7 +213,7 @@ class Router extends Dispatcher
         if (Dispatcher::FOUND === $result[0]) {
             [1 => $callback, 2 => $arguments] = $result;
         } else {
-            $callback = function() use ($result): Response {
+            $callback = function () use ($result): Response {
                 return new Response(null, Dispatcher::METHOD_NOT_ALLOWED === $result[0]
                     ? Response::HTTP_METHOD_NOT_ALLOWED
                     : Response::HTTP_NOT_FOUND

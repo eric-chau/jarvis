@@ -47,7 +47,7 @@ class JarvisTest extends \PHPUnit_Framework_TestCase
 
         $jarvis['router']
             ->beginRoute()
-                ->setHandler(function() {
+                ->setHandler(function () {
                     throw new \Exception('Hello, world!');
                 })
             ->end()
@@ -72,7 +72,7 @@ class JarvisTest extends \PHPUnit_Framework_TestCase
         $jarvis['router']
             ->beginRoute()
                 ->setMethod('post')
-                ->setHandler(function() {
+                ->setHandler(function () {
                     return 'Hello, world!';
                 })
             ->end()
@@ -108,7 +108,7 @@ class JarvisTest extends \PHPUnit_Framework_TestCase
         $jarvis = new Jarvis();
 
         $receiver = new FakeReceiver();
-        $controller = function() {
+        $controller = function () {
             return new Response('foo');
         };
 
@@ -209,6 +209,8 @@ class JarvisTest extends \PHPUnit_Framework_TestCase
         $this->assertNull($receiver->event);
 
         unset($jarvis);
+        gc_collect_cycles();
+
         $this->assertNotNull($receiver->event);
         $this->assertInstanceOf(SimpleEvent::class, $receiver->event);
     }

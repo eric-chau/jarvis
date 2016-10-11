@@ -31,7 +31,7 @@ class CallbackResolverTest extends \PHPUnit_Framework_TestCase
             $jarvis->callbackResolver->resolve([new \DateTime(), 'getTimestamp']);
             $jarvis->callbackResolver->resolve(['DateTime', 'createFromFormat']);
             $jarvis->callbackResolver->resolve('rand');
-            $jarvis->callbackResolver->resolve(function() {});
+            $jarvis->callbackResolver->resolve(function () {});
             $this->assertTrue(true);
         } catch (\InvalidArgumentException $e) {
             if ('Provided callback is not callable.' === $e->getMessage()) {

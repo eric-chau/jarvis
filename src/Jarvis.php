@@ -115,6 +115,34 @@ class Jarvis extends Container implements BroadcasterInterface
     }
 
     /**
+     * {@inheritdoc}
+     */
+    public function offsetSet($id, $v): void
+    {
+        parent::offsetSet($id, $v);
+
+        if (!($v instanceof \Closure)) {
+            return;
+        }
+
+        $refMethod = new \ReflectionMethod($v, '__invoke');
+        if (null === $returntype = $refMethod->getReturnType()) {
+            return;
+        }
+
+        $alias = $returntype->getName();
+        if ($alias === $id) {
+            return;
+        }
+
+        if (!isset($this[$alias])) {
+            $this->alias($alias, $id);
+        } else {
+            unset($this[$alias]);
+        }
+    }
+
+    /**
      * @param  Request|null $request
      * @return Response
      */

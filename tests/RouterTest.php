@@ -17,7 +17,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
 
         $jarvis['router']
             ->beginRoute()
-                ->setHandler(function() {
+                ->setHandler(function () {
                     return 'Hello, world!';
                 })
             ->end()
@@ -40,13 +40,13 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $jarvis['router']
             ->beginRoute()
                 ->setPattern('/hello/{name}')
-                ->setHandler(function($name) {
+                ->setHandler(function ($name) {
                     return "Hello $name!";
                 })
             ->end()
             ->beginRoute('with_params')
                 ->setPattern('/hello/{name:\w+}/{id:\d+}')
-                ->setHandler(function($name, $id) {
+                ->setHandler(function ($name, $id) {
                     return "$name ($id)";
                 })
             ->end()
@@ -80,13 +80,13 @@ class RouterTest extends \PHPUnit_Framework_TestCase
 
         $jarvis['router']
             ->beginRoute('default')
-                ->setHandler(function() {
+                ->setHandler(function () {
                     return 'default';
                 })
             ->end()
             ->beginRoute('with_params')
                 ->setPattern('/hello/{name:\w+}/{id:\d+}')
-                ->setHandler(function($name, $id) {
+                ->setHandler(function ($name, $id) {
                     return "$name ($id)";
                 })
             ->end()
