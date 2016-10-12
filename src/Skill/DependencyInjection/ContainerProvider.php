@@ -7,6 +7,7 @@ namespace Jarvis\Skill\DependencyInjection;
 use Jarvis\Jarvis;
 use Jarvis\Skill\Core\CallbackResolver;
 use Jarvis\Skill\EventBroadcaster\BroadcasterInterface;
+use Jarvis\Skill\EventBroadcaster\ControllerEvent;
 use Jarvis\Skill\EventBroadcaster\ExceptionEvent;
 use Jarvis\Skill\Routing\Router;
 use Symfony\Component\HttpFoundation\Request;
@@ -24,32 +25,57 @@ final class ContainerProvider implements ContainerProviderInterface
     /**
      * {@inheritdoc}
      */
-    public function hydrate(Jarvis $jarvis)
+    public function hydrate(Jarvis $app)
     {
-        $jarvis['request'] = function(): Request {
+        $app['app'] = function () use ($app): Jarvis {
+            return $app;
+        };
+
+        $app['request'] = function (): Request {
             $request = Request::createFromGlobals();
             $request->setSession($request->getSession() ?? new Session());
 
             return $request;
         };
 
-        $jarvis['session'] = function(Jarvis $jarvis): Session {
-            return $jarvis->request->getSession();
+        $app['session'] = function (Jarvis $app): Session {
+            return $app->request->getSession();
         };
 
-        $jarvis['router'] = function(): Router {
+        $app['router'] = function (): Router {
             return new Router();
         };
 
-        $jarvis['callbackResolver'] = function(Jarvis $jarvis): CallbackResolver {
-            return new CallbackResolver($jarvis);
+        $app['callbackResolver'] = function (Jarvis $app): CallbackResolver {
+            return new CallbackResolver($app);
         };
 
-        $jarvis->lock(['request', 'session', 'router', 'callbackResolver']);
+        $app->lock(['request', 'session', 'router', 'callbackResolver']);
 
-        $jarvis->on(BroadcasterInterface::EXCEPTION_EVENT, function(ExceptionEvent $event): void {
+        $app->on(BroadcasterInterface::EXCEPTION_EVENT, function (ExceptionEvent $event): void {
             $response = new Response($event->exception()->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
             $event->setResponse($response);
+        }, BroadcasterInterface::RECEIVER_LOW_PRIORITY);
+
+        $app->on(BroadcasterInterface::CONTROLLER_EVENT, function (ControllerEvent $event) use ($app): void {
+            $finalArgs = [];
+            $rawArgs = $event->arguments();
+            $refMethod = new \ReflectionMethod($event->callback(), '__invoke');
+            foreach ($refMethod->getParameters() as $refParam) {
+                if (null !== $refClass = $refParam->getClass()) {
+                    if (isset($app[$refClass->getName()])) {
+                        $finalArgs[$refParam->getPosition()] = $app[$refClass->getName()];
+
+                        continue;
+                    }
+                }
+
+                if (in_array($refParam->getName(), array_keys($rawArgs))) {
+                    $finalArgs[$refParam->getPosition()] = $rawArgs[$refParam->getName()];
+                }
+            }
+
+            $event->setArguments($finalArgs);
         }, BroadcasterInterface::RECEIVER_LOW_PRIORITY);
     }
 }

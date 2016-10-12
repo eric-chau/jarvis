@@ -48,7 +48,7 @@ class BroadcasterInterfaceTest extends \PHPUnit_Framework_TestCase
 
         $jarvis['router']
             ->beginRoute()
-                ->setHandler(function() {
+                ->setHandler(function () {
                     return 'Hello, world!';
                 })
             ->end()
