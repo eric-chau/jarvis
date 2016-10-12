@@ -70,8 +70,8 @@ final class ContainerProvider implements ContainerProviderInterface
                     }
                 }
 
-                if (in_array($refParam->getName(), array_keys($rawArgs))) {
-                    $finalArgs[$refParam->getPosition()] = $rawArgs[$refParam->getName()];
+                if (in_array($refParam->name, array_keys($rawArgs))) {
+                    $finalArgs[$refParam->getPosition()] = $rawArgs[$refParam->name];
                 }
             }
 
