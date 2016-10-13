@@ -55,20 +55,15 @@ class Jarvis extends Container implements BroadcasterInterface
         parent::__construct();
 
         $this['settings'] = new ParameterBag($settings);
-        $this->lock('settings');
+        $this['debug'] = $this['settings']->getBoolean('debug', static::DEFAULT_DEBUG);
+        $this->lock(['debug', 'settings']);
 
-        $this['debug'] = $this->settings->getBoolean('debug', static::DEFAULT_DEBUG);
-        $this->lock('debug');
+        $this['settings']->set('container_provider', array_merge(
+            [static::CONTAINER_PROVIDER_FQCN],
+            (array) $this['settings']->get('container_provider', [])
+        ));
 
-        if (!$this->settings->has('container_provider')) {
-            $this->settings->set('container_provider', [static::CONTAINER_PROVIDER_FQCN]);
-        } else {
-            $containerProvider = (array) $this->settings->get('container_provider');
-            array_unshift($containerProvider, static::CONTAINER_PROVIDER_FQCN);
-            $this->settings->set('container_provider', $containerProvider);
-        }
-
-        foreach ($this->settings->get('container_provider') as $classname) {
+        foreach ($this['settings']->get('container_provider') as $classname) {
             $this->hydrate(new $classname());
         }
     }
