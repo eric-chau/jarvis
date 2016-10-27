@@ -30,11 +30,11 @@ class JarvisTest extends \PHPUnit_Framework_TestCase
 
     public function testWithCustomContainerProvider()
     {
-        $jarvis = new Jarvis(['container_provider' => []]);
+        $jarvis = new Jarvis(['providers' => []]);
 
         $this->assertFalse(isset($jarvis['fake_container_provider_called']));
 
-        $jarvis = new Jarvis(['container_provider' => 'Jarvis\Tests\FakeContainerProvider']);
+        $jarvis = new Jarvis(['providers' => 'Jarvis\Tests\FakeContainerProvider']);
 
         $this->assertTrue(isset($jarvis['fake_container_provider_called']));
         // ensure that Jarvis container provider is called first
@@ -140,12 +140,14 @@ class JarvisTest extends \PHPUnit_Framework_TestCase
 
     public function testSettingsService()
     {
-        $jarvis = new Jarvis(['foo' => 'bar']);
+        $jarvis = new Jarvis([
+            'extra' => [
+                'foo' => 'bar',
+            ],
+        ]);
 
-        $this->assertTrue(isset($jarvis['settings']));
-        $this->assertInstanceOf(ParameterBag::class, $jarvis['settings']);
-        $this->assertTrue($jarvis['settings']->has('foo'));
-        $this->assertSame('bar', $jarvis['settings']->get('foo'));
+        $this->assertTrue(isset($jarvis['foo.settings']));
+        $this->assertSame('bar', $jarvis['foo.settings']);
     }
 
     public function testAccessToLockedValueAsJarvisAttribute()

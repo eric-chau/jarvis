@@ -27,6 +27,21 @@ final class ContainerProvider implements ContainerProviderInterface
      */
     public function hydrate(Jarvis $app)
     {
+        // settings process
+        // ================
+
+        $app['debug'] = $app['settings']['debug'] ?? Jarvis::DEFAULT_DEBUG;
+
+        $extra = $app['settings']['extra'] ?? [];
+        foreach ((array) $extra as $key => $data) {
+            $app["{$key}.settings"] = $data;
+        }
+
+        unset($app['settings']);
+
+        // services declarations
+        // =====================
+
         $app['app'] = function () use ($app): Jarvis {
             return $app;
         };
@@ -39,7 +54,7 @@ final class ContainerProvider implements ContainerProviderInterface
         };
 
         $app['session'] = function (Jarvis $app): Session {
-            return $app->request->getSession();
+            return $app['request']->getSession();
         };
 
         $app['router'] = function (): Router {
@@ -50,7 +65,10 @@ final class ContainerProvider implements ContainerProviderInterface
             return new CallbackResolver($app);
         };
 
-        $app->lock(['request', 'session', 'router', 'callbackResolver']);
+        $app->lock(['debug', 'request', 'session', 'router', 'callbackResolver']);
+
+        // events receivers
+        // ================
 
         $app->on(BroadcasterInterface::EXCEPTION_EVENT, function (ExceptionEvent $event): void {
             $response = new Response($event->exception()->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);

@@ -54,16 +54,9 @@ class Jarvis extends Container implements BroadcasterInterface
     {
         parent::__construct();
 
-        $this['settings'] = new ParameterBag($settings);
-        $this['debug'] = $this['settings']->getBoolean('debug', static::DEFAULT_DEBUG);
-        $this->lock(['debug', 'settings']);
-
-        $this['settings']->set('container_provider', array_merge(
-            [static::CONTAINER_PROVIDER_FQCN],
-            (array) $this['settings']->get('container_provider', [])
-        ));
-
-        foreach ($this['settings']->get('container_provider') as $classname) {
+        $this['settings'] = $settings;
+        $providers = array_merge([static::CONTAINER_PROVIDER_FQCN], (array) ($settings['providers'] ?? []));
+        foreach ($providers as $classname) {
             $this->hydrate(new $classname());
         }
     }
@@ -154,10 +147,11 @@ class Jarvis extends Container implements BroadcasterInterface
 
             [$callback, $arguments] = $this->router->match($request->getMethod(), $request->getPathInfo());
 
-            $event = new ControllerEvent($this->callbackResolver->resolve($callback), $arguments);
+            $event = new ControllerEvent($this['callbackResolver']->resolve($callback), $arguments);
             $this->masterBroadcast(BroadcasterInterface::CONTROLLER_EVENT, $event);
 
             $response = call_user_func_array($event->callback(), $event->arguments());
+
             $event = new ResponseEvent($request, $response);
             $this->masterBroadcast(BroadcasterInterface::RESPONSE_EVENT, $event);
             $response = $event->response();
@@ -189,7 +183,7 @@ class Jarvis extends Container implements BroadcasterInterface
         if (isset($this->permanentEvents[$name])) {
             $name = $this->permanentEvents[$name];
 
-            call_user_func_array($this->callbackResolver->resolve($receiver), [$name]);
+            call_user_func_array($this['callbackResolver']->resolve($receiver), [$name]);
         }
 
         return $this;
@@ -214,7 +208,7 @@ class Jarvis extends Container implements BroadcasterInterface
 
         if (isset($this->receivers[$name])) {
             foreach ($this->buildEventReceivers($name) as $receiver) {
-                call_user_func_array($this->callbackResolver->resolve($receiver), [$event]);
+                call_user_func_array($this['callbackResolver']->resolve($receiver), [$event]);
 
                 if ($event->isPropagationStopped()) {
                     break;
