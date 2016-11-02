@@ -13,6 +13,7 @@ use Jarvis\Skill\Routing\Router;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\Session;
+use Symfony\Component\HttpFoundation\Session\Storage\NativeSessionStorage;
 
 /**
  * This is Jarvis internal container provider. It will inject every core
@@ -46,9 +47,18 @@ final class ContainerProvider implements ContainerProviderInterface
             return $app;
         };
 
-        $app['request'] = function (): Request {
+        $app['request'] = function (Jarvis $app): Request {
             $request = Request::createFromGlobals();
-            $request->setSession($request->getSession() ?? new Session());
+
+            $session = $request->getSession();
+            if (null === $session) {
+                $settings = $app['session.settings'] ?? [];
+                $storageClassname = $settings['session.storage.classname'] ?? NativeSessionStorage::class;
+                unset($settings['session.storage.classname']);
+                $session = new Session(new $storageClassname($settings));
+            }
+
+            $request->setSession($session);
 
             return $request;
         };
