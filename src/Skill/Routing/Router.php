@@ -18,6 +18,7 @@ use Symfony\Component\HttpFoundation\Response;
 class Router extends Dispatcher
 {
     const HTTP_PORT = 80;
+    const HTTPS_PORT = 443;
 
     private $computed = false;
     private $host = '';
@@ -155,7 +156,7 @@ class Router extends Dispatcher
     {
         $this->setScheme($request->getScheme());
         $this->setHost($request->getHost());
-        if (self::HTTP_PORT !== $request->getPort()) {
+        if (self::HTTP_PORT !== $request->getPort() && self::HTTPS_PORT !== $request->getPort()) {
             $this->setHost($this->host() . ':' . $request->getPort());
         }
 
