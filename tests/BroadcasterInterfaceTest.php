@@ -130,4 +130,18 @@ class BroadcasterInterfaceTest extends \PHPUnit_Framework_TestCase
         $jarvis->on($name, [$receiver, 'onEventBroadcast']);
         $this->assertSame($permanentEvent, $receiver->event);
     }
+
+    /**
+     * @expectedException \LogicException
+     * @expectedMessageException Permanent event cannot be broadcasted multiple times.
+     */
+    public function testForbidPermanentEventMultiBroadcast()
+    {
+        $jarvis = new Jarvis();
+        $permanentEvent = new PermanentEvent();
+
+        $name = 'permanent.event';
+        $jarvis->broadcast($name, $permanentEvent);
+        $jarvis->broadcast($name, $permanentEvent);
+    }
 }

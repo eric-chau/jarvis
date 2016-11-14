@@ -201,6 +201,10 @@ class Jarvis extends Container implements BroadcasterInterface
             ));
         }
 
+        if (isset($this->permanentEvents[$name])) {
+            throw new \LogicException('Permanent event cannot be broadcasted multiple times.');
+        }
+
         $event = $event ?? new SimpleEvent();
         if ($event instanceof PermanentEventInterface && $event->isPermanent()) {
             $this->permanentEvents[$name] = $event;

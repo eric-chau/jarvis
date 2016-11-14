@@ -28,21 +28,27 @@ final class ContainerProvider implements ContainerProviderInterface
      */
     public function hydrate(Jarvis $app)
     {
-        // settings process
-        // ================
+        $this->mountSettings($app);
+        $this->mountServices($app);
+        $this->mountEventReceivers($app);
+    }
 
+    protected function mountSettings(Jarvis $app)
+    {
         $app['debug'] = $app['settings']['debug'] ?? Jarvis::DEFAULT_DEBUG;
+        $app->lock('debug');
 
         $extra = $app['settings']['extra'] ?? [];
         foreach ((array) $extra as $key => $data) {
             $app["{$key}.settings"] = $data;
+            $app->lock("{$key}.settings");
         }
 
         unset($app['settings']);
+    }
 
-        // services declarations
-        // =====================
-
+    protected function mountServices(Jarvis $app)
+    {
         $app['app'] = function () use ($app): Jarvis {
             return $app;
         };
@@ -75,14 +81,27 @@ final class ContainerProvider implements ContainerProviderInterface
             return new CallbackResolver($app);
         };
 
-        $app->lock(['debug', 'request', 'session', 'router', 'callbackResolver']);
+        $app->lock(['app', 'request', 'session', 'router', 'callbackResolver']);
+    }
 
-        // events receivers
-        // ================
+    protected function mountEventReceivers(Jarvis $app)
+    {
+        $app->on(BroadcasterInterface::EXCEPTION_EVENT, function (ExceptionEvent $event) use ($app): void {
+            $throwable = $event->exception();
+            $msg = sprintf(
+                '[%s] error in %s at line %s with message: %s',
+                get_class($throwable),
+                $throwable->getFile(),
+                $throwable->getLine(),
+                $throwable->getMessage()
+            );
 
-        $app->on(BroadcasterInterface::EXCEPTION_EVENT, function (ExceptionEvent $event): void {
-            $response = new Response($event->exception()->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
-            $event->setResponse($response);
+            if (!$app['debug']) {
+                error_log($msg);
+                $msg = '';
+            }
+
+            $event->setResponse(new Response($msg, Response::HTTP_INTERNAL_SERVER_ERROR));
         }, BroadcasterInterface::RECEIVER_LOW_PRIORITY);
 
         $app->on(BroadcasterInterface::CONTROLLER_EVENT, function (ControllerEvent $event) use ($app): void {
