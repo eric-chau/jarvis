@@ -43,7 +43,7 @@ class JarvisTest extends \PHPUnit_Framework_TestCase
 
     public function testRunCatchEveryExceptionAndConvertItToResponse()
     {
-        $jarvis = new Jarvis();
+        $jarvis = new Jarvis(['debug' => true]);
 
         $jarvis['router']
             ->beginRoute()
@@ -55,7 +55,11 @@ class JarvisTest extends \PHPUnit_Framework_TestCase
 
         $this->assertInstanceOf(Response::class, $response = $jarvis->run());
         $this->assertSame(500, $response->getStatusCode());
-        $this->assertSame('Hello, world!', $response->getContent());
+        $this->assertSame(sprintf(
+            '[Exception] error in %s at line 51 with message: %s',
+            __FILE__,
+            'Hello, world!'
+        ), $response->getContent());
     }
 
     public function testRunOnInvalidRouteReturnsResponseWithStatusCode404()

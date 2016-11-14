@@ -24,7 +24,7 @@ class ControllerEventTest extends \PHPUnit_Framework_TestCase
 
     public function testControllerSmartTypeHint()
     {
-        $app = new Jarvis();
+        $app = new Jarvis(['debug' => true]);
 
         $app['router']
             ->beginRoute()
