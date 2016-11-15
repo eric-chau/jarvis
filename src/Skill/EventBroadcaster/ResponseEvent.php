@@ -40,7 +40,7 @@ class ResponseEvent extends SimpleEvent
      *
      * @return Response
      */
-    public function response()
+    public function response(): ?Response
     {
         return $this->response;
     }

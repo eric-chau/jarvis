@@ -15,17 +15,17 @@ class CallbackResolver
     /**
      * @var Jarvis
      */
-    private $jarvis;
+    private $app;
 
-    public function __construct(Jarvis $jarvis)
+    public function __construct(Jarvis $app)
     {
-        $this->jarvis = $jarvis;
+        $this->app = $app;
     }
 
     public function resolve($callback): \Closure
     {
         if (is_array($callback) && $callback[0] instanceof Reference) {
-            $callback[0] = $this->jarvis[(string) $callback[0]] ?? $callback[0];
+            $callback[0] = $this->app[(string) $callback[0]] ?? $callback[0];
         }
 
         return \Closure::fromCallable($callback);

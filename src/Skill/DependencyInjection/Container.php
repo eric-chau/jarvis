@@ -61,7 +61,7 @@ class Container implements \ArrayAccess
         $values = [];
         $pattern = str_replace(['.', '*'], ['\.', '[\w\-\.]*'], $id);
         foreach ($this->keys() as $id) {
-            if (1 === preg_match('/^'.$pattern.'$/', $id)) {
+            if (1 === preg_match('/^' . $pattern . '$/', $id)) {
                 $values[] = $this->offsetGet($id);
             }
         }

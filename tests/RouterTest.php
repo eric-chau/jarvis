@@ -13,9 +13,9 @@ class RouterTest extends \PHPUnit_Framework_TestCase
 {
     public function testRouterNotCaseSensibleToHttpMethod()
     {
-        $jarvis = new Jarvis();
+        $app = new Jarvis();
 
-        $jarvis['router']
+        $app['router']
             ->beginRoute()
                 ->setHandler(function () {
                     return 'Hello, world!';
@@ -23,7 +23,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
             ->end()
         ;
 
-        $response = $jarvis->run();
+        $response = $app->run();
 
         $this->assertSame(200, $response->getStatusCode());
         $this->assertSame('Hello, world!', $response->getContent());
@@ -31,13 +31,13 @@ class RouterTest extends \PHPUnit_Framework_TestCase
 
     public function testBeginRoute()
     {
-        $jarvis = new Jarvis();
+        $app = new Jarvis();
 
-        $response = $jarvis->run(Request::create('/hello/jarvis'));
+        $response = $app->run(Request::create('/hello/jarvis'));
 
         $this->assertSame(Response::HTTP_NOT_FOUND, $response->getStatusCode());
 
-        $jarvis['router']
+        $app['router']
             ->beginRoute()
                 ->setPattern('/hello/{name}')
                 ->setHandler(function ($name) {
@@ -52,12 +52,12 @@ class RouterTest extends \PHPUnit_Framework_TestCase
             ->end()
         ;
 
-        $response = $jarvis->run(Request::create('/hello/jarvis'));
+        $response = $app->run(Request::create('/hello/jarvis'));
 
         $this->assertSame(Response::HTTP_OK, $response->getStatusCode());
         $this->assertSame('Hello jarvis!', $response->getContent());
 
-        $response = $jarvis->run(Request::create('/hello/jarvis/123'));
+        $response = $app->run(Request::create('/hello/jarvis/123'));
 
         $this->assertSame(Response::HTTP_OK, $response->getStatusCode());
         $this->assertSame('jarvis (123)', $response->getContent());
@@ -69,16 +69,16 @@ class RouterTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetUriOfInvalidRouteName()
     {
-        $jarvis = new Jarvis();
+        $app = new Jarvis();
 
-        $jarvis['router']->uri('foobar_route');
+        $app['router']->uri('foobar_route');
     }
 
     public function testGetUri()
     {
-        $jarvis = new Jarvis();
+        $app = new Jarvis();
 
-        $jarvis['router']
+        $app['router']
             ->beginRoute('default')
                 ->setHandler(function () {
                     return 'default';
@@ -92,65 +92,65 @@ class RouterTest extends \PHPUnit_Framework_TestCase
             ->end()
         ;
 
-        $this->assertSame('/', $jarvis['router']->uri('default'));
-        $this->assertSame('/hello/jarvis/123', $jarvis['router']->uri('with_params', [
+        $this->assertSame('/', $app['router']->uri('default'));
+        $this->assertSame('/hello/jarvis/123', $app['router']->uri('with_params', [
             'name' => 'jarvis',
             'id'   => 123,
         ]));
-        $this->assertSame('/hello/{name:\w+}/123', $jarvis['router']->uri('with_params', [
+        $this->assertSame('/hello/{name:\w+}/123', $app['router']->uri('with_params', [
             'id'   => 123,
         ]));
     }
 
     public function testHostAndSchemeGetterAndSetter()
     {
-        $jarvis = new Jarvis();
+        $app = new Jarvis();
 
-        $this->assertSame('', $jarvis->router->host());
-        $this->assertSame('http', $jarvis->router->scheme());
+        $this->assertSame('', $app['router']->host());
+        $this->assertSame('http', $app['router']->scheme());
 
         $host = 'hostname.com:8000';
-        $jarvis->router->setHost($host);
-        $this->assertSame($host, $jarvis->router->host());
-        $jarvis->router->setHost(null);
-        $this->assertSame('', $jarvis->router->host());
+        $app['router']->setHost($host);
+        $this->assertSame($host, $app['router']->host());
+        $app['router']->setHost(null);
+        $this->assertSame('', $app['router']->host());
 
 
-        $jarvis->router->setScheme(null);
-        $this->assertSame('http', $jarvis->router->scheme());
-        $jarvis->router->setScheme('');
-        $this->assertSame('http', $jarvis->router->scheme());
-        $jarvis->router->setScheme('https');
-        $this->assertSame('https', $jarvis->router->scheme());
+        $app['router']->setScheme(null);
+        $this->assertSame('http', $app['router']->scheme());
+        $app['router']->setScheme('');
+        $this->assertSame('http', $app['router']->scheme());
+        $app['router']->setScheme('https');
+        $this->assertSame('https', $app['router']->scheme());
     }
 
     public function testGetUrl()
     {
-        $jarvis = new Jarvis();
+        $app = new Jarvis();
 
-        $this->assertSame('/foo/bar', $jarvis->router->url('/foo/bar'));
+        $this->assertSame('/foo/bar', $app['router']->url('/foo/bar'));
 
-        $jarvis->router->setScheme('https');
-        $jarvis->router->setHost('');
-        $this->assertSame('/foo/bar', $jarvis->router->url('/foo/bar'));
+        $app['router']->setScheme('https');
+        $app['router']->setHost('');
+        $this->assertSame('/foo/bar', $app['router']->url('/foo/bar'));
 
-        $jarvis->router->setHost('github.com/');
-        $this->assertSame('https://github.com/eric-chau/jarvis', $jarvis->router->url('///eric-chau/jarvis'));
+        $app['router']->setHost('github.com/');
+        $this->assertSame('https://github.com/eric-chau/jarvis', $app['router']->url('///eric-chau/jarvis'));
     }
 
     public function testGuessHost()
     {
-        $jarvis = new Jarvis();
+        $app = new Jarvis();
 
-        $this->assertEquals('', $jarvis['router']->host());
-        $this->assertEquals('http', $jarvis['router']->scheme());
+        $this->assertEquals('', $app['router']->host());
+        $this->assertEquals('http', $app['router']->scheme());
 
-        $jarvis['router']->guessHost(Request::create('/'));
-        $this->assertEquals('localhost', $jarvis['router']->host());
-        $this->assertEquals('http', $jarvis['router']->scheme());
-        $this->assertEquals('http://localhost/hello', $jarvis['router']->url('/hello'));
+        $app['router']->guessHost(Request::create('/'));
+        $this->assertEquals('localhost', $app['router']->host());
+        $this->assertEquals('http', $app['router']->scheme());
+        $this->assertEquals('http://localhost/hello', $app['router']->url('/hello'));
 
-        $jarvis['router']->guessHost(Request::create('/', 'GET', [], [], [], ['HTTP_HOST' => 'localhost:8000']));
-        $this->assertEquals('http://localhost:8000/hello', $jarvis['router']->url('/hello'));
+        $app['router']->guessHost(Request::create('/', 'GET', [], [], [], ['HTTP_HOST' => 'localhost:8000']));
+        $this->assertEquals('http://localhost:8000/hello', $app['router']->url('/hello'));
     }
 }
