@@ -17,6 +17,7 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class Router extends Dispatcher
 {
+    const DEFAULT_SCHEME = 'http';
     const HTTP_PORT = 80;
     const HTTPS_PORT = 443;
 
@@ -25,7 +26,7 @@ class Router extends Dispatcher
     private $rawRoutes = [];
     private $routesNames = [];
     private $routeCollector;
-    private $scheme = 'http';
+    private $scheme = self::DEFAULT_SCHEME;
 
     /**
      * Creates an instance of Router.
@@ -50,7 +51,7 @@ class Router extends Dispatcher
         $this->rawRoutes[] = [$route->method(), $route->pattern(), $route->handler()];
         $this->computed = false;
 
-        if (null !== $name = $route->name()) {
+        if (false != $name = $route->name()) {
             $this->routesNames[$name] = $route->pattern();
         }
 
@@ -117,7 +118,7 @@ class Router extends Dispatcher
      */
     public function setScheme(string $scheme = null): Router
     {
-        $this->scheme = (string) $scheme ?: 'http';
+        $this->scheme = (string) $scheme ?: self::DEFAULT_SCHEME;
 
         return $this;
     }
@@ -156,7 +157,7 @@ class Router extends Dispatcher
     {
         $this->setScheme($request->getScheme());
         $this->setHost($request->getHost());
-        if (self::HTTP_PORT !== $request->getPort() && self::HTTPS_PORT !== $request->getPort()) {
+        if (!in_array($request->getPort(), [self::HTTP_PORT, self::HTTPS_PORT])) {
             $this->setHost($this->host() . ':' . $request->getPort());
         }
 
@@ -215,9 +216,9 @@ class Router extends Dispatcher
             [1 => $callback, 2 => $arguments] = $result;
         } else {
             $callback = function () use ($result): Response {
-                return new Response(null, Dispatcher::METHOD_NOT_ALLOWED === $result[0]
-                    ? Response::HTTP_METHOD_NOT_ALLOWED
-                    : Response::HTTP_NOT_FOUND
+                return new Response(null, Dispatcher::NOT_FOUND === $result[0]
+                    ? Response::HTTP_NOT_FOUND
+                    : Response::HTTP_METHOD_NOT_ALLOWED
                 );
             };
         }
@@ -246,7 +247,6 @@ class Router extends Dispatcher
     {
         if (!$this->computed) {
             $this->routeCollector = new RouteCollector(new Parser(), new DataGenerator());
-
             foreach ($this->rawRoutes as $rawRoute) {
                 [$method, $route, $handler] = $rawRoute;
                 $this->routeCollector->addRoute($method, $route, $handler);

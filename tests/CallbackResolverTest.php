@@ -12,26 +12,26 @@ class CallbackResolverTest extends \PHPUnit_Framework_TestCase
 {
     public function testReferenceIsReplacedByValueFromController()
     {
-        $jarvis = new Jarvis();
+        $app = new Jarvis();
 
-        $jarvis['datetime'] = new \DateTime();
+        $app['datetime'] = new \DateTime();
 
         $callback = [new Reference('datetime'), 'getTimestamp'];
 
         $this->assertNotInstanceOf(\Closure::class, $callback);
-        $callback = $jarvis->callbackResolver->resolve($callback);
+        $callback = $app['callbackResolver']->resolve($callback);
         $this->assertInstanceOf(\Closure::class, $callback);
     }
 
     public function testResolveAcceptAnyCallableCallback()
     {
-        $jarvis = new Jarvis();
+        $app = new Jarvis();
 
         try {
-            $jarvis->callbackResolver->resolve([new \DateTime(), 'getTimestamp']);
-            $jarvis->callbackResolver->resolve(['DateTime', 'createFromFormat']);
-            $jarvis->callbackResolver->resolve('rand');
-            $jarvis->callbackResolver->resolve(function () {});
+            $app['callbackResolver']->resolve([new \DateTime(), 'getTimestamp']);
+            $app['callbackResolver']->resolve(['DateTime', 'createFromFormat']);
+            $app['callbackResolver']->resolve('rand');
+            $app['callbackResolver']->resolve(function () {});
             $this->assertTrue(true);
         } catch (\InvalidArgumentException $e) {
             if ('Provided callback is not callable.' === $e->getMessage()) {
@@ -47,8 +47,8 @@ class CallbackResolverTest extends \PHPUnit_Framework_TestCase
      */
     public function testResolveRaisesExceptionOnInvalidCallback()
     {
-        $jarvis = new Jarvis();
+        $app = new Jarvis();
 
-        $jarvis->callbackResolver->resolve([new \DateTime(), 'hello']);
+        $app['callbackResolver']->resolve([new \DateTime(), 'hello']);
     }
 }

@@ -22,15 +22,15 @@ class BroadcasterInterfaceTest extends \PHPUnit_Framework_TestCase
 
     public function testReceiverAlwaysGetAnInstanceOfEventInterfaceAsFirstArgument()
     {
-        $jarvis = new Jarvis();
+        $app = new Jarvis();
 
         $receiver = new FakeReceiver();
 
-        $jarvis->on(self::RANDOM_EVENT_NAME, [$receiver, 'onEventBroadcast']);
+        $app->on(self::RANDOM_EVENT_NAME, [$receiver, 'onEventBroadcast']);
 
         $this->assertNull($receiver->event);
 
-        $jarvis->broadcast(self::RANDOM_EVENT_NAME);
+        $app->broadcast(self::RANDOM_EVENT_NAME);
 
         $this->assertInstanceOf(EventInterface::class, $receiver->event);
         $this->assertInstanceOf(SimpleEvent::class, $receiver->event);
@@ -38,15 +38,15 @@ class BroadcasterInterfaceTest extends \PHPUnit_Framework_TestCase
 
     public function testBroadcastOfRunEventAndControllerEventAndResponseEventDuringRunExecution()
     {
-        $jarvis = new Jarvis();
+        $app = new Jarvis();
 
         $receiver = new FakeReceiver();
 
-        $jarvis->on(BroadcasterInterface::RUN_EVENT, [$receiver, 'onRunEvent']);
-        $jarvis->on(BroadcasterInterface::CONTROLLER_EVENT, [$receiver, 'onControllerEvent']);
-        $jarvis->on(BroadcasterInterface::RESPONSE_EVENT, [$receiver, 'onResponseEvent']);
+        $app->on(BroadcasterInterface::RUN_EVENT, [$receiver, 'onRunEvent']);
+        $app->on(BroadcasterInterface::CONTROLLER_EVENT, [$receiver, 'onControllerEvent']);
+        $app->on(BroadcasterInterface::RESPONSE_EVENT, [$receiver, 'onResponseEvent']);
 
-        $jarvis['router']
+        $app['router']
             ->beginRoute()
                 ->setHandler(function () {
                     return 'Hello, world!';
@@ -58,7 +58,7 @@ class BroadcasterInterfaceTest extends \PHPUnit_Framework_TestCase
         $this->assertNull($receiver->controllerEvent);
         $this->assertNull($receiver->responseEvent);
 
-        $response = $jarvis->run();
+        $response = $app->run();
 
         $this->assertInstanceOf(RunEvent::class, $receiver->runEvent);
         $this->assertInstanceOf(ControllerEvent::class, $receiver->controllerEvent);
@@ -67,13 +67,13 @@ class BroadcasterInterfaceTest extends \PHPUnit_Framework_TestCase
 
     public function testBroadcastEventArgumentWillAlwaysBePassedToReceivers()
     {
-        $jarvis = new Jarvis();
+        $app = new Jarvis();
 
         $receiver = new FakeReceiver();
 
         $this->assertNotInstanceOf(FakeEvent::class, $receiver->event);
-        $jarvis->on(self::RANDOM_EVENT_NAME, [$receiver, 'onEventBroadcast']);
-        $jarvis->broadcast(self::RANDOM_EVENT_NAME, new FakeEvent());
+        $app->on(self::RANDOM_EVENT_NAME, [$receiver, 'onEventBroadcast']);
+        $app->broadcast(self::RANDOM_EVENT_NAME, new FakeEvent());
         $this->assertInstanceOf(FakeEvent::class, $receiver->event);
     }
 
@@ -82,13 +82,13 @@ class BroadcasterInterfaceTest extends \PHPUnit_Framework_TestCase
      */
     public function testExceptionOnUnauthorizedBroadcastRunEvent()
     {
-        $jarvis = new Jarvis();
-        $jarvis->broadcast(BroadcasterInterface::RUN_EVENT);
+        $app = new Jarvis();
+        $app->broadcast(BroadcasterInterface::RUN_EVENT);
     }
 
     public function testEventReceiversPriorities()
     {
-        $jarvis = new Jarvis();
+        $app = new Jarvis();
 
         $eventName = 'receiver_priority_test';
 
@@ -100,11 +100,11 @@ class BroadcasterInterfaceTest extends \PHPUnit_Framework_TestCase
         $this->assertNull($normalPriorityReceiver->microTimestamp);
         $this->assertNull($highPriorityReceiver->microTimestamp);
 
-        $jarvis->on($eventName, [$lowPriorityReceiver, 'saveMicroTimestamp'], Jarvis::RECEIVER_LOW_PRIORITY);
-        $jarvis->on($eventName, [$normalPriorityReceiver, 'saveMicroTimestamp'], Jarvis::RECEIVER_NORMAL_PRIORITY);
-        $jarvis->on($eventName, [$highPriorityReceiver, 'saveMicroTimestamp'], Jarvis::RECEIVER_HIGH_PRIORITY);
+        $app->on($eventName, [$lowPriorityReceiver, 'saveMicroTimestamp'], Jarvis::RECEIVER_LOW_PRIORITY);
+        $app->on($eventName, [$normalPriorityReceiver, 'saveMicroTimestamp'], Jarvis::RECEIVER_NORMAL_PRIORITY);
+        $app->on($eventName, [$highPriorityReceiver, 'saveMicroTimestamp'], Jarvis::RECEIVER_HIGH_PRIORITY);
 
-        $jarvis->broadcast($eventName);
+        $app->broadcast($eventName);
 
         $this->assertTrue($normalPriorityReceiver->microTimestamp < $lowPriorityReceiver->microTimestamp);
         $this->assertTrue($highPriorityReceiver->microTimestamp < $normalPriorityReceiver->microTimestamp);
@@ -112,22 +112,22 @@ class BroadcasterInterfaceTest extends \PHPUnit_Framework_TestCase
 
     public function testPermanentEvent()
     {
-        $jarvis = new Jarvis();
+        $app = new Jarvis();
         $receiver = new FakeReceiver();
 
         $name = 'classic.event';
         $simpleEvent = new SimpleEvent();
 
         $this->assertNull($receiver->event);
-        $jarvis->broadcast($name, $simpleEvent);
-        $jarvis->on($name, [$receiver, 'onEventBroadcast']);
+        $app->broadcast($name, $simpleEvent);
+        $app->on($name, [$receiver, 'onEventBroadcast']);
         $this->assertNull($receiver->event);
 
         $name = 'permanent.event';
         $permanentEvent = new PermanentEvent();
 
-        $jarvis->broadcast($name, $permanentEvent);
-        $jarvis->on($name, [$receiver, 'onEventBroadcast']);
+        $app->broadcast($name, $permanentEvent);
+        $app->on($name, [$receiver, 'onEventBroadcast']);
         $this->assertSame($permanentEvent, $receiver->event);
     }
 
@@ -137,11 +137,11 @@ class BroadcasterInterfaceTest extends \PHPUnit_Framework_TestCase
      */
     public function testForbidPermanentEventMultiBroadcast()
     {
-        $jarvis = new Jarvis();
+        $app = new Jarvis();
         $permanentEvent = new PermanentEvent();
 
         $name = 'permanent.event';
-        $jarvis->broadcast($name, $permanentEvent);
-        $jarvis->broadcast($name, $permanentEvent);
+        $app->broadcast($name, $permanentEvent);
+        $app->broadcast($name, $permanentEvent);
     }
 }

@@ -7,9 +7,9 @@ use Jarvis\Skill\DependencyInjection\ContainerProviderInterface;
 
 class FakeContainerProvider implements ContainerProviderInterface
 {
-    public function hydrate(Jarvis $container)
+    public function hydrate(Jarvis $app)
     {
-        $container['fake_container_provider_called'] = true;
-        $container['is_request_already_defined'] = isset($container['request']);
+        $app['fake_container_provider_called'] = true;
+        $app['is_request_already_defined'] = isset($app['request']);
     }
 }

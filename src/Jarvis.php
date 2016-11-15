@@ -25,7 +25,6 @@ use Symfony\Component\HttpFoundation\Response;
  *
  * @property boolean $debug
  * @property Request $request
- * @property ParameterBag $settings
  * @property \Jarvis\Skill\Routing\Router $router
  * @property \Symfony\Component\HttpFoundation\Session\Session $session
  * @property \Jarvis\Skill\Core\CallbackResolver $callbackResolver
@@ -136,8 +135,8 @@ class Jarvis extends Container implements BroadcasterInterface
      */
     public function run(Request $request = null): Response
     {
-        $request = $request ?? $this->request;
-        $response = null;
+        $request = $request ?? $this['request'];
+        $event = null;
 
         try {
             $this->masterBroadcast(BroadcasterInterface::RUN_EVENT, $event = new RunEvent($request));
@@ -145,23 +144,19 @@ class Jarvis extends Container implements BroadcasterInterface
                 return $response;
             }
 
-            [$callback, $arguments] = $this->router->match($request->getMethod(), $request->getPathInfo());
-
+            [$callback, $arguments] = $this['router']->match($request->getMethod(), $request->getPathInfo());
             $event = new ControllerEvent($this['callbackResolver']->resolve($callback), $arguments);
             $this->masterBroadcast(BroadcasterInterface::CONTROLLER_EVENT, $event);
 
             $response = call_user_func_array($event->callback(), $event->arguments());
-
             $event = new ResponseEvent($request, $response);
             $this->masterBroadcast(BroadcasterInterface::RESPONSE_EVENT, $event);
-            $response = $event->response();
         } catch (\Throwable $throwable) {
-            $exceptionEvent = new ExceptionEvent($throwable);
-            $this->masterBroadcast(BroadcasterInterface::EXCEPTION_EVENT, $exceptionEvent);
-            $response = $exceptionEvent->response();
+            $event = new ExceptionEvent($throwable);
+            $this->masterBroadcast(BroadcasterInterface::EXCEPTION_EVENT, $event);
         }
 
-        return $response;
+        return $event->response();
     }
 
     /**
@@ -179,10 +174,8 @@ class Jarvis extends Container implements BroadcasterInterface
 
         $this->receivers[$name][$priority][] = $receiver;
         $this->computedReceivers[$name] = null;
-
         if (isset($this->permanentEvents[$name])) {
             $name = $this->permanentEvents[$name];
-
             call_user_func_array($this['callbackResolver']->resolve($receiver), [$name]);
         }
 
@@ -213,7 +206,6 @@ class Jarvis extends Container implements BroadcasterInterface
         if (isset($this->receivers[$name])) {
             foreach ($this->buildEventReceivers($name) as $receiver) {
                 call_user_func_array($this['callbackResolver']->resolve($receiver), [$event]);
-
                 if ($event->isPropagationStopped()) {
                     break;
                 }
