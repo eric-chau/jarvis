@@ -8,7 +8,7 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class ExceptionEventTest extends \PHPUnit_Framework_TestCase
 {
-    public function testStopPropagation()
+    public function test_stopPropagation()
     {
         $event = new ExceptionEvent(new \Exception());
 

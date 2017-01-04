@@ -14,7 +14,7 @@ class ControllerEventTest extends \PHPUnit_Framework_TestCase
     /**
      * @expectedException        \TypeError
      */
-    public function testSetInvalidCallbackRaiseException()
+    public function test_set_invalid_callback_raise_exception()
     {
         $event = new ControllerEvent(function () {});
 
@@ -22,7 +22,7 @@ class ControllerEventTest extends \PHPUnit_Framework_TestCase
         $event->setCallback(\Closure::fromCallable('foobar'));
     }
 
-    public function testControllerSmartTypeHint()
+    public function test_controller_smart_type_hint()
     {
         $app = new Jarvis(['debug' => true]);
 

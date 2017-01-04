@@ -10,7 +10,7 @@ use Jarvis\Skill\DependencyInjection\Reference;
  */
 class CallbackResolverTest extends \PHPUnit_Framework_TestCase
 {
-    public function testReferenceIsReplacedByValueFromController()
+    public function test_replace_Reference_by_value_from_container()
     {
         $app = new Jarvis();
 
@@ -23,7 +23,7 @@ class CallbackResolverTest extends \PHPUnit_Framework_TestCase
         $this->assertInstanceOf(\Closure::class, $callback);
     }
 
-    public function testResolveAcceptAnyCallableCallback()
+    public function test_resolve_accept_any_callable_as_callback()
     {
         $app = new Jarvis();
 

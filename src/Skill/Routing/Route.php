@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Jarvis\Skill\Routing;
 
@@ -15,7 +15,7 @@ class Route
     private $handler;
     private $router;
 
-    public function __construct(string $name = null, Router $router)
+    public function __construct(Router $router, string $name = null)
     {
         $this->name = $name;
         $this->router = $router;

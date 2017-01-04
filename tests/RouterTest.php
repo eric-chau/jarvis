@@ -11,7 +11,7 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class RouterTest extends \PHPUnit_Framework_TestCase
 {
-    public function testRouterNotCaseSensibleToHttpMethod()
+    public function test_Router_not_case_sensible_for_http_method()
     {
         $app = new Jarvis();
 
@@ -29,7 +29,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $this->assertSame('Hello, world!', $response->getContent());
     }
 
-    public function testBeginRoute()
+    public function test_beginRoute()
     {
         $app = new Jarvis();
 
@@ -67,14 +67,14 @@ class RouterTest extends \PHPUnit_Framework_TestCase
      * @expectedException        \InvalidArgumentException
      * @expectedExceptionMessage Cannot generate URI for 'foobar_route' cause it does not exist.
      */
-    public function testGetUriOfInvalidRouteName()
+    public function test_uri_of_invalid_route_name()
     {
         $app = new Jarvis();
 
         $app['router']->uri('foobar_route');
     }
 
-    public function testGetUri()
+    public function test_uri()
     {
         $app = new Jarvis();
 
@@ -102,7 +102,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         ]));
     }
 
-    public function testHostAndSchemeGetterAndSetter()
+    public function test_getter_and_setter_for_host_and_scheme()
     {
         $app = new Jarvis();
 
@@ -124,7 +124,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $this->assertSame('https', $app['router']->scheme());
     }
 
-    public function testGetUrl()
+    public function test_url()
     {
         $app = new Jarvis();
 
@@ -138,7 +138,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $this->assertSame('https://github.com/eric-chau/jarvis', $app['router']->url('///eric-chau/jarvis'));
     }
 
-    public function testGuessHost()
+    public function test_guessHost()
     {
         $app = new Jarvis();
 
