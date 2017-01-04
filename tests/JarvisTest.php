@@ -15,7 +15,7 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class JarvisTest extends \PHPUnit_Framework_TestCase
 {
-    public function testJarvisDebugVariable()
+    public function test_debug_variable()
     {
         // By default Jarvis is started with debug setted to false.
         $app = new Jarvis();
@@ -28,7 +28,7 @@ class JarvisTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue($app['debug']);
     }
 
-    public function testWithCustomContainerProvider()
+    public function test_custom_container_provider()
     {
         $app = new Jarvis(['providers' => []]);
 
@@ -41,7 +41,7 @@ class JarvisTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue($app['is_request_already_defined']);
     }
 
-    public function testRunCatchEveryExceptionAndConvertItToResponse()
+    public function test_catch_all_exceptions_to_convert_them_to_response()
     {
         $app = new Jarvis(['debug' => true]);
 
@@ -62,14 +62,14 @@ class JarvisTest extends \PHPUnit_Framework_TestCase
         ), $response->getContent());
     }
 
-    public function testRunOnInvalidRouteReturnsResponseWithStatusCode404()
+    public function test_invalid_route_returns_response_status_code_404()
     {
         $app = new Jarvis();
 
         $this->assertSame(404, $app->run()->getStatusCode());
     }
 
-    public function testRunRouteWithWrongMethodReturnsResponseWithStatusCode405()
+    public function test_wrong_method_route_returns_response_status_code_405()
     {
         $app = new Jarvis();
 
@@ -85,7 +85,7 @@ class JarvisTest extends \PHPUnit_Framework_TestCase
         $this->assertSame(405, $app->run()->getStatusCode());
     }
 
-    public function testRunExecutionIsStoppedIfRunEventHasResponseSetted()
+    public function test_run_is_stopped_if_RunEvent_has_response()
     {
         $app = new Jarvis();
 
@@ -107,7 +107,7 @@ class JarvisTest extends \PHPUnit_Framework_TestCase
         $this->assertNull($receiver->responseEvent);
     }
 
-    public function testReceiveResponseEventOnRunAndModifyResponseWillModifyReturnedResponse()
+    public function test_modify_response_on_ResponseEvent_is_persistent()
     {
         $app = new Jarvis();
 
@@ -134,27 +134,7 @@ class JarvisTest extends \PHPUnit_Framework_TestCase
 
     }
 
-    public function testRequestService()
-    {
-        $app = new Jarvis();
-
-        $this->assertTrue(isset($app['request']));
-        $this->assertInstanceOf(Request::class, $app['request']);
-    }
-
-    public function testSettingsService()
-    {
-        $app = new Jarvis([
-            'extra' => [
-                'foo' => 'bar',
-            ],
-        ]);
-
-        $this->assertTrue(isset($app['foo.settings']));
-        $this->assertSame('bar', $app['foo.settings']);
-    }
-
-    public function testAccessToLockedValueAsJarvisAttribute()
+    public function test_access_to_locked_value_as_Jarvis_attribute()
     {
         $app = new Jarvis();
 
@@ -168,7 +148,7 @@ class JarvisTest extends \PHPUnit_Framework_TestCase
      * @expectedException        \InvalidArgumentException
      * @expectedExceptionMessage "foo" is not a key of a locked value.
      */
-    public function testAccessToUnlockedValueOrNonExistentValueAsJarvisAttributeRaiseException()
+    public function test_access_to_not_locked_value_or_non_existent_value_as_Jarvis_attribute_raise_exception()
     {
         $app = new Jarvis();
 
@@ -180,14 +160,14 @@ class JarvisTest extends \PHPUnit_Framework_TestCase
      * @expectedException        \LogicException
      * @expectedExceptionMessage You are not allowed to set new attribute into Jarvis.
      */
-    public function testSetNewAttributeToJarvisWillRaiseException()
+    public function test_set_new_attribute_to_Jarvis_raise_exception()
     {
         $app = new Jarvis();
 
         $app->foo = 'bar';
     }
 
-    public function testRunWillConvertToSymfonyResponseIfRouteCallbackReturnString()
+    public function test_run_convert_string_returned_by_callback_into_SymfonyResponse()
     {
         $app = new Jarvis();
 
@@ -205,7 +185,7 @@ class JarvisTest extends \PHPUnit_Framework_TestCase
         $this->assertSame($str, $response->getContent());
     }
 
-    public function testBroadcastTerminateEventOnDestruct()
+    public function test_broadcast_TerminateEvent_on_destruct()
     {
         $app = new Jarvis();
 
@@ -221,7 +201,27 @@ class JarvisTest extends \PHPUnit_Framework_TestCase
         $this->assertInstanceOf(SimpleEvent::class, $receiver->event);
     }
 
-    public function testSessionService()
+    public function test_request_service()
+    {
+        $app = new Jarvis();
+
+        $this->assertTrue(isset($app['request']));
+        $this->assertInstanceOf(Request::class, $app['request']);
+    }
+
+    public function test_settings_service()
+    {
+        $app = new Jarvis([
+            'extra' => [
+                'foo' => 'bar',
+            ],
+        ]);
+
+        $this->assertTrue(isset($app['foo.settings']));
+        $this->assertSame('bar', $app['foo.settings']);
+    }
+
+    public function test_session_service()
     {
         $app = new Jarvis();
 

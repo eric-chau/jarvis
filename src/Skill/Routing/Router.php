@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Jarvis\Skill\Routing;
 
@@ -78,7 +78,7 @@ class Router extends Dispatcher
      */
     public function beginRoute(string $name = null): Route
     {
-        return new Route($name, $this);
+        return new Route($this, $name);
     }
 
     /**

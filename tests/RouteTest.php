@@ -10,11 +10,12 @@ use Jarvis\Skill\Routing\Route;
  */
 class RouteTest extends \PHPUnit_Framework_TestCase
 {
-    public function testHttpMethodSetter()
+    public function test_setMethod()
     {
         $app = new Jarvis();
 
-        $route = new Route('test', $app['router']);
+        $route = new Route($app['router']);
+        $this->assertSame(['get'], $route->method());
 
         $route->setMethod('put');
         $this->assertSame(['put'], $route->method());

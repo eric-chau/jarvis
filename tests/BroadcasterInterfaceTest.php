@@ -20,7 +20,7 @@ class BroadcasterInterfaceTest extends \PHPUnit_Framework_TestCase
 {
     const RANDOM_EVENT_NAME = 'random.event_name';
 
-    public function testReceiverAlwaysGetAnInstanceOfEventInterfaceAsFirstArgument()
+    public function test_receiver_get_instance_of_EventInterface_as_first_argument()
     {
         $app = new Jarvis();
 
@@ -36,7 +36,7 @@ class BroadcasterInterfaceTest extends \PHPUnit_Framework_TestCase
         $this->assertInstanceOf(SimpleEvent::class, $receiver->event);
     }
 
-    public function testBroadcastOfRunEventAndControllerEventAndResponseEventDuringRunExecution()
+    public function test_run_will_broadcast_RunEvent_ControllerEvent_And_ResponseEvent()
     {
         $app = new Jarvis();
 
@@ -65,7 +65,7 @@ class BroadcasterInterfaceTest extends \PHPUnit_Framework_TestCase
         $this->assertInstanceOf(ResponseEvent::class, $receiver->responseEvent);
     }
 
-    public function testBroadcastEventArgumentWillAlwaysBePassedToReceivers()
+    public function test_broadcast_event_is_passed_itself_to_receivers()
     {
         $app = new Jarvis();
 
@@ -80,13 +80,13 @@ class BroadcasterInterfaceTest extends \PHPUnit_Framework_TestCase
     /**
      * @expectedException \LogicException
      */
-    public function testExceptionOnUnauthorizedBroadcastRunEvent()
+    public function test_exception_on_broadcast_of_reserved_event_name()
     {
         $app = new Jarvis();
         $app->broadcast(BroadcasterInterface::RUN_EVENT);
     }
 
-    public function testEventReceiversPriorities()
+    public function test_event_receiver_priorities()
     {
         $app = new Jarvis();
 
@@ -110,7 +110,7 @@ class BroadcasterInterfaceTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue($highPriorityReceiver->microTimestamp < $normalPriorityReceiver->microTimestamp);
     }
 
-    public function testPermanentEvent()
+    public function test_permanent_event()
     {
         $app = new Jarvis();
         $receiver = new FakeReceiver();
@@ -135,7 +135,7 @@ class BroadcasterInterfaceTest extends \PHPUnit_Framework_TestCase
      * @expectedException \LogicException
      * @expectedMessageException Permanent event cannot be broadcasted multiple times.
      */
-    public function testForbidPermanentEventMultiBroadcast()
+    public function test_forbid_multiple_broadcast_of_permanent_event()
     {
         $app = new Jarvis();
         $permanentEvent = new PermanentEvent();

@@ -7,7 +7,7 @@ use Jarvis\Skill\DependencyInjection\Container;
  */
 class ContainerTest extends \PHPUnit_Framework_TestCase
 {
-    public function testWithString()
+    public function test_with_string()
     {
         $dic = new Container();
         $dic['string'] = 'string';
@@ -15,7 +15,7 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('string', $dic['string']);
     }
 
-    public function testWithObject()
+    public function test_with_object()
     {
         $dic = new Container();
         $dic['object'] = new \stdClass();
@@ -23,7 +23,7 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
         $this->assertInstanceOf('stdClass', $dic['object']);
     }
 
-    public function testWithClosure()
+    public function test_with_closure()
     {
         $dic = new Container();
         $dic['closure'] = function () {
@@ -33,7 +33,7 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
         $this->assertInstanceOf('DateTime', $dic['closure']);
     }
 
-    public function testFactory()
+    public function test_factory()
     {
         $dic = new Container();
         $dic->factory('factory', function () {
@@ -50,7 +50,7 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
      * @expectedException        InvalidArgumentException
      * @expectedExceptionMessage Service factory must be a Closure or an invokable object.
      */
-    public function testSetFactoryWithInvalidValue()
+    public function test_factory_with_invalid_value()
     {
         $dic = new Container();
 
@@ -61,7 +61,7 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
      * @expectedException        InvalidArgumentException
      * @expectedExceptionMessage Service factory must be a Closure or an invokable object.
      */
-    public function testSetFactoryWithInvalidObject()
+    public function test_factory_with_invalid_object()
     {
         $dic = new Container();
 
@@ -72,7 +72,7 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
      * @expectedException          RuntimeException
      * @expectedExceptionMessage   Cannot override locked value `key`
      */
-    public function testLock()
+    public function test_lock()
     {
         $dic = new Container();
         $dic['key'] = 'value';
@@ -85,7 +85,7 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
      * @expectedException          InvalidArgumentException
      * @expectedExceptionMessage   Identifier `key` is not defined.
      */
-    public function testLockInvalidKey()
+    public function test_lock_undefined_key()
     {
         $dic = new Container();
         $dic->lock('key');
@@ -95,13 +95,13 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
      * @expectedException          InvalidArgumentException
      * @expectedExceptionMessage   Identifier `key` is not defined.
      */
-    public function testGetInvalidKey()
+    public function test_get_undefined_key()
     {
         $dic = new Container();
         $dic['key'];
     }
 
-    public function testAlias()
+    public function test_alias()
     {
         $dic = new Container();
         $dic['service'] = function () {
@@ -124,7 +124,7 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
      * @expectedException        InvalidArgumentException
      * @expectedExceptionMessage Cannot create alias for undefined value `service`.
      */
-    public function testSetAliasToUndefinedValue()
+    public function test_alias_of_undefined_value()
     {
         $dic = new Container();
         $dic->alias('service_alias', 'service');
@@ -134,7 +134,7 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
      * @expectedException        InvalidArgumentException
      * @expectedExceptionMessage Alias cannot be equals to value identifier.
      */
-    public function testSetAliasEqualsToIdentifier()
+    public function test_alias_same_to_identifier()
     {
         $dic = new Container();
         $dic['parameter'] = 'value';
@@ -146,7 +146,7 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
      * @expectedException        InvalidArgumentException
      * @expectedExceptionMessage Value's identifier cannot be equal to existing alias.
      */
-    public function testSetValueWithIdOfExistingAlias()
+    public function test_set_value_with_existing_alias_as_identifier()
     {
         $dic = new Container();
         $dic['service'] = function ($container) {
@@ -161,7 +161,7 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
      * @expectedException        InvalidArgumentException
      * @expectedExceptionMessage Alias cannot be equals to value identifier.
      */
-    public function testSetAliasEqualsToAnotherValueIdentifier()
+    public function test_alias_same_to_already_existing_identifier()
     {
         $dic = new Container();
         $dic['parameter'] = 'value';
@@ -172,7 +172,7 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
         $dic->alias('foo', 'parameter');
     }
 
-    public function testPassContainerAsParameter()
+    public function test_container_passed_as_parameter()
     {
         $dic = new Container();
         $dic['service'] = function (Container $container) {
@@ -187,7 +187,7 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
         $this->assertSame($dic, $dic['factory']);
     }
 
-    public function testUnset()
+    public function test_unset()
     {
         $dic = new Container();
         $dic['key'] = 'value';
@@ -218,7 +218,7 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
         }
     }
 
-    public function testUnsetAlias()
+    public function test_unset_alias()
     {
         $dic = new Container();
         $dic['param'] = 'value';
@@ -229,7 +229,7 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
         $this->assertFalse(isset($dic['param_alias']));
     }
 
-    public function testFind()
+    public function test_find()
     {
         $dic = new Container();
 
