@@ -189,7 +189,9 @@ class Router extends Dispatcher
             $value = (string) $value;
             $pieces = explode(':', $matches[1]);
             if (1 < count($pieces) && 1 !== preg_match("~{$pieces[1]}~", $value)) {
-                continue;
+                throw new \InvalidArgumentException(
+                    "Parameter '{$key}' must match regex '{$pieces[1]}' for route '{$name}'."
+                );
             }
 
             $uri = str_replace($matches[0], $value, $uri);

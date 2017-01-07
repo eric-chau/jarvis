@@ -11,7 +11,7 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class RouterTest extends \PHPUnit_Framework_TestCase
 {
-    public function test_Router_not_case_sensible_for_http_method()
+    public function test_beginRoute_default_parameter()
     {
         $app = new Jarvis();
 
@@ -85,7 +85,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
                 })
             ->end()
             ->beginRoute('with_params')
-                ->setPattern('/hello/{name:\w+}/{id:\d+}')
+                ->setPattern('/hello/{name}/{id:\d+}')
                 ->setHandler(function ($name, $id) {
                     return "$name ($id)";
                 })
@@ -96,10 +96,31 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $this->assertSame('/hello/jarvis/123', $app['router']->uri('with_params', [
             'name' => 'jarvis',
             'id'   => 123,
+            'toto' => 'abc',
         ]));
-        $this->assertSame('/hello/{name:\w+}/123', $app['router']->uri('with_params', [
+        $this->assertSame('/hello/{name}/123', $app['router']->uri('with_params', [
             'id'   => 123,
         ]));
+    }
+
+    /**
+     * @expectedException        \InvalidArgumentException
+     * @expectedExceptionMessage Parameter 'id' must match regex '\d+' for route 'params_with_regex'.
+     */
+    public function test_uri_throw_exception_if_provided_parameter_does_not_match_regex_validation()
+    {
+        $app = new Jarvis();
+
+        $app['router']
+            ->beginRoute('params_with_regex')
+                ->setPattern('/hello/{name:\w+}/{id:\d+}')
+                ->setHandler(function ($name, $id) {
+                    return "$name ($id)";
+                })
+            ->end()
+        ;
+
+        $app['router']->uri('params_with_regex', ['id' => 'abc']);
     }
 
     public function test_getter_and_setter_for_host_and_scheme()
