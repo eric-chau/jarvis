@@ -227,4 +227,46 @@ class JarvisTest extends \PHPUnit_Framework_TestCase
 
         $this->assertSame($app['request']->getSession(), $app['session']);
     }
+
+    public function test_adding_closure_with_return_type_generate_alias()
+    {
+        $app = new Jarvis();
+
+        $this->assertFalse(isset($app['DateTime']));
+
+        $app['foobar'] = function (): \DateTime {
+            return new \DateTime();
+        };
+
+        $this->assertTrue(isset($app['DateTime']));
+        $this->assertSame($app['foobar'], $app['DateTime']);
+
+        // You can use the returned type as identifier
+        $app['stdClass'] = function(): \stdClass {
+            return new \stdClass();
+        };
+
+        $this->assertTrue(isset($app['stdClass']));
+
+        // If two closures have the same return type, the returned type alias is
+        // deleted to preserve unicity and consistence
+        $app['array_object_1'] = function (): \ArrayObject {
+            return new \ArrayObject();
+        };
+
+        $this->assertTrue(isset($app['ArrayObject']));
+
+        $app['array_object_2'] = function (): \ArrayObject {
+            return new \ArrayObject();
+        };
+
+        $this->assertFalse(isset($app['ArrayObject']));
+
+        // Only returned type of class or interface work
+        $app['hello_world'] = function (): string {
+            return 'Hello, world!';
+        };
+
+        $this->assertFalse(isset($app['string']));
+    }
 }

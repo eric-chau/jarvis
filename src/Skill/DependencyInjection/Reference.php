@@ -19,11 +19,17 @@ class Reference
         $this->identifier = $identifier;
     }
 
+    /**
+     * @codeCoverageIgnore
+     */
     public function identifier(): string
     {
         return $this->identifier;
     }
 
+    /**
+     * @codeCoverageIgnore
+     */
     public function __toString(): string
     {
         return $this->identifier;
