@@ -103,26 +103,5 @@ final class ContainerProvider implements ContainerProviderInterface
 
             $event->setResponse(new Response($msg, Response::HTTP_INTERNAL_SERVER_ERROR));
         }, BroadcasterInterface::RECEIVER_LOW_PRIORITY);
-
-        $app->on(BroadcasterInterface::CONTROLLER_EVENT, function (ControllerEvent $event) use ($app): void {
-            $finalArgs = [];
-            $rawArgs = $event->arguments();
-            $refMethod = new \ReflectionMethod($event->callback(), '__invoke');
-            foreach ($refMethod->getParameters() as $refParam) {
-                if (null !== $refClass = $refParam->getClass()) {
-                    if (isset($app[$refClass->getName()])) {
-                        $finalArgs[$refParam->getPosition()] = $app[$refClass->getName()];
-
-                        continue;
-                    }
-                }
-
-                if (in_array($refParam->name, array_keys($rawArgs))) {
-                    $finalArgs[$refParam->getPosition()] = $rawArgs[$refParam->name];
-                }
-            }
-
-            $event->setArguments($finalArgs);
-        }, BroadcasterInterface::RECEIVER_LOW_PRIORITY);
     }
 }
