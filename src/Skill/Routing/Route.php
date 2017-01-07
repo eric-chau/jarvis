@@ -9,10 +9,29 @@ namespace Jarvis\Skill\Routing;
  */
 class Route
 {
+    /**
+     * @var string|null
+     */
     private $name;
+
+    /**
+     * @var array
+     */
     private $method = ['get'];
+
+    /**
+     * @var string
+     */
     private $pattern = '/';
+
+    /**
+     * @var mixed
+     */
     private $handler;
+
+    /**
+     * @var Router
+     */
     private $router;
 
     public function __construct(Router $router, string $name = null)

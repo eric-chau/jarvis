@@ -151,7 +151,13 @@ class Jarvis extends Container implements BroadcasterInterface
             $event = new ControllerEvent($this['callbackResolver']->resolve($callback), $arguments);
             $this->masterBroadcast(BroadcasterInterface::CONTROLLER_EVENT, $event);
 
-            $response = call_user_func_array($event->callback(), $event->arguments());
+            $response = call_user_func_array(
+                $event->callback(),
+                $this['callbackResolver']->resolveArgumentsForClosure(
+                    $event->callback(),
+                    $event->arguments()
+                )
+            );
             $event = new ResponseEvent($request, $response);
             $this->masterBroadcast(BroadcasterInterface::RESPONSE_EVENT, $event);
         } catch (\Throwable $throwable) {
