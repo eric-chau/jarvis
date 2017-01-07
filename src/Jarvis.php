@@ -118,7 +118,10 @@ class Jarvis extends Container implements BroadcasterInterface
         }
 
         $alias = $returntype->getName();
-        if ($alias === $id) {
+        if (
+            $alias === $id
+            || (!class_exists($alias) && !interface_exists($alias))
+        ) {
             return;
         }
 
