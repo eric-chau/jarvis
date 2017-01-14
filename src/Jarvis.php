@@ -214,7 +214,11 @@ class Jarvis extends Container implements BroadcasterInterface
 
         if (isset($this->receivers[$name])) {
             foreach ($this->buildEventReceivers($name) as $receiver) {
-                call_user_func_array($this['callbackResolver']->resolve($receiver), [$event]);
+                $receiver = $this['callbackResolver']->resolve($receiver);
+                $arguments = $this['callbackResolver']->resolveArgumentsForClosure($receiver, [
+                    'event' => $event,
+                ]);
+                call_user_func_array($receiver, $arguments);
                 if ($event->isPropagationStopped()) {
                     break;
                 }
