@@ -47,7 +47,7 @@ class CallbackResolver
      * @param  array    $rawArgs
      * @return array
      */
-    public function resolveArgumentsForClosure(\Closure $callback, array $rawArgs): array
+    public function resolveArgumentsForClosure(\Closure $callback, array $rawArgs = []): array
     {
         $result = [];
         $refMethod = new \ReflectionMethod($callback, '__invoke');
@@ -66,5 +66,23 @@ class CallbackResolver
         }
 
         return $result;
+    }
+
+    /**
+     * Shortcut that calls successively ::resolve(), ::resolveArgumentsForClosure(),
+     * call_user_func_array() and returns the result.
+     *
+     * @param  mixed $callback
+     * @param  array  $rawArgs
+     * @return mixed
+     */
+    public function resolveAndCall($callback, array $rawArgs = [])
+    {
+        $closure = $this->resolve($callback);
+
+        return call_user_func_array(
+            $closure,
+            $this->resolveArgumentsForClosure($closure, $rawArgs)
+        );
     }
 }
