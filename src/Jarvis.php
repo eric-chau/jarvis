@@ -151,13 +151,7 @@ class Jarvis extends Container implements BroadcasterInterface
             $event = new ControllerEvent($this['callbackResolver']->resolve($callback), $arguments);
             $this->masterBroadcast(BroadcasterInterface::CONTROLLER_EVENT, $event);
 
-            $response = call_user_func_array(
-                $event->callback(),
-                $this['callbackResolver']->resolveArgumentsForClosure(
-                    $event->callback(),
-                    $event->arguments()
-                )
-            );
+            $response = $this['callbackResolver']->resolveAndCall($event->callback(), $event->arguments());
             $event = new ResponseEvent($request, $response);
             $this->masterBroadcast(BroadcasterInterface::RESPONSE_EVENT, $event);
         } catch (\Throwable $throwable) {
@@ -184,8 +178,9 @@ class Jarvis extends Container implements BroadcasterInterface
         $this->receivers[$name][$priority][] = $receiver;
         $this->computedReceivers[$name] = null;
         if (isset($this->permanentEvents[$name])) {
-            $name = $this->permanentEvents[$name];
-            call_user_func_array($this['callbackResolver']->resolve($receiver), [$name]);
+            $this['callbackResolver']->resolveAndCall($receiver, [
+                'event' => $this->permanentEvents[$name],
+            ]);
         }
 
         return $this;
@@ -214,11 +209,9 @@ class Jarvis extends Container implements BroadcasterInterface
 
         if (isset($this->receivers[$name])) {
             foreach ($this->buildEventReceivers($name) as $receiver) {
-                $receiver = $this['callbackResolver']->resolve($receiver);
-                $arguments = $this['callbackResolver']->resolveArgumentsForClosure($receiver, [
+                $this['callbackResolver']->resolveAndCall($receiver, [
                     'event' => $event,
                 ]);
-                call_user_func_array($receiver, $arguments);
                 if ($event->isPropagationStopped()) {
                     break;
                 }
