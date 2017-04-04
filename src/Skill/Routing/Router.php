@@ -8,7 +8,6 @@ use FastRoute\DataGenerator\GroupCountBased as DataGenerator;
 use FastRoute\Dispatcher\GroupCountBased as Dispatcher;
 use FastRoute\RouteCollector;
 use FastRoute\RouteParser\Std as Parser;
-use Jarvis\Jarvis;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -46,7 +45,7 @@ class Router extends Dispatcher
      * @param  Route $route
      * @return self
      */
-    public function addRoute(Route $route): Router
+    public function addRoute(Route $route): void
     {
         $this->rawRoutes[] = [$route->method(), $route->pattern(), $route->handler()];
         $this->computed = false;
@@ -54,8 +53,6 @@ class Router extends Dispatcher
         if (false != $name = $route->name()) {
             $this->routesNames[$name] = $route->pattern();
         }
-
-        return $this;
     }
 
     /**
@@ -116,11 +113,9 @@ class Router extends Dispatcher
      *
      * @param string|null $scheme
      */
-    public function setScheme(string $scheme = null): Router
+    public function setScheme(string $scheme = null): void
     {
         $this->scheme = (string) $scheme ?: self::DEFAULT_SCHEME;
-
-        return $this;
     }
 
     /**
@@ -140,11 +135,9 @@ class Router extends Dispatcher
      * @param  string|null $host
      * @return self
      */
-    public function setHost(string $host = null): Router
+    public function setHost(string $host = null): void
     {
         $this->host = (string) $host;
-
-        return $this;
     }
 
     /**
@@ -153,15 +146,13 @@ class Router extends Dispatcher
      * @param  Request $request
      * @return self
      */
-    public function guessHost(Request $request)
+    public function guessHost(Request $request): void
     {
         $this->setScheme($request->getScheme());
         $this->setHost($request->getHost());
         if (!in_array($request->getPort(), [self::HTTP_PORT, self::HTTPS_PORT])) {
             $this->setHost($this->host() . ':' . $request->getPort());
         }
-
-        return $this;
     }
 
     /**

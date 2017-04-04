@@ -29,17 +29,17 @@ class ControllerEvent extends SimpleEvent
     }
 
     /**
+     * @codeCoverageIgnore
+     *
      * Set new callback to ControllerEvent. It must be callable.
      *
      * @param  mixed $callback The new callback to set
      * @return self
      * @throws \InvalidArgumentException if passed callback is not callable
      */
-    public function setCallback(\Closure $callback): ControllerEvent
+    public function setCallback(\Closure $callback): void
     {
         $this->callback = $callback;
-
-        return $this;
     }
 
     /**
@@ -60,10 +60,8 @@ class ControllerEvent extends SimpleEvent
      * @param  array $arguments The new arguments to set, default: empty array ([])
      * @return self
      */
-    public function setArguments(array $arguments = []): ControllerEvent
+    public function setArguments(array $arguments = []): void
     {
         $this->arguments = $arguments;
-
-        return $this;
     }
 }

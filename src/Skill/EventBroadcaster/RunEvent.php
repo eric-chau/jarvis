@@ -28,10 +28,8 @@ class RunEvent extends ResponseEvent
      * @param  Response $response
      * @return self
      */
-    public function setResponse(Response $response): RunEvent
+    public function setResponse(Response $response): void
     {
         $this->response = $response;
-
-        return $this;
     }
 }

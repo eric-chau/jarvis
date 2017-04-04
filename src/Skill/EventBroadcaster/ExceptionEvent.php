@@ -29,12 +29,10 @@ class ExceptionEvent extends SimpleEvent
         return $this->response;
     }
 
-    public function setResponse(Response $response): ExceptionEvent
+    public function setResponse(Response $response): void
     {
         $this->response = $response;
         $this->stopPropagation();
-
-        return $this;
     }
 
     /**
@@ -42,12 +40,12 @@ class ExceptionEvent extends SimpleEvent
      *
      * {@inheritdoc}
      */
-    public function stopPropagation(): SimpleEvent
+    public function stopPropagation(): void
     {
         if (null === $this->response) {
-            return $this;
+            return;
         }
 
-        return parent::stopPropagation();
+        parent::stopPropagation();
     }
 }

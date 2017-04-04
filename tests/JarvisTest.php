@@ -60,6 +60,20 @@ class JarvisTest extends \PHPUnit_Framework_TestCase
             __FILE__,
             'Hello, world!'
         ), $response->getContent());
+
+        // if debug = false, there is no error message in returned response
+        $app = new Jarvis(['debug' => false]);
+
+        $app['router']
+            ->beginRoute()
+                ->setHandler(function () {
+                    throw new \Exception('Hello, world!');
+                })
+            ->end()
+        ;
+
+        $response = $app->run();
+        $this->assertSame('', $response->getContent());
     }
 
     public function test_invalid_route_returns_response_status_code_404()
@@ -226,6 +240,13 @@ class JarvisTest extends \PHPUnit_Framework_TestCase
         $app = new Jarvis();
 
         $this->assertSame($app['request']->getSession(), $app['session']);
+    }
+
+    public function test_app_service()
+    {
+        $app = new Jarvis();
+
+        $this->assertSame($app, $app['app']);
     }
 
     public function test_adding_closure_with_return_type_generate_alias()

@@ -246,19 +246,16 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
         $dic['jarvis_1'] = $callable;
         $this->assertCount(2, $dic->find('jarvis*'));
 
-        $dic
-            ->alias('jarvis.extension', 'jarvis')
-            ->alias('jarvis.plugin', 'jarvis')
-            ->alias('jarvis.bundle', 'jarvis')
-        ;
+        $dic->alias('jarvis.extension', 'jarvis');
+        $dic->alias('jarvis.plugin', 'jarvis');
+        $dic->alias('jarvis.bundle', 'jarvis');
 
         $this->assertCount(3, $dic->find('jarvis.*'));
 
-        $dic
-            ->alias('jarvis.demo.bundle.class', 'jarvis')
-            ->alias('jarvis.comment.bundle.bundle', 'jarvis')
-            ->alias('jarvis.common.bundle.source', 'jarvis')
-        ;
+        $dic->alias('jarvis.demo.bundle.class', 'jarvis');
+        $dic->alias('jarvis.comment.bundle.bundle', 'jarvis');
+        $dic->alias('jarvis.common.bundle.source', 'jarvis');
+
         $this->assertCount(1, $dic->find('jarvis.*.bundle'));
     }
 }

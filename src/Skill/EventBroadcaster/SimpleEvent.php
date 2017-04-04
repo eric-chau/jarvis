@@ -19,10 +19,8 @@ class SimpleEvent implements EventInterface
         return $this->isPropagationStopped;
     }
 
-    public function stopPropagation(): SimpleEvent
+    public function stopPropagation(): void
     {
         $this->isPropagationStopped = true;
-
-        return $this;
     }
 }

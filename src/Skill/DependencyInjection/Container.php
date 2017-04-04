@@ -32,7 +32,7 @@ class Container implements \ArrayAccess
      * @throws InvalidArgumentException if provided identifier is undefined or if alias is
      *                                  equals to identifier
      */
-    public function alias(string $alias, string $id): Container
+    public function alias(string $alias, string $id): void
     {
         if (!$this->offsetExists($id)) {
             throw new \InvalidArgumentException("Cannot create alias for undefined value `$id`.");
@@ -45,8 +45,6 @@ class Container implements \ArrayAccess
         $this->aliasOf[$alias] = $id;
         $this->hasAliases[$id] = $this->hasAliases[$id] ?? [];
         $this->hasAliases[$id][] = $alias;
-
-        return $this;
     }
 
     /**
@@ -175,7 +173,7 @@ class Container implements \ArrayAccess
      * @return self
      * @throws InvalidArgumentException if provided factory is not a Closure or not an invokable object
      */
-    public function factory(string $id, $factory): Container
+    public function factory(string $id, $factory): void
     {
         if (!is_object($factory) || !method_exists($factory, '__invoke')) {
             throw new \InvalidArgumentException('Service factory must be a Closure or an invokable object.');
@@ -183,8 +181,6 @@ class Container implements \ArrayAccess
 
         $this->offsetSet($id, $factory);
         $this->factories->attach($factory);
-
-        return $this;
     }
 
     /**
@@ -193,15 +189,13 @@ class Container implements \ArrayAccess
      * @param  string|array $ids the identifier(s) to lock
      * @return self
      */
-    public function lock($ids): Container
+    public function lock($ids): void
     {
         foreach ((array) $ids as $id) {
             $this->throwExceptionIfIdentifierNotFound($id);
             $id = $this->resolveIdentifier($id);
             $this->locked[$id] = true;
         }
-
-        return $this;
     }
 
     /**
