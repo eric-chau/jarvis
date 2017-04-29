@@ -1,11 +1,12 @@
 <?php
 
 use Jarvis\Skill\DependencyInjection\Container;
+use PHPUnit\Framework\TestCase;
 
 /**
  * @author Eric Chau <eriic.chau@gmail.com>
  */
-class ContainerTest extends \PHPUnit_Framework_TestCase
+class ContainerTest extends TestCase
 {
     public function test_with_string()
     {
@@ -48,7 +49,7 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @expectedException        InvalidArgumentException
-     * @expectedExceptionMessage Service factory must be a Closure or an invokable object.
+     * @expectedExceptionMessage Service factory must be a closure or an invokable object.
      */
     public function test_factory_with_invalid_value()
     {
@@ -59,7 +60,7 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @expectedException        InvalidArgumentException
-     * @expectedExceptionMessage Service factory must be a Closure or an invokable object.
+     * @expectedExceptionMessage Service factory must be a closure or an invokable object.
      */
     public function test_factory_with_invalid_object()
     {
@@ -70,7 +71,7 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @expectedException          RuntimeException
-     * @expectedExceptionMessage   Cannot override locked value `key`
+     * @expectedExceptionMessage   Cannot override locked value "key"
      */
     public function test_lock()
     {
@@ -83,7 +84,7 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @expectedException          InvalidArgumentException
-     * @expectedExceptionMessage   Identifier `key` is not defined.
+     * @expectedExceptionMessage   Identifier "key" is not defined.
      */
     public function test_lock_undefined_key()
     {
@@ -93,7 +94,7 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @expectedException          InvalidArgumentException
-     * @expectedExceptionMessage   Identifier `key` is not defined.
+     * @expectedExceptionMessage   Identifier "key" is not defined.
      */
     public function test_get_undefined_key()
     {
@@ -122,7 +123,7 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @expectedException        InvalidArgumentException
-     * @expectedExceptionMessage Cannot create alias for undefined value `service`.
+     * @expectedExceptionMessage Cannot create alias for undefined value "service".
      */
     public function test_alias_of_undefined_value()
     {
@@ -202,7 +203,7 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
             $this->fail('Raises of RuntimeException expected.');
         } catch (\Exception $e) {
             $this->assertInstanceOf('RuntimeException', $e);
-            $this->assertEquals('Cannot override locked value `key`.', $e->getMessage());
+            $this->assertEquals('Cannot override locked value "key".', $e->getMessage());
         }
 
         unset($dic['key'], $dic['service']);

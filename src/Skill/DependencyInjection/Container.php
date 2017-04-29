@@ -24,50 +24,6 @@ class Container implements \ArrayAccess
     }
 
     /**
-     * Adds alias to service's identifier.
-     *
-     * @param  string $alias the alias to identifier
-     * @param  string $id    the identifier to alias
-     * @return self
-     * @throws InvalidArgumentException if provided identifier is undefined or if alias is
-     *                                  equals to identifier
-     */
-    public function alias(string $alias, string $id): void
-    {
-        if (!$this->offsetExists($id)) {
-            throw new \InvalidArgumentException("Cannot create alias for undefined value `$id`.");
-        }
-
-        if ($alias === $id || array_key_exists($alias, $this->values)) {
-            throw new \InvalidArgumentException('Alias cannot be equals to value identifier.');
-        }
-
-        $this->aliasOf[$alias] = $id;
-        $this->hasAliases[$id] = $this->hasAliases[$id] ?? [];
-        $this->hasAliases[$id][] = $alias;
-    }
-
-    /**
-     * Retrieves parameter and/or object by identifier.
-     * this method also support wildcard character (*) in identifier.
-     *
-     * @param  string $id this identifier can contain one or many wildcard character (*)
-     * @return array an array of values that mached with provided identifier pattern
-     */
-    public function find(string $id): array
-    {
-        $values = [];
-        $pattern = str_replace(['.', '*'], ['\.', '[\w\-\.]*'], $id);
-        foreach ($this->keys() as $id) {
-            if (1 === preg_match('/^' . $pattern . '$/', $id)) {
-                $values[] = $this->offsetGet($id);
-            }
-        }
-
-        return $values;
-    }
-
-    /**
      * Checks if a parameter or an object is defined.
      *
      * @param  string $id the parameter/object identifier to check
@@ -87,7 +43,6 @@ class Container implements \ArrayAccess
      */
     public function offsetGet($id)
     {
-        $this->throwExceptionIfIdentifierNotFound($id);
         $id = $this->resolveIdentifier($id);
         if (
             isset($this->raw[$id])
@@ -119,7 +74,7 @@ class Container implements \ArrayAccess
     public function offsetSet($id, $v): void
     {
         if (isset($this->locked[$id])) {
-            throw new \RuntimeException("Cannot override locked value `$id`.");
+            throw new \RuntimeException(sprintf('Cannot override locked value "%s".', $id));
         }
 
         if (isset($this->aliasOf[$id])) {
@@ -156,6 +111,50 @@ class Container implements \ArrayAccess
     }
 
     /**
+     * Adds alias to service's identifier.
+     *
+     * @param  string $alias the alias to identifier
+     * @param  string $id    the identifier to alias
+     * @return self
+     * @throws InvalidArgumentException if provided identifier is undefined or if alias is
+     *                                  equals to identifier
+     */
+    public function alias(string $alias, string $id): void
+    {
+        if (!$this->offsetExists($id)) {
+            throw new \InvalidArgumentException(sprintf('Cannot create alias for undefined value "%s".', $id));
+        }
+
+        if ($alias === $id || array_key_exists($alias, $this->values)) {
+            throw new \InvalidArgumentException('Alias cannot be equals to value identifier.');
+        }
+
+        $this->aliasOf[$alias] = $id;
+        $this->hasAliases[$id] = $this->hasAliases[$id] ?? [];
+        $this->hasAliases[$id][] = $alias;
+    }
+
+    /**
+     * Retrieves parameter and/or object by identifier.
+     * this method also support wildcard character (*) in identifier.
+     *
+     * @param  string $id this identifier can contain one or many wildcard character (*)
+     * @return array an array of values that mached with provided identifier pattern
+     */
+    public function find(string $id): array
+    {
+        $values = [];
+        $pattern = str_replace(['.', '*'], ['\.', '[\w\-\.]*'], $id);
+        foreach ($this->keys() as $id) {
+            if (1 === preg_match(sprintf('/^%s$/', $pattern), $id)) {
+                $values[] = $this->offsetGet($id);
+            }
+        }
+
+        return $values;
+    }
+
+    /**
      * Returns all defined identifiers and aliases.
      *
      * @return array
@@ -176,7 +175,7 @@ class Container implements \ArrayAccess
     public function factory(string $id, $factory): void
     {
         if (!is_object($factory) || !method_exists($factory, '__invoke')) {
-            throw new \InvalidArgumentException('Service factory must be a Closure or an invokable object.');
+            throw new \InvalidArgumentException('Service factory must be a closure or an invokable object.');
         }
 
         $this->offsetSet($id, $factory);
@@ -192,22 +191,8 @@ class Container implements \ArrayAccess
     public function lock($ids): void
     {
         foreach ((array) $ids as $id) {
-            $this->throwExceptionIfIdentifierNotFound($id);
             $id = $this->resolveIdentifier($id);
             $this->locked[$id] = true;
-        }
-    }
-
-    /**
-     * Checks if provided identifier exists and throws exception if not.
-     *
-     * @param  string $id the identifier we want to know if it exists
-     * @throws \InvalidArgumentException if provided identifier is not defined
-     */
-    private function throwExceptionIfIdentifierNotFound(string $id): void
-    {
-        if (!$this->offsetExists($id)) {
-            throw new \InvalidArgumentException("Identifier `$id` is not defined.");
         }
     }
 
@@ -216,9 +201,14 @@ class Container implements \ArrayAccess
      *
      * @param  string $id the identifier to convert if needed
      * @return string
+     * @throws \InvalidArgumentException if provided identifier is not defined
      */
     private function resolveIdentifier(string $id): string
     {
-        return isset($this->values[$id]) ? $id : $this->aliasOf[$id];
+        if (!$this->offsetExists($id)) {
+            throw new \InvalidArgumentException(sprintf('Identifier "%s" is not defined.', $id));
+        }
+
+        return $this->aliasOf[$id] ?? $id;
     }
 }

@@ -4,11 +4,12 @@ namespace Jarvis\Tests;
 
 use Jarvis\Jarvis;
 use Jarvis\Skill\DependencyInjection\Reference;
+use PHPUnit\Framework\TestCase;
 
 /**
  * @author Eric Chau <eriic.chau@gmail.com>
  */
-class CallbackResolverTest extends \PHPUnit_Framework_TestCase
+class CallbackResolverTest extends TestCase
 {
     public function test_replace_Reference_by_value_from_container()
     {

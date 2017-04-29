@@ -6,6 +6,7 @@ use Jarvis\Jarvis;
 use Jarvis\Skill\EventBroadcaster\BroadcasterInterface;
 use Jarvis\Skill\EventBroadcaster\RunEvent;
 use Jarvis\Skill\EventBroadcaster\SimpleEvent;
+use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\ParameterBag;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -13,7 +14,7 @@ use Symfony\Component\HttpFoundation\Response;
 /**
  * @author Eric Chau <eriic.chau@gmail.com>
  */
-class JarvisTest extends \PHPUnit_Framework_TestCase
+class JarvisTest extends TestCase
 {
     public function test_debug_variable()
     {
@@ -56,7 +57,7 @@ class JarvisTest extends \PHPUnit_Framework_TestCase
         $this->assertInstanceOf(Response::class, $response = $app->run());
         $this->assertSame(500, $response->getStatusCode());
         $this->assertSame(sprintf(
-            '[Exception] error in %s at line 51 with message: %s',
+            '[Exception] error in %s at line 52 with message: %s',
             __FILE__,
             'Hello, world!'
         ), $response->getContent());

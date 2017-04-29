@@ -4,11 +4,12 @@ namespace Jarvis\Tests;
 
 use Jarvis\Jarvis;
 use Jarvis\Skill\Routing\Route;
+use PHPUnit\Framework\TestCase;
 
 /**
  * @author Eric Chau <eriic.chau@gmail.com>
  */
-class RouteTest extends \PHPUnit_Framework_TestCase
+class RouteTest extends TestCase
 {
     public function test_setMethod()
     {
