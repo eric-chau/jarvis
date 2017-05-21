@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Jarvis;
 
-use FastRoute\Dispatcher;
 use Jarvis\Skill\DependencyInjection\Container;
 use Jarvis\Skill\DependencyInjection\ContainerProvider;
 use Jarvis\Skill\DependencyInjection\ContainerProviderInterface;
@@ -16,7 +15,6 @@ use Jarvis\Skill\EventBroadcaster\PermanentEventInterface;
 use Jarvis\Skill\EventBroadcaster\ResponseEvent;
 use Jarvis\Skill\EventBroadcaster\RunEvent;
 use Jarvis\Skill\EventBroadcaster\SimpleEvent;
-use Symfony\Component\HttpFoundation\ParameterBag;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -80,7 +78,9 @@ class Jarvis extends Container implements BroadcasterInterface
             throw new \InvalidArgumentException(sprintf('"%s" is not a key of a locked value.', $key));
         }
 
-        $this->masterSetter($key, $this[$key]);
+        $this->masterSet = true;
+        $this->$key = $this[$key];
+        $this->masterSet = false;
 
         return $this->$key;
     }
@@ -139,10 +139,10 @@ class Jarvis extends Container implements BroadcasterInterface
     public function run(Request $request = null): Response
     {
         $request = $request ?? $this['request'];
-        $event = null;
+        $event = $event = new RunEvent($request);
 
         try {
-            $this->masterBroadcast(BroadcasterInterface::RUN_EVENT, $event = new RunEvent($request));
+            $this->masterBroadcast(BroadcasterInterface::RUN_EVENT, $event);
             if ($response = $event->response()) {
                 return $response;
             }
@@ -165,13 +165,13 @@ class Jarvis extends Container implements BroadcasterInterface
     /**
      * {@inheritdoc}
      */
-    public function on(string $name, $receiver, int $priority = BroadcasterInterface::RECEIVER_NORMAL_PRIORITY): Jarvis
+    public function on(string $name, $receiver, int $priority = BroadcasterInterface::RECEIVER_NORMAL_PRIORITY): void
     {
         if (!isset($this->receivers[$name])) {
             $this->receivers[$name] = [
-                BroadcasterInterface::RECEIVER_LOW_PRIORITY    => [],
+                BroadcasterInterface::RECEIVER_LOW_PRIORITY => [],
                 BroadcasterInterface::RECEIVER_NORMAL_PRIORITY => [],
-                BroadcasterInterface::RECEIVER_HIGH_PRIORITY   => [],
+                BroadcasterInterface::RECEIVER_HIGH_PRIORITY => [],
             ];
         }
 
@@ -182,14 +182,12 @@ class Jarvis extends Container implements BroadcasterInterface
                 'event' => $this->permanentEvents[$name],
             ]);
         }
-
-        return $this;
     }
 
     /**
      * {@inheritdoc}
      */
-    public function broadcast(string $name, EventInterface $event = null): Jarvis
+    public function broadcast(string $name, EventInterface $event = null): void
     {
         if (!$this->masterEmitter && in_array($name, BroadcasterInterface::RESERVED_EVENT_NAMES)) {
             throw new \LogicException(sprintf(
@@ -217,49 +215,24 @@ class Jarvis extends Container implements BroadcasterInterface
                 }
             }
         }
-
-        return $this;
     }
 
     /**
      * @param  ContainerProviderInterface $provider
-     * @return self
      */
-    public function hydrate(ContainerProviderInterface $provider): Jarvis
+    public function hydrate(ContainerProviderInterface $provider): void
     {
         $provider->hydrate($this);
-
-        return $this;
     }
 
     /**
      * Enables master emitter mode.
-     *
-     * @return self
      */
-    private function masterBroadcast(string $name, EventInterface $event = null): Jarvis
+    private function masterBroadcast(string $name, EventInterface $event = null): void
     {
         $this->masterEmitter = true;
         $this->broadcast($name, $event);
         $this->masterEmitter = false;
-
-        return $this;
-    }
-
-    /**
-     * Sets new attribute into Jarvis.
-     *
-     * @param  string $key   The name of the new attribute
-     * @param  mixed  $value The value of the new attribute
-     * @return self
-     */
-    private function masterSetter(string $key, $value): Jarvis
-    {
-        $this->masterSet = true;
-        $this->$key = $value;
-        $this->masterSet = false;
-
-        return $this;
     }
 
     /**

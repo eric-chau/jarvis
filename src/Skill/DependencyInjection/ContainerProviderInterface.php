@@ -10,7 +10,7 @@ use Jarvis\Jarvis;
  * This interface allows you to hydrate Jarvis' container with your own services
  * and parameters.
  *
- * @author Eric Chau <eric.chau@gmail.com>
+ * @author Eric Chau <eriic.chau@gmail.com>
  */
 interface ContainerProviderInterface
 {

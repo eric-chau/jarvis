@@ -7,7 +7,6 @@ namespace Jarvis\Skill\DependencyInjection;
 use Jarvis\Jarvis;
 use Jarvis\Skill\Core\CallbackResolver;
 use Jarvis\Skill\EventBroadcaster\BroadcasterInterface;
-use Jarvis\Skill\EventBroadcaster\ControllerEvent;
 use Jarvis\Skill\EventBroadcaster\ExceptionEvent;
 use Jarvis\Skill\Routing\Router;
 use Symfony\Component\HttpFoundation\Request;
@@ -19,7 +18,7 @@ use Symfony\Component\HttpFoundation\Session\Storage\NativeSessionStorage;
  * This is Jarvis internal container provider. It will inject every core
  * parameters and services into Jarvis.
  *
- * @author Eric Chau <eric.chau@gmail.com>
+ * @author Eric Chau <eriic.chau@gmail.com>
  */
 final class ContainerProvider implements ContainerProviderInterface
 {
@@ -40,8 +39,9 @@ final class ContainerProvider implements ContainerProviderInterface
 
         $extra = $app['settings']['extra'] ?? [];
         foreach ((array) $extra as $key => $data) {
-            $app["{$key}.settings"] = $data;
-            $app->lock("{$key}.settings");
+            $id = sprintf('%s.settings', $key);
+            $app[$id] = $data;
+            $app->lock($id);
         }
 
         unset($app['settings']);
@@ -56,8 +56,7 @@ final class ContainerProvider implements ContainerProviderInterface
         $app['request'] = function (Jarvis $app): Request {
             $request = Request::createFromGlobals();
 
-            $session = $request->getSession();
-            if (null === $session) {
+            if (null === $session = $request->getSession()) {
                 $settings = $app['session.settings'] ?? [];
                 $storageClassname = $settings['session.storage.classname'] ?? NativeSessionStorage::class;
                 unset($settings['session.storage.classname']);

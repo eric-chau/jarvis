@@ -83,6 +83,8 @@ class Route
 
     public function end(): Router
     {
-        return $this->router->addRoute($this);
+        $this->router->addRoute($this);
+
+        return $this->router;
     }
 }
