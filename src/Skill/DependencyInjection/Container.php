@@ -191,8 +191,7 @@ class Container implements \ArrayAccess
     public function lock($ids): void
     {
         foreach ((array) $ids as $id) {
-            $id = $this->resolveIdentifier($id);
-            $this->locked[$id] = true;
+            $this->locked[$this->resolveIdentifier($id)] = true;
         }
     }
 

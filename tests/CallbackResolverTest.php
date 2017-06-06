@@ -20,7 +20,7 @@ class CallbackResolverTest extends TestCase
         $callback = [new Reference('datetime'), 'getTimestamp'];
 
         $this->assertNotInstanceOf(\Closure::class, $callback);
-        $callback = $app['callbackResolver']->resolve($callback);
+        $callback = $app['callbackResolver']->toClosure($callback);
         $this->assertInstanceOf(\Closure::class, $callback);
     }
 
@@ -29,10 +29,10 @@ class CallbackResolverTest extends TestCase
         $app = new Jarvis();
 
         try {
-            $app['callbackResolver']->resolve([new \DateTime(), 'getTimestamp']);
-            $app['callbackResolver']->resolve(['DateTime', 'createFromFormat']);
-            $app['callbackResolver']->resolve('rand');
-            $app['callbackResolver']->resolve(function () {});
+            $app['callbackResolver']->toClosure([new \DateTime(), 'getTimestamp']);
+            $app['callbackResolver']->toClosure(['DateTime', 'createFromFormat']);
+            $app['callbackResolver']->toClosure('rand');
+            $app['callbackResolver']->toClosure(function () {});
             $this->assertTrue(true);
         } catch (\InvalidArgumentException $e) {
             if ('Provided callback is not callable.' === $e->getMessage()) {
@@ -50,6 +50,6 @@ class CallbackResolverTest extends TestCase
     {
         $app = new Jarvis();
 
-        $app['callbackResolver']->resolve([new \DateTime(), 'hello']);
+        $app['callbackResolver']->toClosure([new \DateTime(), 'hello']);
     }
 }

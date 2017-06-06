@@ -12,17 +12,6 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class ControllerEventTest extends TestCase
 {
-    /**
-     * @expectedException        \TypeError
-     */
-    public function test_set_invalid_callback_raise_exception()
-    {
-        $event = new ControllerEvent(function () {});
-
-        $this->assertSame($event, $event->setCallback('rand'));
-        $event->setCallback(\Closure::fromCallable('foobar'));
-    }
-
     public function test_controller_smart_type_hint()
     {
         $app = new Jarvis(['debug' => true]);

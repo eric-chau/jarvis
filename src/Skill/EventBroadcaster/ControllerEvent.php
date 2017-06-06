@@ -12,7 +12,7 @@ class ControllerEvent extends SimpleEvent
     private $callback;
     private $arguments;
 
-    public function __construct(\Closure $callback, array $arguments = [])
+    public function __construct($callback, array $arguments = [])
     {
         $this->callback = $callback;
         $this->arguments = $arguments;
@@ -23,7 +23,7 @@ class ControllerEvent extends SimpleEvent
      *
      * @return mixed
      */
-    public function callback(): \Closure
+    public function callback()
     {
         return $this->callback;
     }
@@ -33,11 +33,9 @@ class ControllerEvent extends SimpleEvent
      *
      * Set new callback to ControllerEvent. It must be callable.
      *
-     * @param  mixed $callback The new callback to set
-     * @return self
-     * @throws \InvalidArgumentException if passed callback is not callable
+     * @param mixed $callback
      */
-    public function setCallback(\Closure $callback): void
+    public function setCallback($callback): void
     {
         $this->callback = $callback;
     }
@@ -57,8 +55,7 @@ class ControllerEvent extends SimpleEvent
      *
      * Sets new list of arguments to ControllerEvent.
      *
-     * @param  array $arguments The new arguments to set, default: empty array ([])
-     * @return self
+     * @param array $arguments
      */
     public function setArguments(array $arguments = []): void
     {
