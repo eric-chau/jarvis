@@ -4,46 +4,48 @@ declare(strict_types=1);
 
 namespace Jarvis;
 
+use Jarvis\Skill\Core\CallbackResolver;
 use Jarvis\Skill\DependencyInjection\Container;
 use Jarvis\Skill\DependencyInjection\ContainerProvider;
 use Jarvis\Skill\DependencyInjection\ContainerProviderInterface;
 use Jarvis\Skill\EventBroadcaster\BroadcasterInterface;
+use Jarvis\Skill\EventBroadcaster\BroadcasterTrait;
 use Jarvis\Skill\EventBroadcaster\ControllerEvent;
 use Jarvis\Skill\EventBroadcaster\EventInterface;
 use Jarvis\Skill\EventBroadcaster\ExceptionEvent;
-use Jarvis\Skill\EventBroadcaster\PermanentEventInterface;
 use Jarvis\Skill\EventBroadcaster\ResponseEvent;
 use Jarvis\Skill\EventBroadcaster\RunEvent;
-use Jarvis\Skill\EventBroadcaster\SimpleEvent;
+use Jarvis\Skill\Routing\Router;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Jarvis. Minimalist dependency injection container.
  *
- * @property boolean $debug
- * @property Request $request
- * @property \Jarvis\Skill\Routing\Router $router
+ * @property bool                                              $debug
+ * @property Router                                            $router
+ * @property Request                                           $request
  * @property \Symfony\Component\HttpFoundation\Session\Session $session
- * @property \Jarvis\Skill\Core\CallbackResolver $callbackResolver
+ * @property CallbackResolver                                  $callbackResolver
  *
  * @author Eric Chau <eriic.chau@gmail.com>
  */
 class Jarvis extends Container implements BroadcasterInterface
 {
+    use BroadcasterTrait {
+        broadcast as traitBroadcast;
+    }
+
     const DEFAULT_DEBUG = false;
     const CONTAINER_PROVIDER_FQCN = ContainerProvider::class;
 
-    private $receivers = [];
-    private $permanentEvents = [];
-    private $computedReceivers = [];
-    private $masterEmitter = false;
-    private $masterSet = false;
+    private $masterSetter = false;
 
     /**
      * Creates an instance of Jarvis. It can take settings as first argument.
      * List of accepted options:
-     *   - container_provider (type: string|array): fqcn of your container provider
+     *   - providers (type: string|array): fqcn of your container provider
+     *   - extra
      *
      * @param  array $settings Your own settings to modify Jarvis behavior
      */
@@ -53,7 +55,7 @@ class Jarvis extends Container implements BroadcasterInterface
 
         $this['settings'] = $settings;
         $providers = array_merge([static::CONTAINER_PROVIDER_FQCN], (array) ($settings['providers'] ?? []));
-        foreach ($providers as $classname) {
+        foreach (array_unique($providers) as $classname) {
             $this->hydrate(new $classname());
         }
     }
@@ -78,9 +80,7 @@ class Jarvis extends Container implements BroadcasterInterface
             throw new \InvalidArgumentException(sprintf('"%s" is not a key of a locked value.', $key));
         }
 
-        $this->masterSet = true;
-        $this->$key = $this[$key];
-        $this->masterSet = false;
+        $this->masterSet($key, $this[$key]);
 
         return $this->$key;
     }
@@ -94,7 +94,7 @@ class Jarvis extends Container implements BroadcasterInterface
      */
     public function __set(string $key, $value)
     {
-        if (!$this->masterSet) {
+        if (!$this->masterSetter) {
             throw new \LogicException('You are not allowed to set new attribute into Jarvis.');
         }
 
@@ -132,13 +132,22 @@ class Jarvis extends Container implements BroadcasterInterface
         }
     }
 
+
+    /**
+     * @param  ContainerProviderInterface $provider
+     */
+    public function hydrate(ContainerProviderInterface $provider): void
+    {
+        $provider->hydrate($this);
+    }
+
     /**
      * @param  Request|null $request
      * @return Response
      */
     public function run(Request $request = null): Response
     {
-        $request = $request ?? $this['request'];
+        $request = $request ?? $this[Request::class];
         $event = $event = new RunEvent($request);
 
         try {
@@ -147,11 +156,11 @@ class Jarvis extends Container implements BroadcasterInterface
                 return $response;
             }
 
-            [$callback, $arguments] = $this['router']->match($request->getMethod(), $request->getPathInfo());
-            $event = new ControllerEvent($this['callbackResolver']->resolve($callback), $arguments);
+            [$callback, $arguments] = $this[Router::class]->match($request->getMethod(), $request->getPathInfo());
+            $event = new ControllerEvent($this[CallbackResolver::class]->resolveReference($callback), $arguments);
             $this->masterBroadcast(BroadcasterInterface::CONTROLLER_EVENT, $event);
 
-            $response = $this['callbackResolver']->resolveAndCall($event->callback(), $event->arguments());
+            $response = call_user_func_array($event->callback(), $event->arguments());
             $event = new ResponseEvent($request, $response);
             $this->masterBroadcast(BroadcasterInterface::RESPONSE_EVENT, $event);
         } catch (\Throwable $throwable) {
@@ -160,28 +169,6 @@ class Jarvis extends Container implements BroadcasterInterface
         }
 
         return $event->response();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function on(string $name, $receiver, int $priority = BroadcasterInterface::RECEIVER_NORMAL_PRIORITY): void
-    {
-        if (!isset($this->receivers[$name])) {
-            $this->receivers[$name] = [
-                BroadcasterInterface::RECEIVER_LOW_PRIORITY => [],
-                BroadcasterInterface::RECEIVER_NORMAL_PRIORITY => [],
-                BroadcasterInterface::RECEIVER_HIGH_PRIORITY => [],
-            ];
-        }
-
-        $this->receivers[$name][$priority][] = $receiver;
-        $this->computedReceivers[$name] = null;
-        if (isset($this->permanentEvents[$name])) {
-            $this['callbackResolver']->resolveAndCall($receiver, [
-                'event' => $this->permanentEvents[$name],
-            ]);
-        }
     }
 
     /**
@@ -196,33 +183,28 @@ class Jarvis extends Container implements BroadcasterInterface
             ));
         }
 
-        if (isset($this->permanentEvents[$name])) {
-            throw new \LogicException('Permanent event cannot be broadcasted multiple times.');
-        }
-
-        $event = $event ?? new SimpleEvent();
-        if ($event instanceof PermanentEventInterface && $event->isPermanent()) {
-            $this->permanentEvents[$name] = $event;
-        }
-
-        if (isset($this->receivers[$name])) {
-            foreach ($this->buildEventReceivers($name) as $receiver) {
-                $this['callbackResolver']->resolveAndCall($receiver, [
-                    'event' => $event,
-                ]);
-                if ($event->isPropagationStopped()) {
-                    break;
-                }
-            }
-        }
+        $this->traitBroadcast($name, $event);
     }
 
     /**
-     * @param  ContainerProviderInterface $provider
+     * {@inheritdoc}
      */
-    public function hydrate(ContainerProviderInterface $provider): void
+    protected function runReceiverCallback($receiver, EventInterface $event)
     {
-        $provider->hydrate($this);
+        $this[CallbackResolver::class]->resolveAndCall($receiver, ['event' => $event]);
+    }
+
+    /**
+     * Sets new attribute into Jarvis.
+     *
+     * @param  string $key   The name of the new attribute
+     * @param  mixed  $value The value of the new attribute
+     */
+    private function masterSet(string $key, $value): void
+    {
+        $this->masterSetter = true;
+        $this->$key = $value;
+        $this->masterSetter = false;
     }
 
     /**
@@ -233,20 +215,5 @@ class Jarvis extends Container implements BroadcasterInterface
         $this->masterEmitter = true;
         $this->broadcast($name, $event);
         $this->masterEmitter = false;
-    }
-
-    /**
-     * Builds and returns well ordered receivers collection that match with provided event name.
-     *
-     * @param  string $name The event name we want to get its receivers
-     * @return array
-     */
-    private function buildEventReceivers(string $name): array
-    {
-        return $this->computedReceivers[$name] = $this->computedReceivers[$name] ?? array_merge(
-            $this->receivers[$name][BroadcasterInterface::RECEIVER_HIGH_PRIORITY],
-            $this->receivers[$name][BroadcasterInterface::RECEIVER_NORMAL_PRIORITY],
-            $this->receivers[$name][BroadcasterInterface::RECEIVER_LOW_PRIORITY]
-        );
     }
 }

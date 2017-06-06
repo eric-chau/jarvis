@@ -23,19 +23,37 @@ class CallbackResolver
     }
 
     /**
+     * Resolves and replaces Reference by the parameter/service from Jarvis's
+     * dependency injection container.
+     *
+     * @param  mixed $callback
+     * @return mixed
+     */
+    public function resolveReference($callback)
+    {
+        if ($callback instanceof Reference) {
+            $callback = $this->app[(string) $callback] ?? $callback;
+        } elseif (is_array($callback) && $callback[0] instanceof Reference) {
+            $callback[0] = $this->app[(string) $callback[0]] ?? $callback[0];
+        }
+
+        return $callback;
+    }
+
+    /**
      * Resolves and replaces placeholders references by the parameter from Jarvis's
      * dependency injection container.
      *
      * @param  mixed $callback
      * @return \Closure
      */
-    public function resolve($callback): \Closure
+    public function toClosure($callback): \Closure
     {
-        if (is_array($callback) && $callback[0] instanceof Reference) {
-            $callback[0] = $this->app[(string) $callback[0]] ?? $callback[0];
+        if ($callback instanceof \Closure) {
+            return $callback;
         }
 
-        return \Closure::fromCallable($callback);
+        return \Closure::fromCallable($this->resolveReference($callback));
     }
 
     /**
@@ -69,7 +87,7 @@ class CallbackResolver
     }
 
     /**
-     * Shortcut that calls successively ::resolve(), ::resolveArgumentsForClosure(),
+     * Shortcut that calls successively ::toClosure(), ::resolveArgumentsForClosure(),
      * call_user_func_array() and returns the result.
      *
      * @param  mixed $callback
@@ -78,7 +96,7 @@ class CallbackResolver
      */
     public function resolveAndCall($callback, array $rawArgs = [])
     {
-        $closure = $this->resolve($callback);
+        $closure = $this->toClosure($callback);
 
         return call_user_func_array(
             $closure,

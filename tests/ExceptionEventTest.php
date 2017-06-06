@@ -1,12 +1,13 @@
 <?php
 
 use Jarvis\Skill\EventBroadcaster\ExceptionEvent;
+use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
  * @author Eric Chau <eriic.chau@gmail.com>
  */
-class ExceptionEventTest extends \PHPUnit_Framework_TestCase
+class ExceptionEventTest extends TestCase
 {
     public function test_stopPropagation()
     {

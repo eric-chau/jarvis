@@ -3,13 +3,14 @@
 namespace Jarvis\Tests;
 
 use Jarvis\Jarvis;
+use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
  * @author Eric Chau <eriic.chau@gmail.com>
  */
-class RouterTest extends \PHPUnit_Framework_TestCase
+class RouterTest extends TestCase
 {
     public function test_beginRoute_default_parameter()
     {

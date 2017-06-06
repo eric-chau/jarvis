@@ -7,6 +7,7 @@ namespace Jarvis\Skill\DependencyInjection;
 use Jarvis\Jarvis;
 use Jarvis\Skill\Core\CallbackResolver;
 use Jarvis\Skill\EventBroadcaster\BroadcasterInterface;
+use Jarvis\Skill\EventBroadcaster\ControllerEvent;
 use Jarvis\Skill\EventBroadcaster\ExceptionEvent;
 use Jarvis\Skill\Routing\Router;
 use Symfony\Component\HttpFoundation\Request;
@@ -27,13 +28,19 @@ final class ContainerProvider implements ContainerProviderInterface
      */
     public function hydrate(Jarvis $app)
     {
-        $this->mountSettings($app);
-        $this->mountServices($app);
-        $this->mountEventReceivers($app);
+        $this
+            ->mountCoreComponents($app)
+            ->mountHttpComponents($app)
+            ->mountCallbackResolverComponents($app)
+        ;
     }
 
-    protected function mountSettings(Jarvis $app)
+    protected function mountCoreComponents(Jarvis $app)
     {
+        $app['app'] = function () use ($app): Jarvis {
+            return $app;
+        };
+
         $app['debug'] = $app['settings']['debug'] ?? Jarvis::DEFAULT_DEBUG;
         $app->lock('debug');
 
@@ -45,14 +52,13 @@ final class ContainerProvider implements ContainerProviderInterface
         }
 
         unset($app['settings']);
+        $app->lock('app');
+
+        return $this;
     }
 
-    protected function mountServices(Jarvis $app)
+    protected function mountHttpComponents(Jarvis $app)
     {
-        $app['app'] = function () use ($app): Jarvis {
-            return $app;
-        };
-
         $app['request'] = function (Jarvis $app): Request {
             $request = Request::createFromGlobals();
 
@@ -69,22 +75,13 @@ final class ContainerProvider implements ContainerProviderInterface
         };
 
         $app['session'] = function (Jarvis $app): Session {
-            return $app['request']->getSession();
+            return $app[Request::class]->getSession();
         };
 
         $app['router'] = function (): Router {
             return new Router();
         };
 
-        $app['callbackResolver'] = function (Jarvis $app): CallbackResolver {
-            return new CallbackResolver($app);
-        };
-
-        $app->lock(['app', 'request', 'session', 'router', 'callbackResolver']);
-    }
-
-    protected function mountEventReceivers(Jarvis $app)
-    {
         $app->on(BroadcasterInterface::EXCEPTION_EVENT, function (ExceptionEvent $event) use ($app): void {
             $throwable = $event->exception();
             $msg = sprintf(
@@ -97,10 +94,34 @@ final class ContainerProvider implements ContainerProviderInterface
 
             if (!$app['debug']) {
                 error_log($msg);
+
                 $msg = '';
             }
 
             $event->setResponse(new Response($msg, Response::HTTP_INTERNAL_SERVER_ERROR));
         }, BroadcasterInterface::RECEIVER_LOW_PRIORITY);
+
+        $app->lock(['request', 'session', 'router']);
+
+        return $this;
+    }
+
+    protected function mountCallbackResolverComponents(Jarvis $app)
+    {
+        $app['callbackResolver'] = function (Jarvis $app): CallbackResolver {
+            return new CallbackResolver($app);
+        };
+
+        $app->on(BroadcasterInterface::CONTROLLER_EVENT, function (ControllerEvent $event) use ($app): void {
+            $event->setCallback($app[CallbackResolver::class]->toClosure($event->callback()));
+            $event->setArguments($app[CallbackResolver::class]->resolveArgumentsForClosure(
+                $event->callback(),
+                $event->arguments()
+            ));
+        }, BroadcasterInterface::RECEIVER_LOW_PRIORITY);
+
+        $app->lock('callbackResolver');
+
+        return $this;
     }
 }

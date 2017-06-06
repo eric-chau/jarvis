@@ -4,11 +4,12 @@ namespace Jarvis\Tests;
 
 use Jarvis\Jarvis;
 use Jarvis\Skill\DependencyInjection\Reference;
+use PHPUnit\Framework\TestCase;
 
 /**
  * @author Eric Chau <eriic.chau@gmail.com>
  */
-class CallbackResolverTest extends \PHPUnit_Framework_TestCase
+class CallbackResolverTest extends TestCase
 {
     public function test_replace_Reference_by_value_from_container()
     {
@@ -19,7 +20,7 @@ class CallbackResolverTest extends \PHPUnit_Framework_TestCase
         $callback = [new Reference('datetime'), 'getTimestamp'];
 
         $this->assertNotInstanceOf(\Closure::class, $callback);
-        $callback = $app['callbackResolver']->resolve($callback);
+        $callback = $app['callbackResolver']->toClosure($callback);
         $this->assertInstanceOf(\Closure::class, $callback);
     }
 
@@ -28,10 +29,10 @@ class CallbackResolverTest extends \PHPUnit_Framework_TestCase
         $app = new Jarvis();
 
         try {
-            $app['callbackResolver']->resolve([new \DateTime(), 'getTimestamp']);
-            $app['callbackResolver']->resolve(['DateTime', 'createFromFormat']);
-            $app['callbackResolver']->resolve('rand');
-            $app['callbackResolver']->resolve(function () {});
+            $app['callbackResolver']->toClosure([new \DateTime(), 'getTimestamp']);
+            $app['callbackResolver']->toClosure(['DateTime', 'createFromFormat']);
+            $app['callbackResolver']->toClosure('rand');
+            $app['callbackResolver']->toClosure(function () {});
             $this->assertTrue(true);
         } catch (\InvalidArgumentException $e) {
             if ('Provided callback is not callable.' === $e->getMessage()) {
@@ -49,6 +50,6 @@ class CallbackResolverTest extends \PHPUnit_Framework_TestCase
     {
         $app = new Jarvis();
 
-        $app['callbackResolver']->resolve([new \DateTime(), 'hello']);
+        $app['callbackResolver']->toClosure([new \DateTime(), 'hello']);
     }
 }

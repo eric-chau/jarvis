@@ -3,20 +3,21 @@
 namespace Jarvis\Tests;
 
 use Jarvis\Jarvis;
-use Jarvis\Skill\EventBroadcaster\RunEvent;
+use Jarvis\Skill\EventBroadcaster\BroadcasterInterface;
 use Jarvis\Skill\EventBroadcaster\ControllerEvent;
 use Jarvis\Skill\EventBroadcaster\EventInterface;
-use Jarvis\Skill\EventBroadcaster\BroadcasterInterface;
 use Jarvis\Skill\EventBroadcaster\PermanentEvent;
-use Jarvis\Skill\EventBroadcaster\SimpleEvent;
 use Jarvis\Skill\EventBroadcaster\ResponseEvent;
+use Jarvis\Skill\EventBroadcaster\RunEvent;
+use Jarvis\Skill\EventBroadcaster\SimpleEvent;
+use PHPUnit\Framework\TestCase;
 
 /**
  * Tests for Jarvis broadcast message skill.
  *
  * @author Eric Chau <eriic.chau@gmail.com>
  */
-class BroadcasterInterfaceTest extends \PHPUnit_Framework_TestCase
+class BroadcasterInterfaceTest extends TestCase
 {
     const RANDOM_EVENT_NAME = 'random.event_name';
 
@@ -71,10 +72,10 @@ class BroadcasterInterfaceTest extends \PHPUnit_Framework_TestCase
 
         $receiver = new FakeReceiver();
 
-        $this->assertNotInstanceOf(FakeEvent::class, $receiver->event);
+        $this->assertNotInstanceOf(SimpleEvent::class, $receiver->event);
         $app->on(self::RANDOM_EVENT_NAME, [$receiver, 'onEventBroadcast']);
-        $app->broadcast(self::RANDOM_EVENT_NAME, new FakeEvent());
-        $this->assertInstanceOf(FakeEvent::class, $receiver->event);
+        $app->broadcast(self::RANDOM_EVENT_NAME, new SimpleEvent());
+        $this->assertInstanceOf(SimpleEvent::class, $receiver->event);
     }
 
     /**
