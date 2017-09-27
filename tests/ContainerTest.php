@@ -2,6 +2,7 @@
 
 use Jarvis\Skill\DependencyInjection\Container;
 use PHPUnit\Framework\TestCase;
+use Psr\Container\ContainerInterface;
 
 /**
  * @author Eric Chau <eriic.chau@gmail.com>
@@ -258,5 +259,42 @@ class ContainerTest extends TestCase
         $dic->alias('jarvis.common.bundle.source', 'jarvis');
 
         $this->assertCount(1, $dic->find('jarvis.*.bundle'));
+    }
+
+    public function test_container_implements_PSR11_ContainerInterface()
+    {
+        $dic = new Container();
+
+        $this->assertInstanceOf(ContainerInterface::class, $dic);
+    }
+
+    public function test_get_has_same_behavior_than_offsetGet()
+    {
+        $dic = new Container();
+        $dic['test'] = new \stdClass();
+
+        $this->assertSame($dic->offsetGet('test'), $dic->get('test'));
+    }
+
+    /**
+     * @expectedException \Psr\Container\NotFoundExceptionInterface
+     */
+    public function test_get_unknown_identifier()
+    {
+        $dic = new Container();
+
+        $dic->get('random_id');
+    }
+
+    public function test_get_has_same_behavior_than_offsetExists()
+    {
+        $dic = new Container();
+
+        $this->assertFalse($dic->offsetExists('foo'));
+        $this->assertSame($dic->offsetExists('foo'), $dic->has('foo'));
+
+        $dic['foo'] = 'bar';
+        $this->assertTrue($dic->offsetExists('foo'));
+        $this->assertSame($dic->offsetExists('foo'), $dic->has('foo'));
     }
 }
