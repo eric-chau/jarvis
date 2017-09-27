@@ -148,7 +148,7 @@ class Jarvis extends Container implements BroadcasterInterface
     public function run(Request $request = null): Response
     {
         $request = $request ?? $this[Request::class];
-        $event = $event = new RunEvent($request);
+        $event = new RunEvent($request);
 
         try {
             $this->masterBroadcast(BroadcasterInterface::RUN_EVENT, $event);

@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace Jarvis\Skill\DependencyInjection;
 
+use Psr\Container\ContainerInterface;
+use Psr\Container\NotFoundExceptionInterface;
+
 /**
  * Minimalist dependency injection container
  *
  * @author Eric Chau <eriic.chau@gmail.com>
  */
-class Container implements \ArrayAccess
+class Container implements \ArrayAccess, ContainerInterface
 {
     protected $locked = [];
     private $aliasOf = [];
@@ -108,6 +111,35 @@ class Container implements \ArrayAccess
         } else {
             unset($this->aliasOf[$id]);
         }
+    }
+
+    /**
+     * {@inheritdoc}
+     * {@see ContainerInterface::get}
+     *
+     * This method has been added to be compatible with PSR-11.
+     */
+    public function get($id)
+    {
+        try {
+            return $this->offsetGet($id);
+        } catch (\InvalidArgumentException $exception) {
+            throw new class($exception->getMessage())
+                extends \InvalidArgumentException
+                implements NotFoundExceptionInterface {}
+            ;
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     * {@see ContainerInterface::has}
+     *
+     * This method has been added to be compatible with PSR-11.
+     */
+    public function has($id)
+    {
+        return $this->offsetExists($id);
     }
 
     /**
